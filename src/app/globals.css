@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Cyber Violet CSS Custom Properties ─────────────────────────────────────
+   These tokens feed shadcn/ui components. Values are in HSL (without "hsl()").
+   Background: #050510  ≈ hsl(240, 52%, 4%)
+   Surface:    #0f0f1f  ≈ hsl(240, 35%, 9%)
+   Primary:    #7c3aed  ≈ hsl(263, 83%, 58%)
+   Accent:     #22d3ee  ≈ hsl(189, 85%, 53%)
+   Glow:       #f0abfc  ≈ hsl(293, 92%, 83%)
+   ─────────────────────────────────────────────────────────────────────────── */
+@layer base {
+  :root {
+    --background: 240 52% 4%;
+    --foreground: 220 20% 96%;
+
+    --card: 240 35% 9%;
+    --card-foreground: 220 20% 96%;
+
+    --popover: 240 35% 9%;
+    --popover-foreground: 220 20% 96%;
+
+    --primary: 263 83% 58%;
+    --primary-foreground: 220 20% 98%;
+
+    --secondary: 240 25% 14%;
+    --secondary-foreground: 220 20% 85%;
+
+    --muted: 240 25% 14%;
+    --muted-foreground: 220 14% 55%;
+
+    --accent: 189 85% 53%;
+    --accent-foreground: 240 52% 4%;
+
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 220 20% 98%;
+
+    --border: 263 30% 18%;
+    --input: 263 25% 14%;
+    --ring: 263 83% 58%;
+
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    @apply border-border;
+  }
+
+  html {
+    /* Smooth scrolling and prevent layout shift */
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+
+  /* Respect user preference for reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ─── Selection Styling ──────────────────────────────────────────────────── */
+::selection {
+  background-color: rgba(124, 58, 237, 0.35);
+  color: #ffffff;
+}
+
+/* ─── Focus Ring Styling ─────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid hsl(263 83% 58%);
+  outline-offset: 2px;
+}
