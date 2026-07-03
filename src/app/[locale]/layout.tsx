@@ -1,7 +1,10 @@
 import type { Metadata, Viewport } from 'next'
 import { Space_Grotesk, Plus_Jakarta_Sans } from 'next/font/google'
 
-import './globals.css'
+import '../globals.css'
+import { notFound } from 'next/navigation'
+import { ThemeProvider } from '@/components/providers/theme-provider'
+import { isValidLocale } from '@/lib/locale'
 
 // ─── Fonts ─────────────────────────────────────────────────────────────────
 // Space Grotesk: geometric, clean — perfect for technical/engineering products.
@@ -46,7 +49,10 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#050510',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f8fafc' },
+    { media: '(prefers-color-scheme: dark)', color: '#050510' }
+  ],
   width: 'device-width',
   initialScale: 1,
 }
@@ -55,18 +61,33 @@ export const viewport: Viewport = {
 
 export default function RootLayout({
   children,
+  params: { locale },
 }: Readonly<{
   children: React.ReactNode
+  params: { locale: string }
 }>) {
+  if (!isValidLocale(locale)) {
+    notFound()
+  }
+
   return (
     <html
-      lang="en"
+      lang={locale}
+      dir={locale === 'ar' ? 'rtl' : 'ltr'}
       className={`${spaceGrotesk.variable} ${plusJakarta.variable}`}
-      style={{ colorScheme: 'dark' }}
+      suppressHydrationWarning
     >
       <body className="min-h-screen bg-background font-sans antialiased">
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   )
 }
+

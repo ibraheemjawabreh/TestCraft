@@ -1,104 +1,109 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import type { CookieOptions } from '@supabase/ssr'
+import { i18n } from './i18n/config'
 
-/**
- * Auth Middleware
- *
- * Responsibilities:
- * 1. Refresh the Supabase session on every request (prevents token expiry
- *    while the user is actively using the app).
- * 2. Protect /dashboard/* and /academy/* — unauthenticated users are
- *    redirected to /login.
- * 3. Redirect already-authenticated users away from auth pages (/login,
- *    /register) to /academy.
- *
- * ⚠️  Always use `getUser()` (not `getSession()`) in middleware.
- *     `getUser()` validates the JWT with the Supabase Auth server;
- *     `getSession()` only reads the local cookie and can be spoofed.
- */
 export async function middleware(request: NextRequest): Promise<NextResponse> {
-  let supabaseResponse = NextResponse.next({ request })
+  const { pathname } = request.nextUrl
 
-  const supabaseUrl    = process.env.NEXT_PUBLIC_SUPABASE_URL
+  // 1. Check if the path should be excluded from locale routing
+  const isExcludedPath = [
+    '/auth/callback',
+    '/auth/signout',
+    '/api',
+    '/_next',
+    '/favicon.ico',
+    '.svg', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.ico', '.woff2'
+  ].some(excluded => pathname.includes(excluded))
+
+  if (isExcludedPath) {
+    // We still want to handle Supabase Auth for these, but avoid locale redirects
+    return handleSupabaseAuth(request, NextResponse.next({ request }))
+  }
+
+  // 2. Check if the pathname is missing a locale
+  const pathnameIsMissingLocale = i18n.locales.every(
+    (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
+  )
+
+  if (pathnameIsMissingLocale) {
+    // Redirect to default locale if missing
+    return NextResponse.redirect(
+      new URL(
+        `/${i18n.defaultLocale}${pathname.startsWith('/') ? '' : '/'}${pathname}`,
+        request.url
+      )
+    )
+  }
+
+  // Extract the locale for auth checks
+  const locale = pathname.split('/')[1]
+
+  // 3. Handle Supabase Auth
+  let supabaseResponse = NextResponse.next({ request })
+  return handleSupabaseAuth(request, supabaseResponse, locale)
+}
+
+async function handleSupabaseAuth(
+  request: NextRequest,
+  response: NextResponse,
+  locale?: string
+) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  // If env vars are missing, fail open — the page will handle the error
   if (!supabaseUrl || !supabaseAnonKey) {
-    return supabaseResponse
+    return response
   }
+
+  let finalResponse = response
 
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll()
       },
-      setAll(
-        cookiesToSet: { name: string; value: string; options: CookieOptions }[],
-      ) {
-        // Write refreshed cookies to both the cloned request and the response
-        cookiesToSet.forEach(({ name, value }: { name: string; value: string }) =>
-          request.cookies.set(name, value),
-        )
-        supabaseResponse = NextResponse.next({ request })
-        cookiesToSet.forEach(
-          ({
-            name,
-            value,
-            options,
-          }: {
-            name: string
-            value: string
-            options: CookieOptions
-          }) => supabaseResponse.cookies.set(name, value, options),
+      setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+        finalResponse = NextResponse.next({ request })
+        cookiesToSet.forEach(({ name, value, options }) =>
+          finalResponse.cookies.set(name, value, options)
         )
       },
     },
   })
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
+  const prefix = locale ? `/${locale}` : ''
 
-  // ── Protected routes ───────────────────────────────────────────────────────
-  // Any path under /academy or /dashboard requires authentication.
-  const isProtected =
-    pathname.startsWith('/academy') || pathname.startsWith('/dashboard')
-
+  // Protected routes require authentication
+  const isProtected = pathname.startsWith(`${prefix}/academy`) || pathname.startsWith(`${prefix}/dashboard`)
+  
   if (isProtected && !user) {
     const loginUrl = request.nextUrl.clone()
-    loginUrl.pathname = '/login'
-    // Preserve the original destination so we can redirect back after login
+    loginUrl.pathname = `${prefix}/login`
     loginUrl.searchParams.set('redirectTo', pathname)
     return NextResponse.redirect(loginUrl)
   }
 
-  // ── Auth routes — redirect logged-in users away ────────────────────────────
-  const authPaths = ['/login', '/register']
-  const isAuthPage = authPaths.some(
-    (p) => pathname === p || pathname.startsWith(`${p}/`),
-  )
+  // Auth routes redirect to academy if already logged in
+  const authPaths = [`${prefix}/login`, `${prefix}/register`]
+  const isAuthPage = authPaths.some((p) => pathname === p || pathname.startsWith(`${p}/`))
 
   if (user && isAuthPage) {
     const academyUrl = request.nextUrl.clone()
-    academyUrl.pathname = '/academy'
+    academyUrl.pathname = `${prefix}/academy`
     return NextResponse.redirect(academyUrl)
   }
 
-  return supabaseResponse
+  return finalResponse
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths EXCEPT:
-     * - _next/static  (Next.js static assets)
-     * - _next/image   (Next.js image optimisation)
-     * - favicon.ico
-     * - Public media files (svg, png, jpg, jpeg, gif, webp, ico, woff2)
-     */
+    // Match all request paths except static assets and auth callback
     '/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?)$).*)',
   ],
 }

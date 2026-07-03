@@ -28,30 +28,16 @@ import { PasswordInput } from './PasswordInput'
 
 // ─── Error message mapping ────────────────────────────────────────────────────
 
-/**
- * Maps Supabase Auth error messages to user-friendly copies.
- * Never expose raw Supabase or database error strings to the user.
- */
-const AUTH_ERROR_MAP: Readonly<Record<string, string>> = {
-  'User already registered':
-    'This email is already registered. Try signing in instead.',
-  'Email already exists':
-    'This email is already registered. Try signing in instead.',
-  'Password should be at least 6 characters':
-    'Please choose a stronger password.',
-  'Signup is disabled':
-    'New registrations are temporarily unavailable. Please try again later.',
-  'Email rate limit exceeded':
-    'Too many attempts. Please wait a moment and try again.',
-  'over_email_send_rate_limit':
-    'Too many emails sent. Please wait a moment and try again.',
-} as const
-
-function mapRegisterError(message: string): string {
-  return (
-    AUTH_ERROR_MAP[message] ??
-    'Something went wrong. Please try again or contact support.'
-  )
+function getSafeSignupMessage(message: string, dictionary: any): string {
+  const AUTH_ERROR_MAP: Record<string, string> = {
+    'User already registered': dictionary.auth.emailAlreadyRegistered,
+    'Email already exists': dictionary.auth.emailAlreadyRegistered,
+    'Password should be at least 6 characters': dictionary.validation.passwordTooShort,
+    'Signup is disabled': 'New registrations are temporarily unavailable. Please try again later.',
+    'Email rate limit exceeded': 'Too many attempts. Please wait a moment and try again.',
+    'over_email_send_rate_limit': 'Too many emails sent. Please wait a moment and try again.',
+  }
+  return AUTH_ERROR_MAP[message] ?? 'Something went wrong. Please try again or contact support.'
 }
 
 // ─── Password Strength Indicator ─────────────────────────────────────────────
@@ -118,12 +104,11 @@ type FormStatus = 'idle' | 'submitting' | 'email-sent' | 'error'
 // ─── Success Card ─────────────────────────────────────────────────────────────
 
 interface SuccessCardProps {
-  email: string
-  onResend: () => Promise<void>
-  isResending: boolean
+  dictionary: any
+  locale: string
 }
 
-function SuccessCard({ email, onResend, isResending }: SuccessCardProps) {
+function SuccessCard({ dictionary, locale }: SuccessCardProps) {
   return (
     <div
       className="flex flex-col items-center gap-5 py-4 text-center animate-fade-in"
@@ -135,34 +120,28 @@ function SuccessCard({ email, onResend, isResending }: SuccessCardProps) {
       </div>
 
       <div className="space-y-2.5">
-        <h2 className="font-heading text-xl font-bold text-white">
-          Check your inbox
+        <h2 className="font-heading text-xl font-bold text-foreground">
+          {dictionary.auth.checkEmail}
         </h2>
-        <p className="text-sm text-[#6b7a99] leading-relaxed">
-          We sent a confirmation link to{' '}
-          <strong className="text-foreground font-medium">{email}</strong>.
-          Click it to activate your account.
-        </p>
-        <p className="text-xs text-muted-foreground">
-          Didn&apos;t receive it? Check your spam folder, or{' '}
-          <button
-            type="button"
-            onClick={onResend}
-            disabled={isResending}
-            className="text-primary hover:text-primary/80 underline underline-offset-2 transition-colors disabled:pointer-events-none disabled:opacity-60"
-          >
-            {isResending ? 'Sending…' : 'resend the email'}
-          </button>
-          .
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          {dictionary.auth.safeEmailConfirmation}
         </p>
       </div>
 
-      <Link
-        href="/login"
-        className="mt-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-      >
-        Back to sign in
-      </Link>
+      <div className="flex flex-col w-full gap-3 mt-4">
+        <Link
+          href={`/${locale}/login`}
+          className="flex h-11 items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium text-sm w-full"
+        >
+          {dictionary.auth.goToSignIn}
+        </Link>
+        <Link
+          href={`/${locale}/forgot-password`}
+          className="flex h-11 items-center justify-center rounded-lg border border-border/50 bg-secondary/30 text-foreground hover:bg-secondary/60 hover:border-primary/40 transition-all font-medium text-sm w-full"
+        >
+          {dictionary.auth.forgotPassword}
+        </Link>
+      </div>
     </div>
   )
 }
@@ -182,16 +161,15 @@ function SuccessCard({ email, onResend, isResending }: SuccessCardProps) {
  *
  * Google sign-up is delegated to OAuthButton (separate component).
  */
-export function RegisterForm() {
+export function RegisterForm({ dictionary, locale }: { dictionary: any; locale: string }) {
   const router = useRouter()
   const [status, setStatus]           = useState<FormStatus>('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [isResending, setIsResending]   = useState(false)
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      fullName: '',
+      username: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -212,12 +190,14 @@ export function RegisterForm() {
       const supabase = createClient()
 
       const metadata: RegistrationMetadata = {
-        full_name: values.fullName,
+        username: values.username,
         registration_provider: 'email',
       }
 
+      const normalizedEmail = values.email.trim().toLowerCase()
+
       const { data, error } = await supabase.auth.signUp({
-        email: values.email,
+        email: normalizedEmail,
         password: values.password,
         options: {
           data: metadata,
@@ -228,7 +208,7 @@ export function RegisterForm() {
 
       if (error) {
         setStatus('error')
-        setErrorMessage(mapRegisterError(error.message))
+        setErrorMessage(getSafeSignupMessage(error.message, dictionary))
         return
       }
 
@@ -251,17 +231,7 @@ export function RegisterForm() {
     [router],
   )
 
-  // Resend confirmation email
-  const handleResend = useCallback(async (): Promise<void> => {
-    setIsResending(true)
-    const supabase = createClient()
-    await supabase.auth.resend({
-      type: 'signup',
-      email: form.getValues('email'),
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
-    })
-    setIsResending(false)
-  }, [form])
+
 
   const isDisabled = isSubmitting || status === 'submitting'
 
@@ -269,9 +239,8 @@ export function RegisterForm() {
   if (status === 'email-sent') {
     return (
       <SuccessCard
-        email={form.getValues('email')}
-        onResend={handleResend}
-        isResending={isResending}
+        dictionary={dictionary}
+        locale={locale}
       />
     )
   }
@@ -301,13 +270,13 @@ export function RegisterForm() {
           </div>
         )}
 
-        {/* ── Full Name ─────────────────────────────────────────────────── */}
+        {/* ── Username ─────────────────────────────────────────────────── */}
         <FormField
           control={form.control}
-          name="fullName"
+          name="username"
           render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>Full name</FormLabel>
+              <FormLabel>{dictionary.auth.username}</FormLabel>
               <FormControl>
                 <div className="relative">
                   <User
@@ -316,11 +285,11 @@ export function RegisterForm() {
                   />
                   <Input
                     {...field}
-                    id="fullName"
+                    id="username"
                     type="text"
-                    placeholder="Jane Smith"
-                    autoComplete="name"
-                    autoCapitalize="words"
+                    placeholder="janesmith123"
+                    autoComplete="username"
+                    autoCapitalize="none"
                     spellCheck={false}
                     disabled={isDisabled}
                     className={[
@@ -344,7 +313,7 @@ export function RegisterForm() {
           name="email"
           render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>Email address</FormLabel>
+              <FormLabel>{dictionary.auth.email}</FormLabel>
               <FormControl>
                 <div className="relative">
                   <Mail
@@ -383,7 +352,7 @@ export function RegisterForm() {
           name="password"
           render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>{dictionary.auth.password}</FormLabel>
               <FormControl>
                 <PasswordInput
                   {...field}
@@ -410,7 +379,7 @@ export function RegisterForm() {
           name="confirmPassword"
           render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>Confirm password</FormLabel>
+              <FormLabel>{dictionary.auth.confirmPassword}</FormLabel>
               <FormControl>
                 <PasswordInput
                   {...field}
@@ -503,10 +472,10 @@ export function RegisterForm() {
           {isDisabled ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-              <span>Creating account…</span>
+              <span>{dictionary.common.loading}</span>
             </>
           ) : (
-            <span>Create Account</span>
+            <span>{dictionary.auth.register}</span>
           )}
         </Button>
 
@@ -516,16 +485,16 @@ export function RegisterForm() {
         {/* ── Google OAuth ──────────────────────────────────────────────── */}
         <OAuthButton
           provider="google"
-          label="Continue with Google"
+          label={dictionary.auth.continueWithGoogle}
           disabled={isDisabled}
           redirectPath="/auth/callback"
         />
 
         {/* ── Sign in link ──────────────────────────────────────────────── */}
         <p className="text-center text-sm text-muted-foreground pt-1">
-          Already have an account?{' '}
+          {dictionary.auth.alreadyHaveAccount}{' '}
           <Link
-            href="/login"
+            href={`/${locale}/login`}
             className={[
               'font-semibold text-foreground',
               'underline underline-offset-4 decoration-border',
@@ -533,7 +502,7 @@ export function RegisterForm() {
               'transition-colors duration-150',
             ].join(' ')}
           >
-            Sign in
+            {dictionary.auth.login}
           </Link>
         </p>
       </form>

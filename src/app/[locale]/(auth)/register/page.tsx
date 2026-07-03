@@ -2,6 +2,10 @@ import type { Metadata } from 'next'
 
 import { Logo } from '@/components/brand/Logo'
 import { RegisterForm } from '@/components/auth/RegisterForm'
+import { getDictionary } from '@/i18n/get-dictionary'
+import { type Locale } from '@/i18n/config'
+import { ThemeToggle } from '@/components/theme/theme-toggle'
+import { LanguageSwitcher } from '@/components/language/language-switcher'
 
 export const metadata: Metadata = {
   title: 'Create Account',
@@ -9,21 +13,17 @@ export const metadata: Metadata = {
     'Create your free TestCraft account and start your QA engineering journey with real-world testing challenges.',
 }
 
-/**
- * Register page — Server Component shell.
- *
- * Visual design:
- *  • Identical Cyber Violet background to the login page for brand consistency.
- *  • The top orb is cyan (accent) instead of violet to differentiate the page.
- *  • Slightly wider card (max-w-[480px]) to accommodate the extra form fields.
- *  • Logo centred at the top with gradient heading below.
- *  • All interactive logic lives in RegisterForm.tsx (Client Component).
- *
- * This file has zero client-side JavaScript bundle cost.
- */
-export default function RegisterPage() {
+export default async function RegisterPage({ params: { locale } }: { params: { locale: Locale } }) {
+  const dictionary = await getDictionary(locale)
+
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#050510] px-4 py-12">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-12 transition-colors">
+
+      {/* ── Top-right Controls ────────────────────────────────────────── */}
+      <div className="absolute top-6 end-6 z-50 flex items-center gap-4 animate-fade-in-up">
+        <ThemeToggle dictionary={dictionary} />
+        <LanguageSwitcher dictionary={dictionary} locale={locale} />
+      </div>
 
       {/* ── Atmospheric background ──────────────────────────────────────── */}
 
@@ -64,8 +64,8 @@ export default function RegisterPage() {
         <div
           className={[
             'relative rounded-2xl',
-            'border border-[#22d3ee]/12',
-            'bg-[#0f0f1f]/75 backdrop-blur-2xl',
+            'border border-border/50',
+            'bg-card/75 backdrop-blur-2xl',
             'px-8 py-9 shadow-card',
             'sm:px-10',
           ].join(' ')}
@@ -75,19 +75,16 @@ export default function RegisterPage() {
 
           {/* ── Heading ──────────────────────────────────────────────── */}
           <div className="mt-7 mb-6">
-            <h1 className="font-heading text-[2.05rem] font-bold leading-[1.1] tracking-[-0.03em] text-white">
-              Create your{' '}
-              <span className="bg-cyber-gradient-r bg-clip-text text-transparent">
-                account
-              </span>
+            <h1 className="font-heading text-[2.05rem] font-bold leading-[1.1] tracking-[-0.03em] text-foreground">
+              {dictionary.auth.createAccount}
             </h1>
-            <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-[#6b7a99]">
-              Start your QA journey with real-world testing challenges.
+            <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-muted-foreground">
+              {dictionary.auth.continueYourJourney}
             </p>
           </div>
 
           {/* ── Form (Client Component) ───────────────────────────────── */}
-          <RegisterForm />
+          <RegisterForm dictionary={dictionary} locale={locale} />
         </div>
 
         {/* Bottom gradient line */}
@@ -100,3 +97,4 @@ export default function RegisterPage() {
     </main>
   )
 }
+

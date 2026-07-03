@@ -62,7 +62,7 @@ function mapAuthError(message: string): string {
  * - Google OAuth via GoogleSignInButton
  * - Link to register and forgot-password pages
  */
-export function LoginForm() {
+export function LoginForm({ dictionary, locale }: { dictionary: any; locale: string }) {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
@@ -140,7 +140,7 @@ export function LoginForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email address</FormLabel>
+              <FormLabel>{dictionary.auth.email}</FormLabel>
               <FormControl>
                 <Input
                   {...field}
@@ -169,9 +169,9 @@ export function LoginForm() {
             <FormItem>
               {/* Label row with inline "Forgot password" link */}
               <div className="flex items-center justify-between">
-                <FormLabel>Password</FormLabel>
+                <FormLabel>{dictionary.auth.password}</FormLabel>
                 <Link
-                  href="/forgot-password"
+                  href={`/${locale}/forgot-password`}
                   className={[
                     'text-xs text-muted-foreground',
                     'hover:text-primary transition-colors duration-150',
@@ -179,7 +179,7 @@ export function LoginForm() {
                   ].join(' ')}
                   tabIndex={0}
                 >
-                  Forgot password?
+                  {dictionary.auth.forgotPassword}
                 </Link>
               </div>
 
@@ -245,7 +245,7 @@ export function LoginForm() {
                   htmlFor="rememberMe"
                   className="cursor-pointer text-sm font-normal text-muted-foreground hover:text-foreground transition-colors duration-150"
                 >
-                  Remember me
+                  {dictionary.auth.rememberMe}
                 </Label>
                 <span id="rememberMe-description" className="sr-only">
                   When unchecked, your session will end when you close the browser tab.
@@ -267,10 +267,10 @@ export function LoginForm() {
           {isSubmitting ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-              <span>Signing in…</span>
+              <span>{dictionary.common.loading}</span>
             </>
           ) : (
-            <span>Sign in</span>
+            <span>{dictionary.auth.login}</span>
           )}
         </Button>
 
@@ -278,13 +278,13 @@ export function LoginForm() {
         <AuthDivider />
 
         {/* ── Google OAuth ──────────────────────────────────────────────── */}
-        <GoogleSignInButton disabled={isSubmitting} />
+        <GoogleSignInButton disabled={isSubmitting} text={dictionary.auth.continueWithGoogle} />
 
         {/* ── Register link ─────────────────────────────────────────────── */}
         <p className="text-center text-sm text-muted-foreground pt-1">
-          Don&apos;t have an account?{' '}
+          {dictionary.auth.dontHaveAccount}{' '}
           <Link
-            href="/register"
+            href={`/${locale}/register`}
             className={[
               'font-semibold text-foreground',
               'underline underline-offset-4 decoration-border',
@@ -292,7 +292,7 @@ export function LoginForm() {
               'transition-colors duration-150',
             ].join(' ')}
           >
-            Create Account
+            {dictionary.auth.register}
           </Link>
         </p>
       </form>

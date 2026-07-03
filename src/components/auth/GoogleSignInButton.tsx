@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button'
 interface GoogleSignInButtonProps {
   /** Disable the button externally — e.g., when the email form is submitting. */
   disabled?: boolean
+  /** The text to display on the button. */
+  text?: string
 }
 
 /**
@@ -16,7 +18,7 @@ interface GoogleSignInButtonProps {
  * Redirects to /auth/callback on success; handles duplicate-click prevention
  * by tracking its own loading state.
  */
-export function GoogleSignInButton({ disabled = false }: GoogleSignInButtonProps) {
+export function GoogleSignInButton({ disabled = false, text = 'Continue with Google' }: GoogleSignInButtonProps) {
   const [isLoading, setIsLoading] = useState(false)
 
   async function handleClick(): Promise<void> {
@@ -66,7 +68,7 @@ export function GoogleSignInButton({ disabled = false }: GoogleSignInButtonProps
       ].join(' ')}
       onClick={handleClick}
       disabled={isDisabled}
-      aria-label="Continue with Google"
+      aria-label={text}
       aria-busy={isLoading}
     >
       {isLoading ? (
@@ -74,7 +76,7 @@ export function GoogleSignInButton({ disabled = false }: GoogleSignInButtonProps
       ) : (
         <GoogleSvgIcon />
       )}
-      <span>Continue with Google</span>
+      <span>{text}</span>
     </Button>
   )
 }

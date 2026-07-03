@@ -2,6 +2,10 @@ import type { Metadata } from 'next'
 
 import { Logo } from '@/components/brand/Logo'
 import { LoginForm } from '@/components/auth/LoginForm'
+import { getDictionary } from '@/i18n/get-dictionary'
+import { type Locale } from '@/i18n/config'
+import { ThemeToggle } from '@/components/theme/theme-toggle'
+import { LanguageSwitcher } from '@/components/language/language-switcher'
 
 export const metadata: Metadata = {
   title: 'Sign In',
@@ -9,22 +13,17 @@ export const metadata: Metadata = {
     'Sign in to TestCraft and continue your QA engineering journey.',
 }
 
-/**
- * Login page — Server Component shell.
- *
- * Layout:
- *   • Full-viewport dark background (#050510)
- *   • Two atmospheric gradient orbs (violet + cyan) with blur
- *   • Subtle dot-grid overlay for depth
- *   • Centered glassmorphism card with violet border glow
- *   • Logo → heading → subtitle → LoginForm (client)
- *
- * The heavy interactive logic lives in LoginForm.tsx (Client Component).
- * This page itself has zero client-side bundle cost.
- */
-export default function LoginPage() {
+export default async function LoginPage({ params: { locale } }: { params: { locale: Locale } }) {
+  const dictionary = await getDictionary(locale)
+
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#050510] px-4 py-12">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-12 transition-colors">
+
+      {/* ── Top-right Controls ────────────────────────────────────────── */}
+      <div className="absolute top-6 end-6 z-50 flex items-center gap-4 animate-fade-in-up">
+        <ThemeToggle dictionary={dictionary} />
+        <LanguageSwitcher dictionary={dictionary} locale={locale} />
+      </div>
 
       {/* ── Atmospheric background ──────────────────────────────────────── */}
 
@@ -65,8 +64,8 @@ export default function LoginPage() {
         <div
           className={[
             'relative rounded-2xl',
-            'border border-[#7c3aed]/14',
-            'bg-[#0f0f1f]/75 backdrop-blur-2xl',
+            'border border-border/50',
+            'bg-card/75 backdrop-blur-2xl',
             'px-8 py-9 shadow-card',
             'sm:px-10',
           ].join(' ')}
@@ -76,19 +75,16 @@ export default function LoginPage() {
 
           {/* ── Heading ──────────────────────────────────────────────────── */}
           <div className="mt-7 mb-6">
-            <h1 className="font-heading text-[2.15rem] font-bold leading-[1.1] tracking-[-0.03em] text-white">
-              Welcome{' '}
-              <span className="bg-cyber-gradient bg-clip-text text-transparent">
-                back
-              </span>
+            <h1 className="font-heading text-[2.15rem] font-bold leading-[1.1] tracking-[-0.03em] text-foreground">
+              {dictionary.auth.welcomeBack}
             </h1>
-            <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-[#6b7a99]">
-              Continue your QA journey.
+            <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-muted-foreground">
+              {dictionary.auth.continueYourJourney}
             </p>
           </div>
 
           {/* ── Form (Client Component) ───────────────────────────────── */}
-          <LoginForm />
+          <LoginForm dictionary={dictionary} locale={locale} />
         </div>
 
         {/* Bottom gradient line — subtle brand accent */}
@@ -101,3 +97,4 @@ export default function LoginPage() {
     </main>
   )
 }
+

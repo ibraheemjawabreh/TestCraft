@@ -43,11 +43,12 @@ export type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>
  */
 export const registerSchema = z
   .object({
-    fullName: z
+    username: z
       .string()
       .trim()
-      .min(2, 'Full name must be at least 2 characters.')
-      .max(80, 'Full name must be 80 characters or less.'),
+      .min(2, 'Username must be at least 2 characters.')
+      .max(40, 'Username must be 40 characters or less.')
+      .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores.'),
 
     email: z
       .string()
