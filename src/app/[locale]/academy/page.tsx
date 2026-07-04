@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
-import { LogOut, User } from 'lucide-react'
+import Link from 'next/link'
+import { LogOut, User, Shield } from 'lucide-react'
 
 import { createClient } from '@/lib/supabase/server'
 import { Logo } from '@/components/brand/Logo'
@@ -20,6 +21,15 @@ export default async function DashboardPage({ params: { locale } }: { params: { 
     redirect(`/${locale}/login`)
   }
 
+  // Fetch profile to check role
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  const isAdmin = profile?.role === 'admin'
+
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors">
       {/* Nav */}
@@ -29,6 +39,16 @@ export default async function DashboardPage({ params: { locale } }: { params: { 
 
           {/* User pill & controls */}
           <div className="flex items-center gap-4">
+            {isAdmin && (
+              <Link
+                href={`/${locale}/admin`}
+                className="flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-sm font-medium text-primary hover:bg-primary/20 transition-colors"
+              >
+                <Shield className="h-4 w-4" aria-hidden="true" />
+                {dictionary.navigation.admin}
+              </Link>
+            )}
+            
             <ThemeToggle dictionary={dictionary} />
             <LanguageSwitcher dictionary={dictionary} locale={locale} />
             

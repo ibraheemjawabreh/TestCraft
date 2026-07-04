@@ -102,9 +102,9 @@ export function LoginForm({ dictionary, locale }: { dictionary: any; locale: str
     }
 
     // Refresh server components to pick up the new session cookie, then
-    // navigate to the protected dashboard.
+    // let the server choose the role-aware landing page.
     router.refresh()
-    router.push('/dashboard')
+    router.push(`/auth/post-login?locale=${locale}`)
   }
 
   return (
@@ -278,7 +278,11 @@ export function LoginForm({ dictionary, locale }: { dictionary: any; locale: str
         <AuthDivider />
 
         {/* ── Google OAuth ──────────────────────────────────────────────── */}
-        <GoogleSignInButton disabled={isSubmitting} text={dictionary.auth.continueWithGoogle} />
+        <GoogleSignInButton
+          disabled={isSubmitting}
+          text={dictionary.auth.continueWithGoogle}
+          locale={locale}
+        />
 
         {/* ── Register link ─────────────────────────────────────────────── */}
         <p className="text-center text-sm text-muted-foreground pt-1">

@@ -19,6 +19,7 @@ export function LanguageSwitcher({ dictionary, locale }: { dictionary: any; loca
 
   const switchLocale = (newLocale: Locale) => {
     if (!pathname) return
+    document.cookie = `testcraft-locale=${newLocale}; path=/; max-age=31536000; samesite=lax`
     const segments = pathname.split('/')
     // Replace the locale segment
     segments[1] = newLocale

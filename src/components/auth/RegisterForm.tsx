@@ -202,7 +202,7 @@ export function RegisterForm({ dictionary, locale }: { dictionary: any; locale: 
         options: {
           data: metadata,
           // Email confirmation link redirects here
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?locale=${locale}`,
         },
       })
 
@@ -220,7 +220,7 @@ export function RegisterForm({ dictionary, locale }: { dictionary: any; locale: 
 
       // Case 2: Email confirmation disabled — user is immediately signed in
       if (data.session) {
-        router.push('/academy')
+        router.push(`/auth/post-login?locale=${locale}`)
         router.refresh()
         return
       }
@@ -487,7 +487,7 @@ export function RegisterForm({ dictionary, locale }: { dictionary: any; locale: 
           provider="google"
           label={dictionary.auth.continueWithGoogle}
           disabled={isDisabled}
-          redirectPath="/auth/callback"
+          redirectPath={`/auth/callback?locale=${locale}`}
         />
 
         {/* ── Sign in link ──────────────────────────────────────────────── */}

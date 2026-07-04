@@ -11,6 +11,8 @@ interface GoogleSignInButtonProps {
   disabled?: boolean
   /** The text to display on the button. */
   text?: string
+  /** Current route locale, forwarded through the OAuth callback. */
+  locale?: string
 }
 
 /**
@@ -18,7 +20,11 @@ interface GoogleSignInButtonProps {
  * Redirects to /auth/callback on success; handles duplicate-click prevention
  * by tracking its own loading state.
  */
-export function GoogleSignInButton({ disabled = false, text = 'Continue with Google' }: GoogleSignInButtonProps) {
+export function GoogleSignInButton({
+  disabled = false,
+  text = 'Continue with Google',
+  locale = 'en',
+}: GoogleSignInButtonProps) {
   const [isLoading, setIsLoading] = useState(false)
 
   async function handleClick(): Promise<void> {
@@ -33,7 +39,7 @@ export function GoogleSignInButton({ disabled = false, text = 'Continue with Goo
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${window.location.origin}/auth/callback?locale=${locale}`,
           queryParams: {
             // Request an access token that includes the user's email
             access_type: 'offline',

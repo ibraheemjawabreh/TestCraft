@@ -1,44 +1,45 @@
+import { cookies } from 'next/headers'
 import { NextResponse, type NextRequest } from 'next/server'
 
+import { getPostLoginRedirect, normalizeAuthLocale } from '@/lib/auth/get-post-login-redirect'
 import { createClient } from '@/lib/supabase/server'
 
 /**
  * Auth Callback Route Handler
  *
- * Handles two flows:
- *
- * 1. Google / OAuth redirect
- *    Supabase sends a one-time `code` query param after the user grants consent.
- *    We exchange it for a session via `exchangeCodeForSession`, which also fires
- *    the on_auth_user_created trigger (creating the profile row if needed).
- *
- * 2. Password reset
- *    Same flow — the magic link contains a `code` and `next=/update-password`.
- *
- * Security notes:
- * - The `next` param is validated to be a relative path (no open redirects).
- * - No tokens are logged or exposed in responses.
- * - Failed exchanges redirect to /register with a safe error indicator.
+ * Handles Supabase OAuth and magic-link callbacks. Successful sign-in flows are
+ * redirected by role: admins to /[locale]/admin, testers to /[locale]/academy.
+ * Explicit safe `next` destinations are still honored for non-login flows such
+ * as password reset.
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { searchParams, origin } = new URL(request.url)
-
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/academy'
+  const next = searchParams.get('next')
+  const cookieStore = await cookies()
+  const locale = normalizeAuthLocale(
+    searchParams.get('locale') ?? cookieStore.get('testcraft-locale')?.value,
+  )
 
   if (code) {
     const supabase = await createClient()
-
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
-      // Strict relative-path check — prevents open redirect attacks
-      const safeNext = next.startsWith('/') && !next.startsWith('//') ? next : '/academy'
-      return NextResponse.redirect(`${origin}${safeNext}`)
+      cookieStore.set('testcraft-locale', locale, {
+        path: '/',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 365,
+      })
+
+      if (next && next.startsWith('/') && !next.startsWith('//') && next !== '/academy') {
+        return NextResponse.redirect(`${origin}${next}`)
+      }
+
+      const redirectPath = await getPostLoginRedirect(locale)
+      return NextResponse.redirect(`${origin}${redirectPath}`)
     }
   }
 
-  // Exchange failed (invalid/expired code, or no code provided)
-  // Redirect to register with a non-sensitive error indicator in the query string
-  return NextResponse.redirect(`${origin}/register?error=auth_failed`)
+  return NextResponse.redirect(`${origin}/${locale}/register?error=auth_failed`)
 }
