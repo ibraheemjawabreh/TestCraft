@@ -1,94 +1,143 @@
-import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { LogOut, User, Shield } from 'lucide-react'
+import { BookOpen, FileText, Award, Sword } from 'lucide-react'
 
-import { createClient } from '@/lib/supabase/server'
-import { Logo } from '@/components/brand/Logo'
-import { ThemeToggle } from '@/components/theme/theme-toggle'
-import { LanguageSwitcher } from '@/components/language/language-switcher'
+import { requireTester } from '@/lib/auth/require-tester'
+import { getAcademyDashboardData } from '@/lib/academy/academy'
 import { getDictionary } from '@/i18n/get-dictionary'
 import { type Locale } from '@/i18n/config'
 
-export default async function DashboardPage({ params: { locale } }: { params: { locale: Locale } }) {
-  const supabase = await createClient()
+import { AcademyLayout } from '@/components/academy/academy-layout'
+import { ProfileProgressCard } from '@/components/academy/profile-progress-card'
+import { AcademyStats } from '@/components/academy/academy-stats'
+import { RecommendedChallenges } from '@/components/academy/recommended-challenges'
+import { RecentReports } from '@/components/academy/recent-reports'
+import { RecentAiFeedback } from '@/components/academy/recent-ai-feedback'
+import { BadgesPreview } from '@/components/academy/badges-preview'
+
+export default async function AcademyPage({
+  params: { locale },
+}: {
+  params: { locale: Locale }
+}) {
   const dictionary = await getDictionary(locale)
+  const { user, profile } = await requireTester(locale)
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const dashboardResult = await getAcademyDashboardData(user.id, profile)
 
-  if (!user) {
-    redirect(`/${locale}/login`)
+  if (dashboardResult.error || !dashboardResult.data) {
+    return (
+      <AcademyLayout dictionary={dictionary} locale={locale} username={profile.username}>
+        <div className="flex flex-col items-center justify-center py-24 text-center">
+          <p className="text-muted-foreground">{dictionary.academy.failedToLoad}</p>
+        </div>
+      </AcademyLayout>
+    )
   }
 
-  // Fetch profile to check role
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  const isAdmin = profile?.role === 'admin'
+  const {
+    stats,
+    recommendedChallenges,
+    recentReports,
+    recentEvaluations,
+    badges,
+  } = dashboardResult.data
 
   return (
-    <div className="min-h-screen bg-background text-foreground transition-colors">
-      {/* Nav */}
-      <header className="border-b border-border/50 bg-card/60 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Logo />
+    <AcademyLayout dictionary={dictionary} locale={locale} username={profile.username}>
+      <div className="space-y-10">
 
-          {/* User pill & controls */}
-          <div className="flex items-center gap-4">
-            {isAdmin && (
-              <Link
-                href={`/${locale}/admin`}
-                className="flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-sm font-medium text-primary hover:bg-primary/20 transition-colors"
-              >
-                <Shield className="h-4 w-4" aria-hidden="true" />
-                {dictionary.navigation.admin}
-              </Link>
-            )}
-            
-            <ThemeToggle dictionary={dictionary} />
-            <LanguageSwitcher dictionary={dictionary} locale={locale} />
-            
-            <div className="flex items-center gap-2.5 rounded-xl border border-primary/15 bg-primary/8 px-3.5 py-2">
-              <User className="h-4 w-4 text-primary" aria-hidden="true" />
-              <span className="text-sm font-medium text-foreground/80 max-w-[200px] truncate">
-                {user.email}
-              </span>
-            </div>
-
-            <form action="/auth/signout" method="POST">
-              <button
-                type="submit"
-                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all duration-150"
-              >
-                <LogOut className="h-4 w-4" aria-hidden="true" />
-                {dictionary.navigation.logout}
-              </button>
-            </form>
-          </div>
-        </div>
-      </header>
-
-      {/* Content */}
-      <main className="mx-auto max-w-6xl px-6 py-16">
-        <div className="text-center">
-          <div
-            aria-hidden="true"
-            className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-cyber-gradient shadow-glow-sm"
-          >
-            <span className="font-heading text-xl font-black text-white">TC</span>
-          </div>
-          <h1 className="font-heading text-4xl font-extrabold tracking-tight text-foreground">
-            {dictionary.navigation.academy}
+        {/* ── Header ─────────────────────────────────────────────────── */}
+        <div className="space-y-1">
+          <h1 className="font-heading text-3xl font-extrabold tracking-tight text-foreground">
+            {dictionary.academy.welcomeBack},{' '}
+            <span className="bg-cyber-gradient bg-clip-text text-transparent">
+              {profile.username}
+            </span>
           </h1>
-          <p className="mt-3 text-lg text-muted-foreground">
-            {dictionary.auth.welcomeBack}.
-          </p>
+          <p className="text-muted-foreground">{dictionary.academy.continueJourney}</p>
         </div>
-      </main>
-    </div>
+
+        {/* ── Profile Progress Card ───────────────────────────────────── */}
+        <ProfileProgressCard
+          profile={profile}
+          attemptedChallenges={stats.attemptedChallengesCount}
+          reviewedReports={stats.reviewedReports}
+          dictionary={dictionary}
+        />
+
+        {/* ── Stats Grid ─────────────────────────────────────────────── */}
+        <section>
+          <AcademyStats stats={stats} dictionary={dictionary} />
+        </section>
+
+        {/* ── Continue Learning ───────────────────────────────────────── */}
+        <RecommendedChallenges
+          challenges={recommendedChallenges}
+          dictionary={dictionary}
+          locale={locale}
+        />
+
+        {/* ── Two-column: Recent Reports + AI Feedback ────────────────── */}
+        <div className="grid gap-8 lg:grid-cols-2">
+          <RecentReports
+            reports={recentReports}
+            dictionary={dictionary}
+            locale={locale}
+          />
+          <RecentAiFeedback
+            evaluations={recentEvaluations}
+            dictionary={dictionary}
+          />
+        </div>
+
+        {/* ── Badges Preview ──────────────────────────────────────────── */}
+        <BadgesPreview badges={badges} dictionary={dictionary} />
+
+        {/* ── Quick Actions ───────────────────────────────────────────── */}
+        <section>
+          <h2 className="mb-4 font-heading text-lg font-semibold text-foreground">
+            {dictionary.academy.quickActions}
+          </h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              {
+                href: `/${locale}/academy/challenges`,
+                label: dictionary.academy.browseChallenges,
+                icon: Sword,
+                colorClass: 'text-primary bg-primary/10 border-primary/20 hover:bg-primary/15',
+              },
+              {
+                href: `/${locale}/academy/reports`,
+                label: dictionary.academy.viewReports,
+                icon: FileText,
+                colorClass: 'text-blue-400 bg-blue-500/10 border-blue-500/20 hover:bg-blue-500/15',
+              },
+              {
+                href: `/${locale}/academy/challenges`,
+                label: dictionary.academy.continueLearning,
+                icon: BookOpen,
+                colorClass: 'text-green-400 bg-green-500/10 border-green-500/20 hover:bg-green-500/15',
+              },
+              {
+                href: `/${locale}/academy/badges`,
+                label: dictionary.academy.viewBadges,
+                icon: Award,
+                colorClass: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20 hover:bg-yellow-500/15',
+              },
+            ].map((action) => (
+              <Link
+                key={action.href + action.label}
+                href={action.href}
+                className={`flex flex-col items-center gap-2.5 rounded-xl border p-4 text-center text-sm font-medium transition-all hover:shadow-sm ${action.colorClass}`}
+              >
+                <action.icon className="h-6 w-6" aria-hidden="true" />
+                {action.label}
+              </Link>
+            ))}
+          </div>
+        </section>
+
+      </div>
+    </AcademyLayout>
   )
 }
