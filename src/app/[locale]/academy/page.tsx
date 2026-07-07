@@ -3,6 +3,7 @@ import { BookOpen, FileText, Award, Sword } from 'lucide-react'
 
 import { requireTester } from '@/lib/auth/require-tester'
 import { getAcademyDashboardData } from '@/lib/academy/academy'
+import { getAcademyLearningOverview } from '@/lib/academy/progress'
 import { getDictionary } from '@/i18n/get-dictionary'
 import { type Locale } from '@/i18n/config'
 
@@ -13,6 +14,8 @@ import { RecommendedChallenges } from '@/components/academy/recommended-challeng
 import { RecentReports } from '@/components/academy/recent-reports'
 import { RecentAiFeedback } from '@/components/academy/recent-ai-feedback'
 import { BadgesPreview } from '@/components/academy/badges-preview'
+import { ContinueLearningCard } from '@/components/academy/learning/continue-learning-card'
+import { LearningPathTimeline } from '@/components/academy/learning/learning-path-timeline'
 
 export default async function AcademyPage({
   params: { locale },
@@ -22,9 +25,12 @@ export default async function AcademyPage({
   const dictionary = await getDictionary(locale)
   const { user, profile } = await requireTester(locale)
 
-  const dashboardResult = await getAcademyDashboardData(user.id, profile)
+  const [dashboardResult, learningOverviewResult] = await Promise.all([
+    getAcademyDashboardData(user.id, profile),
+    getAcademyLearningOverview(user.id),
+  ])
 
-  if (dashboardResult.error || !dashboardResult.data) {
+  if (dashboardResult.error || !dashboardResult.data || learningOverviewResult.error || !learningOverviewResult.data) {
     return (
       <AcademyLayout dictionary={dictionary} locale={locale} username={profile.username}>
         <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -41,6 +47,8 @@ export default async function AcademyPage({
     recentEvaluations,
     badges,
   } = dashboardResult.data
+
+  const learningOverview = learningOverviewResult.data
 
   return (
     <AcademyLayout dictionary={dictionary} locale={locale} username={profile.username}>
@@ -71,11 +79,27 @@ export default async function AcademyPage({
         </section>
 
         {/* ── Continue Learning ───────────────────────────────────────── */}
-        <RecommendedChallenges
-          challenges={recommendedChallenges}
-          dictionary={dictionary}
-          locale={locale}
-        />
+        <div className="grid gap-8 lg:grid-cols-2 items-start">
+          <div className="space-y-8">
+            <ContinueLearningCard
+              overview={learningOverview}
+              dictionary={dictionary}
+              locale={locale}
+            />
+            <RecommendedChallenges
+              challenges={recommendedChallenges}
+              dictionary={dictionary}
+              locale={locale}
+            />
+          </div>
+          <div className="rounded-2xl border border-border/50 bg-card/40 p-6 backdrop-blur-sm lg:sticky lg:top-8">
+            <LearningPathTimeline
+              lessons={learningOverview.lessons}
+              dictionary={dictionary}
+              locale={locale}
+            />
+          </div>
+        </div>
 
         {/* ── Two-column: Recent Reports + AI Feedback ────────────────── */}
         <div className="grid gap-8 lg:grid-cols-2">

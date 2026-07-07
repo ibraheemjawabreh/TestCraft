@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Sword, FileText, Users, Settings, LogOut } from 'lucide-react'
+import { LayoutDashboard, Sword, FileText, Users, Settings, LogOut, BookOpen } from 'lucide-react'
 
 import { Logo } from '@/components/brand/Logo'
 import { type Locale } from '@/i18n/config'
@@ -18,6 +18,9 @@ interface AdminSidebarDictionary {
   navigation: {
     logout: string
   }
+  learning: {
+    lessons: string
+  }
 }
 
 interface AdminSidebarProps {
@@ -31,6 +34,7 @@ export function AdminSidebar({ dictionary, locale }: AdminSidebarProps) {
   const navItems = [
     { name: dictionary.admin.overview, href: `/${locale}/admin`, icon: LayoutDashboard, exact: true },
     { name: dictionary.admin.challengesNav, href: `/${locale}/admin/challenges`, icon: Sword, exact: false },
+    { name: dictionary.learning.lessons, href: `/${locale}/admin/lessons`, icon: BookOpen, exact: false },
     { name: dictionary.admin.reports, href: `/${locale}/admin/reports`, icon: FileText, exact: false },
     { name: dictionary.admin.users, href: `/${locale}/admin/users`, icon: Users, exact: false },
     { name: dictionary.admin.settings, href: `/${locale}/admin/settings`, icon: Settings, exact: false },

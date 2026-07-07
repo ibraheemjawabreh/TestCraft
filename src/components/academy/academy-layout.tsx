@@ -46,12 +46,16 @@ export function AcademyLayout({
             <ThemeToggle dictionary={dictionary} />
             <LanguageSwitcher dictionary={dictionary} locale={locale} />
 
-            <div className="flex items-center gap-2 rounded-xl border border-primary/15 bg-primary/8 px-3 py-1.5">
+            <Link
+              href={`/${locale}/settings`}
+              className="flex items-center gap-2 rounded-xl border border-primary/15 bg-primary/8 px-3 py-1.5 hover:bg-primary/15 transition-colors"
+              title={dictionary.navigation.settings}
+            >
               <User className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
               <span className="text-sm font-medium text-foreground/80 max-w-[140px] truncate">
                 {username}
               </span>
-            </div>
+            </Link>
 
             <form action="/auth/signout" method="POST">
               <button

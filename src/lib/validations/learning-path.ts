@@ -1,0 +1,28 @@
+import { z } from 'zod'
+
+export const learningPathSchema = z.object({
+  title: z
+    .string()
+    .min(3, 'titleMin')
+    .max(120, 'titleMax')
+    .trim(),
+  description: z
+    .string()
+    .min(10, 'descriptionMin')
+    .max(2000, 'descriptionMax')
+    .trim(),
+  slug: z
+    .string()
+    .min(3, 'slugMin')
+    .max(140, 'slugMax')
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'slugInvalid')
+    .trim(),
+  is_active: z.boolean().default(true),
+  sort_order: z
+    .number({ invalid_type_error: 'required' })
+    .int()
+    .min(0, 'sortOrderMin')
+    .default(0),
+})
+
+export type LearningPathFormValues = z.infer<typeof learningPathSchema>

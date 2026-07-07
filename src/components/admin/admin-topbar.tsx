@@ -1,9 +1,10 @@
 'use client'
 
+import Link from 'next/link'
 import { ThemeToggle } from '@/components/theme/theme-toggle'
 import { LanguageSwitcher } from '@/components/language/language-switcher'
 import { type Locale } from '@/i18n/config'
-import { ShieldCheck } from 'lucide-react'
+import { ShieldCheck, Settings } from 'lucide-react'
 
 interface AdminTopbarProps {
   dictionary: any
@@ -27,7 +28,11 @@ export function AdminTopbar({ dictionary, locale, email }: AdminTopbarProps) {
         <LanguageSwitcher dictionary={dictionary} locale={locale} />
         
         {/* Admin Pill */}
-        <div className="hidden sm:flex items-center gap-2.5 rounded-xl border border-primary/20 bg-primary/10 px-3.5 py-1.5 shadow-sm">
+        <Link
+          href={`/${locale}/settings`}
+          className="hidden sm:flex items-center gap-2.5 rounded-xl border border-primary/20 bg-primary/10 px-3.5 py-1.5 shadow-sm hover:bg-primary/20 transition-colors"
+          title={dictionary.navigation?.settings ?? "Settings"}
+        >
           <ShieldCheck className="h-4 w-4 text-primary" aria-hidden="true" />
           <div className="flex flex-col">
             <span className="text-[0.65rem] font-bold uppercase tracking-wider text-primary">
@@ -37,7 +42,8 @@ export function AdminTopbar({ dictionary, locale, email }: AdminTopbarProps) {
               {email}
             </span>
           </div>
-        </div>
+          <Settings className="h-3.5 w-3.5 text-muted-foreground ml-2" aria-hidden="true" />
+        </Link>
       </div>
     </header>
   )

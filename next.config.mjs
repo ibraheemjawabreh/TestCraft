@@ -3,6 +3,22 @@ const nextConfig = {
   // Strict mode catches potential issues during development
   reactStrictMode: true,
 
+  // Allow external images from Google Auth and Supabase Storage
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'gpqebvkpvdrcqvucbjgr.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
+  },
+
   // Security HTTP response headers applied to every route
   async headers() {
     return [
