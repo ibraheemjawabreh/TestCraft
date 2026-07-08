@@ -32,11 +32,28 @@ import type { Locale } from '@/i18n/config'
 
 type Challenge = Database['public']['Tables']['challenges']['Row']
 
+interface LessonOption {
+  id: string
+  title: string
+  learning_path_title: string | null
+}
+
 interface ChallengeDictionary {
-  challengeTitle: string
-  description: string
+  englishTitle: string
+  arabicTitle: string
+  englishDescription: string
+  arabicDescription: string
+  englishScenario: string
+  arabicScenario: string
+  englishInstructions: string
+  arabicInstructions: string
+  linkedLesson: string
+  noLinkedLesson: string
+  challengeType: string
+  labTemplate: string
   difficulty: string
   baseXpReward: string
+  requiredChallenge: string
   active: string
   createChallenge: string
   updateChallenge: string
@@ -55,14 +72,28 @@ interface ValidationDictionary {
 interface ChallengeFormProps {
   mode: 'create' | 'edit'
   challenge?: Challenge
+  lessonOptions: LessonOption[]
   dictionary: ChallengeDictionary
   validationDictionary: ValidationDictionary
   locale: Locale
 }
 
+function challengeField(challenge: Challenge | undefined, key: string): string | null {
+  if (!challenge) return null
+  const value = (challenge as unknown as Record<string, unknown>)[key]
+  return typeof value === 'string' ? value : null
+}
+
+function challengeBoolean(challenge: Challenge | undefined, key: string, fallback: boolean): boolean {
+  if (!challenge) return fallback
+  const value = (challenge as unknown as Record<string, unknown>)[key]
+  return typeof value === 'boolean' ? value : fallback
+}
+
 export function ChallengeForm({
   mode,
   challenge,
+  lessonOptions,
   dictionary,
   validationDictionary,
   locale,
@@ -73,19 +104,26 @@ export function ChallengeForm({
   const form = useForm<ChallengeFormValues>({
     resolver: zodResolver(challengeSchema),
     defaultValues: {
-      title: challenge?.title ?? '',
-      description: challenge?.description ?? '',
+      title_en: challengeField(challenge, 'title_en') ?? challenge?.title ?? '',
+      title_ar: challengeField(challenge, 'title_ar') ?? '',
+      description_en: challengeField(challenge, 'description_en') ?? challenge?.description ?? '',
+      description_ar: challengeField(challenge, 'description_ar') ?? '',
+      scenario_en: challengeField(challenge, 'scenario_en') ?? challenge?.scenario ?? '',
+      scenario_ar: challengeField(challenge, 'scenario_ar') ?? '',
+      instructions_en: challengeField(challenge, 'instructions_en') ?? challenge?.instructions ?? '',
+      instructions_ar: challengeField(challenge, 'instructions_ar') ?? '',
+      lesson_id: challenge?.lesson_id ?? null,
+      challenge_type: challenge?.challenge_type ?? 'bug_hunt',
+      lab_template: challenge?.lab_template ?? '',
       difficulty: challenge?.difficulty ?? 'Beginner',
       base_xp_reward: challenge?.base_xp_reward ?? 100,
+      is_required: challengeBoolean(challenge, 'is_required', true),
       is_active: challenge?.is_active ?? true,
     },
   })
 
   const { isSubmitting } = form.formState
 
-  /**
-   * Translate a Zod validation key to a human-readable message.
-   */
   function translateError(message: string | undefined): string | undefined {
     if (!message) return undefined
     return validationDictionary[message] ?? message
@@ -128,7 +166,6 @@ export function ChallengeForm({
         text: mode === 'create' ? dictionary.createdSuccessfully : dictionary.updatedSuccessfully,
       })
 
-      // Redirect to the challenge details page after a short delay
       const targetId = result.data?.id ?? challenge?.id
       setTimeout(() => {
         router.push(`/${locale}/admin/challenges/${targetId}`)
@@ -142,38 +179,184 @@ export function ChallengeForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Title */}
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field, fieldState }) => (
-            <FormItem>
-              <FormLabel>{dictionary.challengeTitle}</FormLabel>
-              <FormControl>
-                <Input {...field} className="bg-card/60 border-border/50" />
-              </FormControl>
-              <FormMessage>{translateError(fieldState.error?.message)}</FormMessage>
-            </FormItem>
-          )}
-        />
-
-        {/* Description */}
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field, fieldState }) => (
-            <FormItem>
-              <FormLabel>{dictionary.description}</FormLabel>
-              <FormControl>
-                <Textarea {...field} rows={6} className="bg-card/60 border-border/50 resize-none" />
-              </FormControl>
-              <FormMessage>{translateError(fieldState.error?.message)}</FormMessage>
-            </FormItem>
-          )}
-        />
-
-        {/* Difficulty + XP Row */}
         <div className="grid gap-6 sm:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="title_en"
+            render={({ field, fieldState }) => (
+              <FormItem>
+                <FormLabel>{dictionary.englishTitle}</FormLabel>
+                <FormControl>
+                  <Input {...field} className="bg-card/60 border-border/50" />
+                </FormControl>
+                <FormMessage>{translateError(fieldState.error?.message)}</FormMessage>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="title_ar"
+            render={({ field, fieldState }) => (
+              <FormItem>
+                <FormLabel>{dictionary.arabicTitle}</FormLabel>
+                <FormControl>
+                  <Input {...field} dir="rtl" className="bg-card/60 border-border/50" />
+                </FormControl>
+                <FormMessage>{translateError(fieldState.error?.message)}</FormMessage>
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid gap-6 sm:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="description_en"
+            render={({ field, fieldState }) => (
+              <FormItem>
+                <FormLabel>{dictionary.englishDescription}</FormLabel>
+                <FormControl>
+                  <Textarea {...field} rows={5} className="bg-card/60 border-border/50 resize-none" />
+                </FormControl>
+                <FormMessage>{translateError(fieldState.error?.message)}</FormMessage>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="description_ar"
+            render={({ field, fieldState }) => (
+              <FormItem>
+                <FormLabel>{dictionary.arabicDescription}</FormLabel>
+                <FormControl>
+                  <Textarea {...field} rows={5} dir="rtl" className="bg-card/60 border-border/50 resize-none" />
+                </FormControl>
+                <FormMessage>{translateError(fieldState.error?.message)}</FormMessage>
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid gap-6 sm:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="scenario_en"
+            render={({ field, fieldState }) => (
+              <FormItem>
+                <FormLabel>{dictionary.englishScenario}</FormLabel>
+                <FormControl>
+                  <Textarea {...field} rows={4} className="bg-card/60 border-border/50 resize-none" />
+                </FormControl>
+                <FormMessage>{translateError(fieldState.error?.message)}</FormMessage>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="scenario_ar"
+            render={({ field, fieldState }) => (
+              <FormItem>
+                <FormLabel>{dictionary.arabicScenario}</FormLabel>
+                <FormControl>
+                  <Textarea {...field} rows={4} dir="rtl" className="bg-card/60 border-border/50 resize-none" />
+                </FormControl>
+                <FormMessage>{translateError(fieldState.error?.message)}</FormMessage>
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid gap-6 sm:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="instructions_en"
+            render={({ field, fieldState }) => (
+              <FormItem>
+                <FormLabel>{dictionary.englishInstructions}</FormLabel>
+                <FormControl>
+                  <Textarea {...field} rows={4} className="bg-card/60 border-border/50 resize-none" />
+                </FormControl>
+                <FormMessage>{translateError(fieldState.error?.message)}</FormMessage>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="instructions_ar"
+            render={({ field, fieldState }) => (
+              <FormItem>
+                <FormLabel>{dictionary.arabicInstructions}</FormLabel>
+                <FormControl>
+                  <Textarea {...field} rows={4} dir="rtl" className="bg-card/60 border-border/50 resize-none" />
+                </FormControl>
+                <FormMessage>{translateError(fieldState.error?.message)}</FormMessage>
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid gap-6 sm:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="lesson_id"
+            render={({ field, fieldState }) => (
+              <FormItem>
+                <FormLabel>{dictionary.linkedLesson}</FormLabel>
+                <Select
+                  value={field.value ?? 'none'}
+                  onValueChange={(value) => field.onChange(value === 'none' ? null : value)}
+                >
+                  <FormControl>
+                    <SelectTrigger className="bg-card/60 border-border/50">
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="none">{dictionary.noLinkedLesson}</SelectItem>
+                    {lessonOptions.map((lesson) => (
+                      <SelectItem key={lesson.id} value={lesson.id}>
+                        {lesson.learning_path_title ? `${lesson.learning_path_title} / ${lesson.title}` : lesson.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage>{translateError(fieldState.error?.message)}</FormMessage>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="challenge_type"
+            render={({ field, fieldState }) => (
+              <FormItem>
+                <FormLabel>{dictionary.challengeType}</FormLabel>
+                <FormControl>
+                  <Input {...field} className="bg-card/60 border-border/50" />
+                </FormControl>
+                <FormMessage>{translateError(fieldState.error?.message)}</FormMessage>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="lab_template"
+            render={({ field, fieldState }) => (
+              <FormItem>
+                <FormLabel>{dictionary.labTemplate}</FormLabel>
+                <FormControl>
+                  <Input {...field} className="bg-card/60 border-border/50" />
+                </FormControl>
+                <FormMessage>{translateError(fieldState.error?.message)}</FormMessage>
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={form.control}
             name="difficulty"
@@ -207,7 +390,7 @@ export function ChallengeForm({
                   <Input
                     type="number"
                     {...field}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
+                    onChange={(event) => field.onChange(Number(event.target.value))}
                     className="bg-card/60 border-border/50"
                   />
                 </FormControl>
@@ -217,26 +400,38 @@ export function ChallengeForm({
           />
         </div>
 
-        {/* Active Checkbox */}
-        <FormField
-          control={form.control}
-          name="is_active"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center gap-3 space-y-0">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <FormLabel className="text-sm font-medium cursor-pointer">
-                {dictionary.active}
-              </FormLabel>
-            </FormItem>
-          )}
-        />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="is_required"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center gap-3 space-y-0">
+                <FormControl>
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <FormLabel className="text-sm font-medium cursor-pointer">
+                  {dictionary.requiredChallenge}
+                </FormLabel>
+              </FormItem>
+            )}
+          />
 
-        {/* Server Message */}
+          <FormField
+            control={form.control}
+            name="is_active"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center gap-3 space-y-0">
+                <FormControl>
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <FormLabel className="text-sm font-medium cursor-pointer">
+                  {dictionary.active}
+                </FormLabel>
+              </FormItem>
+            )}
+          />
+        </div>
+
         {serverMessage && (
           <div
             className={[
@@ -251,7 +446,6 @@ export function ChallengeForm({
           </div>
         )}
 
-        {/* Submit */}
         <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
           {isSubmitting && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
           {mode === 'create' ? dictionary.createChallenge : dictionary.updateChallenge}

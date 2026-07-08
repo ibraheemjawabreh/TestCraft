@@ -8,10 +8,12 @@ interface DataResult<T> {
   error: string | null
 }
 
-interface LearningPath {
+export interface LearningPath {
   id: string
-  title: string
-  description: string
+  title_en: string | null
+  title_ar: string | null
+  description_en: string | null
+  description_ar: string | null
   slug: string
   is_active: boolean
   sort_order: number
@@ -53,7 +55,7 @@ export async function getAdminLearningPaths(): Promise<DataResult<LearningPathWi
     }
   }
 
-  const pathsWithCounts: LearningPathWithLessonCount[] = (paths as LearningPath[]).map((p) => ({
+  const pathsWithCounts: LearningPathWithLessonCount[] = (paths as any[]).map((p) => ({
     ...p,
     lessons_count: countMap.get(p.id) ?? 0,
   }))
@@ -77,7 +79,7 @@ export async function getAdminLearningPathById(id: string): Promise<DataResult<L
     return { data: null, error: 'Learning path not found.' }
   }
 
-  return { data: data as LearningPath, error: null }
+  return { data: data as any as LearningPath, error: null }
 }
 
 /**
@@ -89,8 +91,10 @@ export async function createLearningPath(input: LearningPathFormValues): Promise
   const { data, error } = await supabase
     .from('learning_paths')
     .insert({
-      title: input.title,
-      description: input.description,
+      title_en: input.title_en,
+      title_ar: input.title_ar,
+      description_en: input.description_en,
+      description_ar: input.description_ar,
       slug: input.slug,
       is_active: input.is_active,
       sort_order: input.sort_order,
@@ -105,7 +109,7 @@ export async function createLearningPath(input: LearningPathFormValues): Promise
     return { data: null, error: 'Failed to create learning path.' }
   }
 
-  return { data: data as LearningPath, error: null }
+  return { data: data as any as LearningPath, error: null }
 }
 
 /**
@@ -117,8 +121,10 @@ export async function updateLearningPath(id: string, input: LearningPathFormValu
   const { data, error } = await supabase
     .from('learning_paths')
     .update({
-      title: input.title,
-      description: input.description,
+      title_en: input.title_en,
+      title_ar: input.title_ar,
+      description_en: input.description_en,
+      description_ar: input.description_ar,
       slug: input.slug,
       is_active: input.is_active,
       sort_order: input.sort_order,
@@ -134,7 +140,7 @@ export async function updateLearningPath(id: string, input: LearningPathFormValu
     return { data: null, error: 'Failed to update learning path.' }
   }
 
-  return { data: data as LearningPath, error: null }
+  return { data: data as any as LearningPath, error: null }
 }
 
 /**
@@ -154,5 +160,5 @@ export async function toggleLearningPathStatus(id: string, isActive: boolean): P
     return { data: null, error: 'Failed to update learning path status.' }
   }
 
-  return { data: data as LearningPath, error: null }
+  return { data: data as any as LearningPath, error: null }
 }

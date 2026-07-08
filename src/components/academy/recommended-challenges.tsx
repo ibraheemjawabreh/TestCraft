@@ -41,7 +41,7 @@ export function RecommendedChallenges({
       {challenges.length === 0 ? (
         <AcademyEmptyState
           icon={Sword}
-          message={dictionary.academy.noChallenges}
+          message={dictionary.academy.noPracticalChallenges}
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

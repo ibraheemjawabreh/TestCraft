@@ -14,7 +14,7 @@ export default async function AcademyChallengesPage({
   const dictionary = await getDictionary(locale)
   const { user, profile } = await requireTester(locale)
 
-  const { data: challenges, error } = await getActiveChallengesForTester(user.id)
+  const { data: challenges, error } = await getActiveChallengesForTester(user.id, locale)
 
   return (
     <AcademyLayout dictionary={dictionary} locale={locale} username={profile.username}>

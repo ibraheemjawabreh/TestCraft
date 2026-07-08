@@ -23,7 +23,8 @@ export function AdminLessonsTable({ lessons, paths, dictionary, locale }: AdminL
   const [filterStatus, setFilterStatus] = useState<string>('all')
 
   const filtered = lessons.filter((lesson) => {
-    const matchesSearch = lesson.title.toLowerCase().includes(search.toLowerCase())
+    const lessonTitle = (locale === 'ar' ? lesson.title_ar || lesson.title_en : lesson.title_en || lesson.title_ar) ?? ''
+    const matchesSearch = lessonTitle.toLowerCase().includes(search.toLowerCase())
     const matchesPath = filterPath === 'all' || lesson.learning_path_id === filterPath
     const matchesStatus =
       filterStatus === 'all' ||
@@ -62,7 +63,7 @@ export function AdminLessonsTable({ lessons, paths, dictionary, locale }: AdminL
         >
           <option value="all">{dictionary.learning.allPaths}</option>
           {paths.map((p) => (
-            <option key={p.id} value={p.id}>{p.title}</option>
+            <option key={p.id} value={p.id}>{locale === 'ar' ? p.title_ar || p.title_en : p.title_en || p.title_ar}</option>
           ))}
         </select>
         <select
@@ -87,7 +88,7 @@ export function AdminLessonsTable({ lessons, paths, dictionary, locale }: AdminL
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border/50 bg-card/40 text-muted-foreground">
-                <th className="py-3 px-4 text-start font-medium">{dictionary.learning.lessonTitle}</th>
+                <th className="py-3 px-4 text-start font-medium">{dictionary.learning.lesson}</th>
                 <th className="py-3 px-4 text-start font-medium hidden md:table-cell">{dictionary.learning.learningPath}</th>
                 <th className="py-3 px-4 text-start font-medium hidden sm:table-cell">{dictionary.learning.difficulty}</th>
                 <th className="py-3 px-4 text-center font-medium hidden lg:table-cell">{dictionary.learning.estimatedMinutes}</th>
@@ -98,7 +99,7 @@ export function AdminLessonsTable({ lessons, paths, dictionary, locale }: AdminL
             <tbody className="divide-y divide-border/30">
               {filtered.map((lesson) => (
                 <tr key={lesson.id} className="hover:bg-secondary/30 transition-colors">
-                  <td className="py-3 px-4 font-medium text-foreground">{lesson.title}</td>
+                  <td className="py-3 px-4 font-medium text-foreground">{locale === 'ar' ? lesson.title_ar || lesson.title_en : lesson.title_en || lesson.title_ar}</td>
                   <td className="py-3 px-4 text-muted-foreground hidden md:table-cell">{lesson.learning_path_title ?? '—'}</td>
                   <td className="py-3 px-4 hidden sm:table-cell">
                     <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${difficultyColor(lesson.difficulty)}`}>

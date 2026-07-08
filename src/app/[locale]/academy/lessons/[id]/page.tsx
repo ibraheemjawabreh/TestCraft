@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react'
 import { requireTester } from '@/lib/auth/require-tester'
 import { getDictionary } from '@/i18n/get-dictionary'
 import { type Locale } from '@/i18n/config'
-import { getLessonForTester, getNextLessonForTester } from '@/lib/academy/lessons'
+import { getTesterLesson, getNextLessonForTester } from '@/lib/academy/lessons'
 import { markLessonOpened } from '@/lib/academy/progress'
 import { AcademyLayout } from '@/components/academy/academy-layout'
 import { LessonViewer } from '@/components/academy/learning/lesson-viewer'
@@ -19,9 +19,9 @@ export default async function TesterLessonPage({
   const dictionary = await getDictionary(locale)
   const { user, profile } = await requireTester(locale)
 
-  const lessonResult = await getLessonForTester(id, user.id)
+  const lessonResult = await getTesterLesson(user.id, id, locale)
 
-  if (!lessonResult.data) {
+  if (!lessonResult.data || lessonResult.data.is_locked) {
     redirect(`/${locale}/academy`)
   }
 
@@ -31,7 +31,7 @@ export default async function TesterLessonPage({
   await markLessonOpened(user.id, id)
 
   // Get next lesson for navigation
-  const nextResult = await getNextLessonForTester(user.id)
+  const nextResult = await getNextLessonForTester(user.id, locale)
   const nextLessonId = nextResult.data?.id !== id ? (nextResult.data?.id ?? null) : null
 
   return (
@@ -54,7 +54,7 @@ export default async function TesterLessonPage({
           lessonId={lesson.id}
           userId={user.id}
           isCompleted={lesson.is_completed}
-          relatedChallengeId={lesson.related_challenge_id}
+          relatedChallengeId={lesson.related_challenge_id ?? null}
           nextLessonId={nextLessonId}
           dictionary={dictionary}
           locale={locale}

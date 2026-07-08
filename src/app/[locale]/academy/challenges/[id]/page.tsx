@@ -19,7 +19,7 @@ export default async function ChallengeDetailsPage({
   const dictionary = await getDictionary(locale)
   const { user, profile } = await requireTester(locale)
 
-  const { data: challengeData, error: challengeError } = await getChallengeForTester(id, user.id)
+  const { data: challengeData, error: challengeError } = await getChallengeForTester(id, user.id, locale)
 
   if (challengeError === 'challenge_not_found') {
     notFound()

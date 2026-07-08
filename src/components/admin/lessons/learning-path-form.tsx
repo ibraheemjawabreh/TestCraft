@@ -32,8 +32,10 @@ export function LearningPathForm({ dictionary, locale, initialData, onSuccess }:
   } = useForm<LearningPathFormValues>({
     resolver: zodResolver(learningPathSchema),
     defaultValues: initialData ?? {
-      title: '',
-      description: '',
+      title_en: '',
+      title_ar: '',
+      description_en: '',
+      description_ar: '',
       slug: '',
       is_active: true,
       sort_order: 0,
@@ -72,9 +74,15 @@ export function LearningPathForm({ dictionary, locale, initialData, onSuccess }:
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <label className="block text-sm font-medium text-foreground">{dictionary.learning.pathTitle}</label>
-          <input type="text" {...register('title')} className={inputClass} disabled={isLoading} />
-          {errors.title && <p className="text-xs text-destructive">{errors.title.message}</p>}
+          <label className="block text-sm font-medium text-foreground">{dictionary.learning.pathTitleEn}</label>
+          <input type="text" {...register('title_en')} className={inputClass} disabled={isLoading} />
+          {errors.title_en && <p className="text-xs text-destructive">{errors.title_en.message}</p>}
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="block text-sm font-medium text-foreground">{dictionary.learning.pathTitleAr}</label>
+          <input type="text" {...register('title_ar')} className={inputClass} disabled={isLoading} dir="rtl" />
+          {errors.title_ar && <p className="text-xs text-destructive">{errors.title_ar.message}</p>}
         </div>
 
         <div className="space-y-1.5">
@@ -84,10 +92,18 @@ export function LearningPathForm({ dictionary, locale, initialData, onSuccess }:
         </div>
       </div>
 
-      <div className="space-y-1.5">
-        <label className="block text-sm font-medium text-foreground">{dictionary.learning.pathDescription}</label>
-        <textarea {...register('description')} className={inputClass} rows={3} disabled={isLoading} />
-        {errors.description && <p className="text-xs text-destructive">{errors.description.message}</p>}
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <label className="block text-sm font-medium text-foreground">{dictionary.learning.pathDescriptionEn}</label>
+          <textarea {...register('description_en')} className={inputClass} rows={3} disabled={isLoading} />
+          {errors.description_en && <p className="text-xs text-destructive">{errors.description_en.message}</p>}
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="block text-sm font-medium text-foreground">{dictionary.learning.pathDescriptionAr}</label>
+          <textarea {...register('description_ar')} className={inputClass} rows={3} disabled={isLoading} dir="rtl" />
+          {errors.description_ar && <p className="text-xs text-destructive">{errors.description_ar.message}</p>}
+        </div>
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2">

@@ -2,9 +2,13 @@ import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/types/database.types'
+import { type Locale } from '@/i18n/config'
+import { localizedString } from '@/lib/i18n/content'
+import { getAcademyLearningOverview } from '@/lib/academy/progress'
 
 type Challenge = Database['public']['Tables']['challenges']['Row']
 type BugReport = Database['public']['Tables']['bug_reports']['Row']
+type Difficulty = Challenge['difficulty']
 
 export type ChallengeStatus =
   | 'not_started'
@@ -12,7 +16,22 @@ export type ChallengeStatus =
   | 'reviewed'
   | 'needs_improvement'
 
-export interface ChallengeWithStatus extends Challenge {
+export interface TesterChallenge {
+  id: string
+  title: string
+  description: string
+  difficulty: Difficulty
+  base_xp_reward: number
+  is_active: boolean | null
+  lesson_id: string | null
+  challenge_type: string
+  lab_template: string | null
+  scenario: string | null
+  instructions: string | null
+  sort_order: number
+}
+
+export interface ChallengeWithStatus extends TesterChallenge {
   userStatus: ChallengeStatus
 }
 
@@ -44,57 +63,11 @@ function deriveStatus(
  */
 export async function getActiveChallengesForTester(
   userId: string,
+  locale: Locale,
 ): Promise<Result<ChallengeWithStatus[]>> {
   try {
-    const supabase = await createClient()
-
-    const { data: challenges, error: challengesError } = await supabase
-      .from('challenges')
-      .select('id, title, description, difficulty, base_xp_reward, is_active')
-      .eq('is_active', true)
-      .order('base_xp_reward', { ascending: false })
-
-    if (challengesError) {
-      return { data: null, error: 'Failed to load challenges.' }
-    }
-
-    if (!challenges || challenges.length === 0) {
-      return { data: [], error: null }
-    }
-
-    // Fetch user's reports for these challenges
-    const challengeIds = challenges.map((c) => c.id)
-
-    const { data: reports, error: reportsError } = await supabase
-      .from('bug_reports')
-      .select('challenge_id, status')
-      .eq('user_id', userId)
-      .in('challenge_id', challengeIds)
-
-    if (reportsError) {
-      // If reports fail, still show challenges with 'not_started' status
-      const withStatus = challenges.map((c) => ({
-        ...c,
-        userStatus: 'not_started' as ChallengeStatus,
-      }))
-      return { data: withStatus, error: null }
-    }
-
-    // Group reports by challenge_id
-    const reportsByChallenge = new Map<string, Pick<BugReport, 'status'>[]>()
-    for (const report of reports ?? []) {
-      if (!report.challenge_id) continue
-      const existing = reportsByChallenge.get(report.challenge_id) ?? []
-      existing.push({ status: report.status })
-      reportsByChallenge.set(report.challenge_id, existing)
-    }
-
-    const withStatus: ChallengeWithStatus[] = challenges.map((c) => ({
-      ...c,
-      userStatus: deriveStatus(reportsByChallenge.get(c.id) ?? []),
-    }))
-
-    return { data: withStatus, error: null }
+    const overview = await getAcademyLearningOverview(userId, locale)
+    return { data: overview.data?.practiceChallenges ?? [], error: null }
   } catch {
     return { data: null, error: 'An unexpected error occurred.' }
   }
@@ -108,19 +81,52 @@ export async function getActiveChallengesForTester(
 export async function getChallengeForTester(
   challengeId: string,
   userId: string,
-): Promise<Result<{ challenge: Challenge; userStatus: ChallengeStatus }>> {
+  locale: Locale,
+): Promise<Result<{ challenge: TesterChallenge; userStatus: ChallengeStatus }>> {
   try {
     const supabase = await createClient()
 
     const { data: challenge, error: challengeError } = await supabase
       .from('challenges')
-      .select('id, title, description, difficulty, base_xp_reward, is_active')
+      .select(`
+        id,
+        title,
+        title_en,
+        title_ar,
+        description,
+        description_en,
+        description_ar,
+        difficulty,
+        base_xp_reward,
+        is_active,
+        lesson_id,
+        challenge_type,
+        lab_template,
+        scenario,
+        scenario_en,
+        scenario_ar,
+        instructions,
+        instructions_en,
+        instructions_ar,
+        sort_order
+      `)
       .eq('id', challengeId)
       .eq('is_active', true)
       .single()
 
     if (challengeError || !challenge) {
       return { data: null, error: 'challenge_not_found' }
+    }
+
+    const overview = await getAcademyLearningOverview(userId, locale)
+    const challengeRow = challenge as Record<string, unknown>
+    const lessonId = typeof challengeRow.lesson_id === 'string' ? challengeRow.lesson_id : null
+
+    if (lessonId) {
+      const linkedLesson = overview.data?.lessons.find((lesson) => lesson.id === lessonId)
+      if (!linkedLesson?.is_unlocked) {
+        return { data: null, error: 'challenge_not_found' }
+      }
     }
 
     const { data: reports } = await supabase
@@ -130,8 +136,22 @@ export async function getChallengeForTester(
       .eq('challenge_id', challengeId)
 
     const userStatus = deriveStatus(reports ?? [])
+    const localizedChallenge: TesterChallenge = {
+      id: challenge.id,
+      title: localizedString(challengeRow, locale, 'title', 'title'),
+      description: localizedString(challengeRow, locale, 'description', 'description'),
+      difficulty: challenge.difficulty,
+      base_xp_reward: challenge.base_xp_reward,
+      is_active: challenge.is_active,
+      lesson_id: challenge.lesson_id,
+      challenge_type: challenge.challenge_type,
+      lab_template: challenge.lab_template,
+      scenario: localizedString(challengeRow, locale, 'scenario', 'scenario') || null,
+      instructions: localizedString(challengeRow, locale, 'instructions', 'instructions') || null,
+      sort_order: challenge.sort_order,
+    }
 
-    return { data: { challenge, userStatus }, error: null }
+    return { data: { challenge: localizedChallenge, userStatus }, error: null }
   } catch {
     return { data: null, error: 'An unexpected error occurred.' }
   }

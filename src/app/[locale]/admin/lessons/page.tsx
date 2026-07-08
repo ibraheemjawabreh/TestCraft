@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Plus, Route } from 'lucide-react'
+import { Plus, Route, Pencil } from 'lucide-react'
 
 import { getDictionary } from '@/i18n/get-dictionary'
 import { type Locale } from '@/i18n/config'
@@ -63,15 +63,22 @@ export default async function AdminLessonsPage({
                 className="rounded-xl border border-border/50 bg-card/40 p-4 backdrop-blur-sm space-y-2"
               >
                 <div className="flex items-center justify-between">
-                  <h3 className="font-medium text-foreground text-sm">{path.title}</h3>
+                  <h3 className="font-medium text-foreground text-sm">{locale === 'ar' ? path.title_ar || path.title_en : path.title_en || path.title_ar}</h3>
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${path.is_active ? 'text-green-400 bg-green-500/10' : 'text-yellow-400 bg-yellow-500/10'}`}>
                     {path.is_active ? dictionary.learning.active : dictionary.learning.inactive}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground line-clamp-2">{path.description}</p>
+                <p className="text-xs text-muted-foreground line-clamp-2">{locale === 'ar' ? path.description_ar || path.description_en : path.description_en || path.description_ar}</p>
                 <p className="text-xs text-muted-foreground">
                   {path.lessons_count} {dictionary.learning.lessons}
                 </p>
+                <Link
+                  href={`/${locale}/admin/learning-paths/${path.id}/edit`}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border/50 px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
+                >
+                  <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                  {dictionary.learning.editPath}
+                </Link>
               </div>
             ))}
           </div>

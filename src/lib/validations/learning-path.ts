@@ -1,12 +1,22 @@
 import { z } from 'zod'
 
 export const learningPathSchema = z.object({
-  title: z
+  title_en: z
     .string()
     .min(3, 'titleMin')
     .max(120, 'titleMax')
     .trim(),
-  description: z
+  title_ar: z
+    .string()
+    .min(3, 'titleMin')
+    .max(120, 'titleMax')
+    .trim(),
+  description_en: z
+    .string()
+    .min(10, 'descriptionMin')
+    .max(2000, 'descriptionMax')
+    .trim(),
+  description_ar: z
     .string()
     .min(10, 'descriptionMin')
     .max(2000, 'descriptionMax')

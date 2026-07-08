@@ -2,6 +2,7 @@ import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/types/database.types'
+import { type Locale } from '@/i18n/config'
 import { getActiveChallengesForTester, type ChallengeWithStatus } from './challenges'
 import { getTesterAiEvaluations, type EvaluationWithReport } from './evaluations'
 import { getTesterBadges, type UserBadgeWithDetails } from './badges'
@@ -42,6 +43,7 @@ type Result<T> =
 export async function getAcademyDashboardData(
   userId: string,
   profile: Profile,
+  locale: Locale,
 ): Promise<Result<AcademyDashboardData>> {
   try {
     const supabase = await createClient()
@@ -55,7 +57,7 @@ export async function getAcademyDashboardData(
       badgesResult,
     ] = await Promise.all([
       // Active challenges with user status
-      getActiveChallengesForTester(userId),
+      getActiveChallengesForTester(userId, locale),
 
       // Report counts by status
       supabase

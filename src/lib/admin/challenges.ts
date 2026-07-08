@@ -82,12 +82,26 @@ export async function createChallenge(input: ChallengeFormValues): Promise<DataR
   const { data, error } = await supabase
     .from('challenges')
     .insert({
-      title: input.title,
-      description: input.description,
+      title: input.title_en,
+      title_en: input.title_en,
+      title_ar: input.title_ar,
+      description: input.description_en,
+      description_en: input.description_en,
+      description_ar: input.description_ar,
+      scenario: input.scenario_en || null,
+      scenario_en: input.scenario_en || null,
+      scenario_ar: input.scenario_ar || null,
+      instructions: input.instructions_en || null,
+      instructions_en: input.instructions_en || null,
+      instructions_ar: input.instructions_ar || null,
+      lesson_id: input.lesson_id || null,
+      challenge_type: input.challenge_type,
+      lab_template: input.lab_template || null,
       difficulty: input.difficulty,
       base_xp_reward: input.base_xp_reward,
+      is_required: input.is_required,
       is_active: input.is_active,
-    })
+    } as never)
     .select()
     .single()
 
@@ -95,7 +109,7 @@ export async function createChallenge(input: ChallengeFormValues): Promise<DataR
     return { data: null, error: 'Failed to create challenge.' }
   }
 
-  return { data, error: null }
+  return { data: data as unknown as Challenge, error: null }
 }
 
 /**
@@ -107,12 +121,26 @@ export async function updateChallenge(id: string, input: ChallengeFormValues): P
   const { data, error } = await supabase
     .from('challenges')
     .update({
-      title: input.title,
-      description: input.description,
+      title: input.title_en,
+      title_en: input.title_en,
+      title_ar: input.title_ar,
+      description: input.description_en,
+      description_en: input.description_en,
+      description_ar: input.description_ar,
+      scenario: input.scenario_en || null,
+      scenario_en: input.scenario_en || null,
+      scenario_ar: input.scenario_ar || null,
+      instructions: input.instructions_en || null,
+      instructions_en: input.instructions_en || null,
+      instructions_ar: input.instructions_ar || null,
+      lesson_id: input.lesson_id || null,
+      challenge_type: input.challenge_type,
+      lab_template: input.lab_template || null,
       difficulty: input.difficulty,
       base_xp_reward: input.base_xp_reward,
+      is_required: input.is_required,
       is_active: input.is_active,
-    })
+    } as never)
     .eq('id', id)
     .select()
     .single()
@@ -121,7 +149,7 @@ export async function updateChallenge(id: string, input: ChallengeFormValues): P
     return { data: null, error: 'Failed to update challenge.' }
   }
 
-  return { data, error: null }
+  return { data: data as unknown as Challenge, error: null }
 }
 
 /**

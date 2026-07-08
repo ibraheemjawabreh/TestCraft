@@ -53,7 +53,7 @@ export default async function AdminLessonDetailPage({
       <div className="space-y-3">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="font-heading text-2xl font-extrabold tracking-tight text-foreground">
-            {lesson.title}
+            {locale === 'ar' ? lesson.title_ar || lesson.title_en : lesson.title_en || lesson.title_ar}
           </h1>
           {lesson.is_published ? (
             <span className="inline-flex items-center gap-1 rounded-full border border-green-500/20 bg-green-500/10 px-2.5 py-0.5 text-xs font-medium text-green-400">
@@ -91,20 +91,31 @@ export default async function AdminLessonDetailPage({
       </div>
 
       {/* Summary */}
-      {lesson.summary && (
+      {(lesson.summary_en || lesson.summary_ar) && (
         <div className="rounded-xl border border-border/50 bg-card/40 p-6 backdrop-blur-sm">
-          <h2 className="text-sm font-semibold text-foreground mb-2">{dictionary.learning.summary}</h2>
-          <p className="text-sm text-muted-foreground">{lesson.summary}</p>
+          <h2 className="text-sm font-semibold text-foreground mb-2">{dictionary.learning.englishSummary}</h2>
+          <p className="text-sm text-muted-foreground">{lesson.summary_en}</p>
+          <h2 className="text-sm font-semibold text-foreground mt-4 mb-2">{dictionary.learning.arabicSummary}</h2>
+          <p className="text-sm text-muted-foreground">{lesson.summary_ar}</p>
         </div>
       )}
 
       {/* Objectives */}
-      {lesson.objectives.length > 0 && (
+      {(lesson.objectives_en?.length > 0 || lesson.objectives_ar?.length > 0) && (
         <div className="rounded-xl border border-border/50 bg-card/40 p-6 backdrop-blur-sm">
-          <h2 className="text-sm font-semibold text-foreground mb-3">{dictionary.learning.objectives}</h2>
+          <h2 className="text-sm font-semibold text-foreground mb-3">{dictionary.learning.englishObjectives}</h2>
+          <ul className="space-y-2 mb-4">
+            {lesson.objectives_en?.map((obj, i) => (
+              <li key={`en-${i}`} className="flex items-start gap-2 text-sm text-muted-foreground">
+                <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" aria-hidden="true" />
+                {obj}
+              </li>
+            ))}
+          </ul>
+          <h2 className="text-sm font-semibold text-foreground mb-3">{dictionary.learning.arabicObjectives}</h2>
           <ul className="space-y-2">
-            {lesson.objectives.map((obj, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+            {lesson.objectives_ar?.map((obj, i) => (
+              <li key={`ar-${i}`} className="flex items-start gap-2 text-sm text-muted-foreground">
                 <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" aria-hidden="true" />
                 {obj}
               </li>
@@ -115,9 +126,13 @@ export default async function AdminLessonDetailPage({
 
       {/* Content */}
       <div className="rounded-xl border border-border/50 bg-card/40 p-6 backdrop-blur-sm">
-        <h2 className="text-sm font-semibold text-foreground mb-3">{dictionary.learning.content}</h2>
+        <h2 className="text-sm font-semibold text-foreground mb-3">{dictionary.learning.englishContent}</h2>
+        <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap text-muted-foreground mb-6">
+          {lesson.content_en}
+        </div>
+        <h2 className="text-sm font-semibold text-foreground mb-3">{dictionary.learning.arabicContent}</h2>
         <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap text-muted-foreground">
-          {lesson.content}
+          {lesson.content_ar}
         </div>
       </div>
     </div>

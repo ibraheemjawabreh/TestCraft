@@ -51,8 +51,7 @@ export function LessonActions({
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row gap-3">
-        {/* Mark as Complete */}
+      <div className="flex flex-col gap-3 sm:flex-row">
         {!completed ? (
           <button
             onClick={handleMarkComplete}
@@ -73,8 +72,7 @@ export function LessonActions({
           </div>
         )}
 
-        {/* Related Challenge */}
-        {relatedChallengeId && (
+        {relatedChallengeId && completed && (
           <Link
             href={`/${locale}/academy/challenges/${relatedChallengeId}`}
             className="flex items-center justify-center gap-2 rounded-lg border border-primary/20 bg-primary/10 px-5 py-3 text-sm font-semibold text-primary transition-all hover:bg-primary/20"
@@ -84,8 +82,7 @@ export function LessonActions({
           </Link>
         )}
 
-        {/* Next Lesson */}
-        {nextLessonId && completed && (
+        {nextLessonId && completed && !relatedChallengeId && (
           <Link
             href={`/${locale}/academy/lessons/${nextLessonId}`}
             className="flex items-center justify-center gap-2 rounded-lg border border-border/50 bg-secondary/40 px-5 py-3 text-sm font-semibold text-foreground transition-all hover:bg-secondary/60"
@@ -96,13 +93,10 @@ export function LessonActions({
         )}
       </div>
 
-      {/* Practice section */}
       {relatedChallengeId && (
         <div className="rounded-xl border border-primary/15 bg-primary/5 p-5">
-          <p className="text-sm font-medium text-foreground mb-1">{dictionary.learning.practiceWhatYouLearned}</p>
-          <p className="text-xs text-muted-foreground">
-            {dictionary.learning.noRelatedChallenge.includes('لا') ? '' : ''}
-          </p>
+          <p className="mb-1 text-sm font-medium text-foreground">{dictionary.learning.practiceWhatYouLearned}</p>
+          <p className="text-xs text-muted-foreground">{dictionary.learning.challengeAfterLesson}</p>
         </div>
       )}
     </div>

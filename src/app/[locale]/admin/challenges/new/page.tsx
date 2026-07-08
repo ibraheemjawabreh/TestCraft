@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { getDictionary } from '@/i18n/get-dictionary'
 import { ChallengeForm } from '@/components/admin/challenges/challenge-form'
 import { Button } from '@/components/ui/button'
+import { getAdminLessons } from '@/lib/admin/lessons'
 import type { Locale } from '@/i18n/config'
 
 interface NewChallengePageProps {
@@ -12,6 +13,7 @@ interface NewChallengePageProps {
 
 export default async function NewChallengePage({ params: { locale } }: NewChallengePageProps) {
   const dictionary = await getDictionary(locale)
+  const lessonsResult = await getAdminLessons()
   const isRtl = locale === 'ar'
 
   return (
@@ -30,9 +32,14 @@ export default async function NewChallengePage({ params: { locale } }: NewChalle
         </div>
       </div>
 
-      <div className="max-w-2xl rounded-xl border border-border/50 bg-card/40 backdrop-blur-xl p-6 sm:p-8">
+      <div className="max-w-5xl rounded-xl border border-border/50 bg-card/40 backdrop-blur-xl p-6 sm:p-8">
         <ChallengeForm
           mode="create"
+          lessonOptions={(lessonsResult.data ?? []).map(l => ({
+            id: l.id,
+            title: locale === 'ar' ? l.title_ar || l.title_en || '' : l.title_en || l.title_ar || '',
+            learning_path_title: l.learning_path_title
+          }))}
           dictionary={dictionary.admin.challenges}
           validationDictionary={dictionary.validation}
           locale={locale}
