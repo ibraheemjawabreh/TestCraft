@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/types/database.types'
 import { type Locale } from '@/i18n/config'
 import { localizedString } from '@/lib/i18n/content'
-import { getAcademyLearningOverview } from '@/lib/academy/progress'
+import { getAcademyLearningOverview } from '@/lib/academy/learning'
 
 type Challenge = Database['public']['Tables']['challenges']['Row']
 type BugReport = Database['public']['Tables']['bug_reports']['Row']
@@ -41,7 +41,7 @@ type Result<T> =
 
 /**
  * Derives user challenge status from their bug reports for that challenge.
- * Does NOT touch hidden_bugs.
+ * Derives status only from the tester's submitted reports.
  */
 function deriveStatus(
   reports: Pick<BugReport, 'status'>[],
@@ -59,7 +59,7 @@ function deriveStatus(
 
 /**
  * Fetches all active challenges and computes per-challenge status for the tester.
- * Never touches hidden_bugs table.
+ * Uses only active public challenge fields and tester report status.
  */
 export async function getActiveChallengesForTester(
   userId: string,
@@ -76,7 +76,7 @@ export async function getActiveChallengesForTester(
 /**
  * Fetches a single active challenge for the tester.
  * Returns null if challenge doesn't exist or is inactive.
- * Never touches hidden_bugs.
+ * Uses only active public challenge fields and tester report status.
  */
 export async function getChallengeForTester(
   challengeId: string,

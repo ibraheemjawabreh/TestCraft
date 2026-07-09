@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { CheckCircle2, Circle, Lock, Sword } from 'lucide-react'
 import type { Dictionary } from '@/i18n/types'
 import type { Locale } from '@/i18n/config'
-import type { LessonProgressItem } from '@/lib/academy/progress'
+import type { LessonProgressItem } from '@/lib/academy/learning'
 
 interface LearningPathTimelineProps {
   lessons: LessonProgressItem[]

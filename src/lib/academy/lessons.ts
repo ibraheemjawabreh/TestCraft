@@ -68,7 +68,7 @@ export async function getTesterLesson(userId: string, lessonId: string, locale: 
 
   const is_completed = !!progress?.completed_at
 
-  // Get related challenge if any
+  // Get the related challenge when one is attached.
   const { data: challenge } = await supabase
     .from('challenges')
     .select('id')
@@ -92,7 +92,7 @@ export async function getTesterLesson(userId: string, lessonId: string, locale: 
       is_locked: !unlockStatus.isUnlocked,
       lock_reason: unlockStatus.reason,
       related_challenge_id: challenge?.id || null,
-      learning_path_title: lesson.learning_paths ? getLocalizedContent(lesson.learning_paths as any, 'title', locale) : null,
+      learning_path_title: lesson.learning_paths ? getLocalizedContent(lesson.learning_paths, 'title', locale) : null,
     },
     error: null,
   }
@@ -130,7 +130,7 @@ export async function getPathTimeline(userId: string, pathId: string, locale: Lo
 
   // 3. To determine locked status efficiently, we'll iterate through the sorted lessons.
   // A lesson is unlocked if it is the first lesson, OR if the previous lesson is completed 
-  // AND any required challenge for the previous lesson is submitted.
+  // AND the required challenge for the previous lesson is submitted.
   // For the MVP, we will reuse `checkLessonUnlockStatus` for accuracy, although it runs queries in a loop,
   // we can optimize it if the timeline is huge. For now, we will do sequential checks.
   

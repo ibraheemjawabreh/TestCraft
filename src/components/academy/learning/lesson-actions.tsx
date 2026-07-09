@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle2, ArrowRight, Sword, Loader2 } from 'lucide-react'
-import { markLessonCompleted } from '@/lib/academy/progress'
+import { markLessonCompleted } from '@/lib/academy/learning'
 import type { Dictionary } from '@/i18n/types'
 import type { Locale } from '@/i18n/config'
 

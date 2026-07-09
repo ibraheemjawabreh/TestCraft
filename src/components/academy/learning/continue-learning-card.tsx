@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { BookOpen, ArrowRight, Sparkles, Sword } from 'lucide-react'
 import type { Dictionary } from '@/i18n/types'
 import type { Locale } from '@/i18n/config'
-import type { LearningOverview } from '@/lib/academy/progress'
+import type { LearningOverview } from '@/lib/academy/learning'
 
 interface ContinueLearningCardProps {
   overview: LearningOverview

@@ -38,7 +38,7 @@ type Result<T> =
 
 /**
  * Aggregates all data needed for the Academy dashboard in efficient parallel queries.
- * Never fetches hidden_bugs.
+ * Does not fetch answer-key tables.
  */
 export async function getAcademyDashboardData(
   userId: string,

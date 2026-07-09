@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import { TesterFooter } from '@/components/layout/tester-footer'
 import type { Dictionary } from '@/i18n/types'
 import type { Locale } from '@/i18n/config'
 import type { Database } from '@/types/database.types'
@@ -21,6 +22,7 @@ export function SettingsLayout({
 }: SettingsLayoutProps) {
   const backHref = profile.role === 'admin' ? `/${locale}/admin` : `/${locale}/academy`
   const backText = profile.role === 'admin' ? dictionary.settings.backToDashboard : dictionary.settings.backToAcademy
+  const showTesterFooter = profile.role !== 'admin'
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors">
@@ -47,6 +49,8 @@ export function SettingsLayout({
         </div>
         {children}
       </main>
+
+      {showTesterFooter ? <TesterFooter dictionary={dictionary} locale={locale} /> : null}
     </div>
   )
 }

@@ -10,7 +10,7 @@ import type { Locale } from '@/i18n/config'
  * @returns The localized string, falling back appropriately
  */
 export function getLocalizedContent(
-  record: Record<string, any>,
+  record: Record<string, unknown>,
   field: string,
   locale: Locale
 ): string {
@@ -23,11 +23,13 @@ export function getLocalizedContent(
       return arValue
     }
     // Fallback to English if Arabic is missing
-    return (record[enField] as string) || ''
+    const enValue = record[enField]
+    return typeof enValue === 'string' ? enValue : ''
   }
 
   // Default to English
-  return (record[enField] as string) || ''
+  const enValue = record[enField]
+  return typeof enValue === 'string' ? enValue : ''
 }
 
 /**
@@ -35,7 +37,7 @@ export function getLocalizedContent(
  * Falls back to English if Arabic array is empty or missing.
  */
 export function getLocalizedArray(
-  record: Record<string, any>,
+  record: Record<string, unknown>,
   field: string,
   locale: Locale
 ): string[] {
@@ -46,21 +48,27 @@ export function getLocalizedArray(
     const arValue = record[arField]
     if (Array.isArray(arValue) && arValue.length > 0) {
       // Check if the array has actual content, not just empty strings
-      if (arValue.some((item) => item.trim().length > 0)) {
+      if (arValue.every((item): item is string => typeof item === 'string') && arValue.some((item) => item.trim().length > 0)) {
         return arValue
       }
     }
-    return (record[enField] as string[]) || []
+    const enValue = record[enField]
+    return Array.isArray(enValue) && enValue.every((item): item is string => typeof item === 'string')
+      ? enValue
+      : []
   }
 
-  return (record[enField] as string[]) || []
+  const enValue = record[enField]
+  return Array.isArray(enValue) && enValue.every((item): item is string => typeof item === 'string')
+    ? enValue
+    : []
 }
 
 /**
  * Legacy alias for getLocalizedContent
  */
 export function localizedString(
-  record: Record<string, any>,
+  record: Record<string, unknown>,
   locale: Locale,
   field: string,
   _fallbackField?: string
