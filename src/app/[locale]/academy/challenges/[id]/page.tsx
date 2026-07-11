@@ -5,11 +5,13 @@ import { ArrowLeft, BookOpen, Zap, FileText } from 'lucide-react'
 import { requireTester } from '@/lib/auth/require-tester'
 import { getChallengeForTester } from '@/lib/academy/challenges'
 import { getTesterReportsForChallenge } from '@/lib/academy/reports'
+import { getTesterChallengeLab } from '@/lib/academy/challenge-lab'
 import { getDictionary } from '@/i18n/get-dictionary'
 import { type Locale } from '@/i18n/config'
 
 import { AcademyLayout } from '@/components/academy/academy-layout'
 import { BugReportForm } from '@/components/academy/bug-report-form'
+import { ChallengeLabPage } from '@/components/academy/challenges/challenge-lab-page'
 
 export default async function ChallengeDetailsPage({
   params: { locale, id },
@@ -37,6 +39,32 @@ export default async function ChallengeDetailsPage({
 
   const { challenge } = challengeData
 
+  // If this challenge has a lab_template, delegate entirely to ChallengeLabPage
+  if (challenge.lab_template) {
+    const { data: labData, error: labError } = await getTesterChallengeLab(id, user.id, locale)
+    
+    if (labError || !labData) {
+      return (
+        <AcademyLayout dictionary={dictionary} locale={locale} username={profile.username}>
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <p className="text-muted-foreground">{dictionary.academy.failedToLoad}</p>
+          </div>
+        </AcademyLayout>
+      )
+    }
+
+    return (
+      <ChallengeLabPage
+        data={labData}
+        dictionary={dictionary}
+        locale={locale}
+        username={profile.username}
+      />
+    )
+  }
+
+  // --- LEGACY LAYOUT for challenges without lab_template ---
+  
   const { data: previousReports, error: reportsError } = await getTesterReportsForChallenge(
     user.id,
     id,

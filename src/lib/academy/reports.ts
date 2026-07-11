@@ -159,6 +159,35 @@ export async function submitBugReport(
       return { data: null, error: 'Failed to submit report. Please try again.' }
     }
 
+    // Update challenge_progress to "submitted" (non-blocking)
+    try {
+      const now = new Date().toISOString()
+      const { data: existingProgress } = await supabase
+        .from('challenge_progress')
+        .select('status')
+        .eq('user_id', input.userId)
+        .eq('challenge_id', input.challengeId)
+        .maybeSingle()
+
+      if (existingProgress) {
+        await supabase
+          .from('challenge_progress')
+          .update({ status: 'submitted', submitted_at: now })
+          .eq('user_id', input.userId)
+          .eq('challenge_id', input.challengeId)
+      } else {
+        await supabase.from('challenge_progress').insert({
+          user_id: input.userId,
+          challenge_id: input.challengeId,
+          status: 'submitted',
+          started_at: now,
+          submitted_at: now,
+        })
+      }
+    } catch {
+      // Non-blocking — report was already saved successfully
+    }
+
     return { data: { id: report.id }, error: null }
   } catch {
     return { data: null, error: 'An unexpected error occurred.' }

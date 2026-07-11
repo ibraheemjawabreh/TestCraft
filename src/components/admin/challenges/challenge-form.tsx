@@ -113,7 +113,7 @@ export function ChallengeForm({
       instructions_en: challengeField(challenge, 'instructions_en') ?? challenge?.instructions ?? '',
       instructions_ar: challengeField(challenge, 'instructions_ar') ?? '',
       lesson_id: challenge?.lesson_id ?? null,
-      challenge_type: challenge?.challenge_type ?? 'bug_hunt',
+      challenge_type: challenge?.challenge_type ?? 'bug_report',
       lab_template: challenge?.lab_template ?? '',
       difficulty: challenge?.difficulty ?? 'Beginner',
       base_xp_reward: challenge?.base_xp_reward ?? 100,

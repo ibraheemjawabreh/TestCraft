@@ -138,6 +138,8 @@ export async function createLesson(input: LessonFormValues): Promise<DataResult<
     .from('lessons')
     .insert({
       learning_path_id: input.learning_path_id,
+      title: input.title_en, // required field in DB
+      content: input.content_en, // required field in DB
       title_en: input.title_en,
       title_ar: input.title_ar,
       slug: input.slug,
@@ -175,6 +177,8 @@ export async function updateLesson(id: string, input: LessonFormValues): Promise
     .from('lessons')
     .update({
       learning_path_id: input.learning_path_id,
+      title: input.title_en, // required field in DB
+      content: input.content_en, // required field in DB
       title_en: input.title_en,
       title_ar: input.title_ar,
       slug: input.slug,

@@ -101,12 +101,13 @@ export async function createChallenge(input: ChallengeFormValues): Promise<DataR
       base_xp_reward: input.base_xp_reward,
       is_required: input.is_required,
       is_active: input.is_active,
-    } as never)
+    })
     .select()
     .single()
 
   if (error) {
-    return { data: null, error: 'Failed to create challenge.' }
+    console.error('Supabase Challenge Creation Error:', error)
+    return { data: null, error: `Failed to create challenge: ${error.message || JSON.stringify(error)}` }
   }
 
   return { data: data as unknown as Challenge, error: null }
@@ -140,13 +141,14 @@ export async function updateChallenge(id: string, input: ChallengeFormValues): P
       base_xp_reward: input.base_xp_reward,
       is_required: input.is_required,
       is_active: input.is_active,
-    } as never)
+    })
     .eq('id', id)
     .select()
     .single()
 
   if (error) {
-    return { data: null, error: 'Failed to update challenge.' }
+    console.error('Supabase Challenge Update Error:', error)
+    return { data: null, error: `Failed to update challenge: ${error.message || JSON.stringify(error)}` }
   }
 
   return { data: data as unknown as Challenge, error: null }

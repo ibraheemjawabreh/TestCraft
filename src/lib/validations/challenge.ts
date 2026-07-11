@@ -24,7 +24,7 @@ export const challengeSchema = z.object({
   instructions_en: z.string().max(5000, 'descriptionMax').optional().or(z.literal('')),
   instructions_ar: z.string().max(5000, 'descriptionMax').optional().or(z.literal('')),
   lesson_id: z.string().uuid('required').nullable().optional(),
-  challenge_type: z.string().min(2, 'required').max(80, 'titleMax').default('bug_hunt'),
+  challenge_type: z.string().min(2, 'required').max(80, 'titleMax').default('bug_report'),
   lab_template: z.string().max(160, 'titleMax').optional().or(z.literal('')),
   difficulty: z.enum(['Beginner', 'Intermediate', 'Advanced'], {
     required_error: 'required',
