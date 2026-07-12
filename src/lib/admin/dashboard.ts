@@ -3,27 +3,15 @@ import 'server-only'
 import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/types/database.types'
 
-type AiEvaluation = Database['public']['Tables']['ai_evaluations']['Row']
-type BugReport = Database['public']['Tables']['bug_reports']['Row']
 type Profile = Database['public']['Tables']['profiles']['Row']
+type BugReport = Database['public']['Tables']['bug_reports']['Row']
 
 export interface AdminDashboardStats {
-  totalUsers: number
-  totalAdmins: number
-  totalTesters: number
-  totalChallenges: number
-  activeChallenges: number
-  inactiveChallenges: number
-  totalHiddenBugs: number
-  totalBugReports: number
+  pendingReviews: number
   pendingReports: number
-  reviewedReports: number
-  rejectedReports: number
-  totalAiEvaluations: number
-  totalXpAwarded: number
-  averageAiScore: number
-  totalBadges: number
-  awardedBadges: number
+  activeUsers: number
+  activeChallenges: number
+  publishedLessons: number
 }
 
 export interface RecentBugReport {
@@ -45,19 +33,10 @@ export interface RecentUser {
   createdAt: string | null
 }
 
-export interface RecentAiEvaluation {
-  id: string
-  aiScore: number
-  earnedXp: number
-  evaluatedAt: string | null
-  reportTitle: string | null
-}
-
 export interface AdminDashboardData {
   stats: AdminDashboardStats
   recentBugReports: RecentBugReport[]
   recentUsers: RecentUser[]
-  recentAiEvaluations: RecentAiEvaluation[]
 }
 
 export type AdminDashboardResult =
@@ -72,44 +51,23 @@ function uniqueStrings(values: Array<string | null>): string[] {
   return Array.from(new Set(values.filter((value): value is string => Boolean(value))))
 }
 
-export async function getAdminDashboardStats(): Promise<AdminDashboardResult> {
+export async function getAdminDashboardOverview(): Promise<AdminDashboardResult> {
   const supabase = await createClient()
 
   const [
-    totalUsers,
-    totalAdmins,
-    totalTesters,
-    totalChallenges,
-    activeChallenges,
-    inactiveChallenges,
-    totalHiddenBugs,
-    totalBugReports,
-    pendingReports,
-    reviewedReports,
-    rejectedReports,
-    totalAiEvaluations,
-    totalBadges,
-    awardedBadges,
-    aiMetricRows,
-    recentBugReportsResult,
+    pendingAttemptsCount,
+    pendingReportsCount,
+    activeUsersCount,
+    activeChallengesCount,
+    publishedLessonsCount,
+    recentReportsResult,
     recentUsersResult,
-    recentAiEvaluationsResult,
   ] = await Promise.all([
-    supabase.from('profiles').select('*', { count: 'exact', head: true }),
-    supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'admin'),
-    supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'tester'),
-    supabase.from('challenges').select('*', { count: 'exact', head: true }),
-    supabase.from('challenges').select('*', { count: 'exact', head: true }).eq('is_active', true),
-    supabase.from('challenges').select('*', { count: 'exact', head: true }).eq('is_active', false),
-    supabase.from('hidden_bugs').select('*', { count: 'exact', head: true }),
-    supabase.from('bug_reports').select('*', { count: 'exact', head: true }),
+    supabase.from('challenge_attempts').select('*', { count: 'exact', head: true }).in('status', ['pending', 'needs_improvement']),
     supabase.from('bug_reports').select('*', { count: 'exact', head: true }).eq('status', 'Pending'),
-    supabase.from('bug_reports').select('*', { count: 'exact', head: true }).eq('status', 'Reviewed'),
-    supabase.from('bug_reports').select('*', { count: 'exact', head: true }).eq('status', 'Rejected'),
-    supabase.from('ai_evaluations').select('*', { count: 'exact', head: true }),
-    supabase.from('badges').select('*', { count: 'exact', head: true }),
-    supabase.from('user_badges').select('*', { count: 'exact', head: true }),
-    supabase.from('ai_evaluations').select('earned_xp, ai_score'),
+    supabase.from('profiles').select('*', { count: 'exact', head: true }), // For this MVP, all profiles are considered 'active' users
+    supabase.from('challenges').select('*', { count: 'exact', head: true }).eq('is_active', true),
+    supabase.from('lessons').select('*', { count: 'exact', head: true }).eq('is_published', true),
     supabase
       .from('bug_reports')
       .select('id, title, status, reported_severity, created_at, user_id, challenge_id')
@@ -120,92 +78,48 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardResult> {
       .select('id, username, role, total_xp, current_level, created_at')
       .order('created_at', { ascending: false, nullsFirst: false })
       .limit(5),
-    supabase
-      .from('ai_evaluations')
-      .select('id, report_id, ai_score, earned_xp, evaluated_at')
-      .order('evaluated_at', { ascending: false, nullsFirst: false })
-      .limit(5),
   ])
 
-  const requiredResults = [
-    totalUsers,
-    totalAdmins,
-    totalTesters,
-    totalChallenges,
-    activeChallenges,
-    inactiveChallenges,
-    totalHiddenBugs,
-    totalBugReports,
-    pendingReports,
-    reviewedReports,
-    rejectedReports,
-    totalAiEvaluations,
-    totalBadges,
-    awardedBadges,
-    aiMetricRows,
-    recentBugReportsResult,
-    recentUsersResult,
-    recentAiEvaluationsResult,
-  ]
-
-  if (requiredResults.some((result) => result.error)) {
+  if (
+    pendingAttemptsCount.error ||
+    pendingReportsCount.error ||
+    activeUsersCount.error ||
+    activeChallengesCount.error ||
+    publishedLessonsCount.error ||
+    recentReportsResult.error ||
+    recentUsersResult.error
+  ) {
     return { data: null, error: 'failedToLoad' }
   }
 
-  const aiRows = aiMetricRows.data ?? []
-  const totalXpAwarded = aiRows.reduce((sum, row) => sum + row.earned_xp, 0)
-  const averageAiScore =
-    aiRows.length === 0
-      ? 0
-      : Number((aiRows.reduce((sum, row) => sum + row.ai_score, 0) / aiRows.length).toFixed(1))
-
-  const reportRows = recentBugReportsResult.data ?? []
-  const recentEvaluationRows = recentAiEvaluationsResult.data ?? []
+  const reportRows = recentReportsResult.data ?? []
   const userIds = uniqueStrings(reportRows.map((report) => report.user_id))
   const challengeIds = uniqueStrings(reportRows.map((report) => report.challenge_id))
-  const reportIds = uniqueStrings(recentEvaluationRows.map((evaluation) => evaluation.report_id))
 
-  const [profilesResult, challengesResult, reportsResult] = await Promise.all([
+  const [profilesResult, challengesResult] = await Promise.all([
     userIds.length > 0
       ? supabase.from('profiles').select('id, username').in('id', userIds)
       : Promise.resolve({ data: [], error: null }),
     challengeIds.length > 0
       ? supabase.from('challenges').select('id, title').in('id', challengeIds)
       : Promise.resolve({ data: [], error: null }),
-    reportIds.length > 0
-      ? supabase.from('bug_reports').select('id, title').in('id', reportIds)
-      : Promise.resolve({ data: [], error: null }),
   ])
 
   const usernamesById = new Map(
-    (profilesResult.data ?? []).map((profile) => [profile.id, profile.username]),
+    (profilesResult.data ?? []).map((profile) => [profile.id, profile.username])
   )
   const challengeTitlesById = new Map(
-    (challengesResult.data ?? []).map((challenge) => [challenge.id, challenge.title]),
-  )
-  const reportTitlesById = new Map(
-    (reportsResult.data ?? []).map((report) => [report.id, report.title]),
+    (challengesResult.data ?? []).map((challenge) => [challenge.id, challenge.title])
   )
 
   return {
     data: {
       stats: {
-        totalUsers: countOrZero(totalUsers.count),
-        totalAdmins: countOrZero(totalAdmins.count),
-        totalTesters: countOrZero(totalTesters.count),
-        totalChallenges: countOrZero(totalChallenges.count),
-        activeChallenges: countOrZero(activeChallenges.count),
-        inactiveChallenges: countOrZero(inactiveChallenges.count),
-        totalHiddenBugs: countOrZero(totalHiddenBugs.count),
-        totalBugReports: countOrZero(totalBugReports.count),
-        pendingReports: countOrZero(pendingReports.count),
-        reviewedReports: countOrZero(reviewedReports.count),
-        rejectedReports: countOrZero(rejectedReports.count),
-        totalAiEvaluations: countOrZero(totalAiEvaluations.count),
-        totalXpAwarded,
-        averageAiScore,
-        totalBadges: countOrZero(totalBadges.count),
-        awardedBadges: countOrZero(awardedBadges.count),
+        pendingReviews: countOrZero(pendingAttemptsCount.count),
+        pendingReports: countOrZero(pendingReportsCount.count),
+        activeUsers: countOrZero(activeUsersCount.count),
+        activeChallenges: countOrZero(activeChallengesCount.count),
+        publishedLessons: countOrZero(publishedLessonsCount.count),
       },
       recentBugReports: reportRows.map((report) => ({
         id: report.id,
@@ -226,22 +140,6 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardResult> {
         currentLevel: profile.current_level,
         createdAt: profile.created_at,
       })),
-      recentAiEvaluations: recentEvaluationRows.map(
-        (
-          evaluation: Pick<
-            AiEvaluation,
-            'id' | 'report_id' | 'ai_score' | 'earned_xp' | 'evaluated_at'
-          >,
-        ) => ({
-          id: evaluation.id,
-          aiScore: evaluation.ai_score,
-          earnedXp: evaluation.earned_xp,
-          evaluatedAt: evaluation.evaluated_at,
-          reportTitle: evaluation.report_id
-            ? reportTitlesById.get(evaluation.report_id) ?? null
-            : null,
-        }),
-      ),
     },
     error: null,
   }

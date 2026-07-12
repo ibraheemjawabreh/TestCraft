@@ -2,25 +2,34 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Sword, FileText, Users, Settings, LogOut, BookOpen, ClipboardList } from 'lucide-react'
+import {
+  LayoutDashboard,
+  ClipboardCheck,
+  BookOpen,
+  Sword,
+  Users,
+  BarChart3,
+  Settings,
+  LogOut,
+} from 'lucide-react'
 
 import { Logo } from '@/components/brand/Logo'
 import { type Locale } from '@/i18n/config'
 
 interface AdminSidebarDictionary {
   admin: {
-    overview: string
-    challengesNav: string
-    reports: string
-    reportsReview: string
-    users: string
-    settings: string
+    nav: {
+      dashboard: string
+      reviews: string
+      lessons: string
+      challenges: string
+      users: string
+      analytics: string
+      settings: string
+    }
   }
   navigation: {
     logout: string
-  }
-  learning: {
-    lessons: string
   }
 }
 
@@ -31,14 +40,16 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ dictionary, locale }: AdminSidebarProps) {
   const pathname = usePathname()
+  const nav = dictionary.admin.nav
 
   const navItems = [
-    { name: dictionary.admin.overview, href: `/${locale}/admin`, icon: LayoutDashboard, exact: true },
-    { name: dictionary.admin.challengesNav, href: `/${locale}/admin/challenges`, icon: Sword, exact: false },
-    { name: dictionary.learning.lessons, href: `/${locale}/admin/lessons`, icon: BookOpen, exact: false },
-    { name: dictionary.admin.reportsReview, href: `/${locale}/admin/reports`, icon: ClipboardList, exact: false },
-    { name: dictionary.admin.users, href: `/${locale}/admin/users`, icon: Users, exact: false },
-    { name: dictionary.admin.settings, href: `/${locale}/admin/settings`, icon: Settings, exact: false },
+    { name: nav.dashboard, href: `/${locale}/admin`, icon: LayoutDashboard, exact: true },
+    { name: nav.reviews, href: `/${locale}/admin/reviews`, icon: ClipboardCheck, exact: false },
+    { name: nav.lessons, href: `/${locale}/admin/lessons`, icon: BookOpen, exact: false },
+    { name: nav.challenges, href: `/${locale}/admin/challenges`, icon: Sword, exact: false },
+    { name: nav.users, href: `/${locale}/admin/users`, icon: Users, exact: false },
+    { name: nav.analytics, href: `/${locale}/admin/analytics`, icon: BarChart3, exact: false },
+    { name: nav.settings, href: `/${locale}/admin/settings`, icon: Settings, exact: false },
   ]
 
   return (
