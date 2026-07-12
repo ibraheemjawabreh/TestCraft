@@ -138,7 +138,7 @@ export function ChallengeLabPage({
 
           {/* Sidebar */}
           <div className="space-y-6">
-            <MyChallengeReports dictionary={dictionary} reports={previousReports} />
+            <MyChallengeReports dictionary={dictionary} reports={previousReports} locale={locale} />
           </div>
         </div>
       </div>

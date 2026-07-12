@@ -56,6 +56,12 @@ export async function getTesterReports(
       reported_severity: row.reported_severity,
       status: row.status,
       created_at: row.created_at,
+      // New fields from migration (may be null for old records)
+      attempt_id: null,
+      admin_feedback: null,
+      admin_score: null,
+      reviewed_at: null,
+      reviewed_by: null,
       challenge_title: Array.isArray(row.challenges)
         ? (row.challenges[0]?.title ?? null)
         : ((row.challenges as { title: string } | null)?.title ?? null),
@@ -140,11 +146,52 @@ export async function submitBugReport(
       return { data: null, error: 'challenge_not_found' }
     }
 
+    // Find or create challenge_attempt (non-blocking for report creation if possible, but we need attempt_id)
+    let attemptId: string | undefined
+
+    try {
+      const now = new Date().toISOString()
+      
+      const { data: existingAttempt } = await supabase
+        .from('challenge_attempts')
+        .select('id')
+        .eq('user_id', input.userId)
+        .eq('challenge_id', input.challengeId)
+        .maybeSingle()
+
+      if (existingAttempt) {
+        attemptId = existingAttempt.id
+        await supabase
+          .from('challenge_attempts')
+          .update({ status: 'submitted', submitted_at: now })
+          .eq('id', attemptId)
+      } else {
+        const { data: newAttempt } = await supabase
+          .from('challenge_attempts')
+          .insert({
+            user_id: input.userId,
+            challenge_id: input.challengeId,
+            status: 'submitted',
+            started_at: now,
+            submitted_at: now,
+          })
+          .select('id')
+          .single()
+          
+        if (newAttempt) {
+          attemptId = newAttempt.id
+        }
+      }
+    } catch (e) {
+      console.error('Failed to create/update challenge_attempt', e)
+    }
+
     const { data: report, error: insertError } = await supabase
       .from('bug_reports')
       .insert({
         user_id: input.userId,
         challenge_id: input.challengeId,
+        attempt_id: attemptId || null,
         title: parsed.data.title,
         steps_to_reproduce: parsed.data.steps_to_reproduce,
         expected_result: parsed.data.expected_result,

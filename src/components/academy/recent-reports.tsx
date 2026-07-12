@@ -5,6 +5,7 @@ import type { Dictionary } from '@/i18n/types'
 import type { Locale } from '@/i18n/config'
 import type { ReportWithChallengeTitle } from '@/lib/academy/academy'
 import type { Database } from '@/types/database.types'
+import { FormattedDate } from '@/components/ui/formatted-date'
 
 type SeverityLevel = Database['public']['Enums']['severity_level']
 type ReportStatus = Database['public']['Enums']['report_status']
@@ -90,11 +91,11 @@ export function RecentReports({ reports, dictionary, locale }: RecentReportsProp
                         ? dictionary.academy.pendingReview
                         : report.status === 'Reviewed'
                         ? dictionary.academy.reviewed
-                        : dictionary.academy.needsImprovement}
+                        : dictionary.academy.rejectedReports}
                     </span>
                   )}
                   <span className="text-xs text-muted-foreground">
-                    {formatDate(report.created_at)}
+                    <FormattedDate value={report.created_at} locale={locale} fallback="-" dateStyle="medium" />
                   </span>
                 </div>
               </div>

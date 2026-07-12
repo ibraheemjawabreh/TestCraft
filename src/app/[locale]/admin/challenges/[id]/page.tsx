@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import NextLink from 'next/link'
-import { ArrowLeft, ArrowRight, Pencil, Trophy, Target, ShieldAlert } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Pencil, Trophy, Target, ShieldAlert, Users } from 'lucide-react'
 
 import { getDictionary } from '@/i18n/get-dictionary'
 import { getAdminChallengeById } from '@/lib/admin/challenges'
@@ -75,12 +75,20 @@ export default async function ChallengeDetailsPage({
             </div>
           </div>
         </div>
-        <Button asChild className="gap-2 shrink-0">
-          <NextLink href={`/${locale}/admin/challenges/${challenge.id}/edit`}>
-            <Pencil className="h-4 w-4" />
-            {dictionary.admin.challenges.editChallenge}
-          </NextLink>
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button asChild variant="outline" className="gap-2">
+            <NextLink href={`/${locale}/admin/challenges/${challenge.id}/submissions`}>
+              <Users className="h-4 w-4" />
+              {dictionary.admin.challenges.submissions}
+            </NextLink>
+          </Button>
+          <Button asChild className="gap-2">
+            <NextLink href={`/${locale}/admin/challenges/${challenge.id}/edit`}>
+              <Pencil className="h-4 w-4" />
+              {dictionary.admin.challenges.editChallenge}
+            </NextLink>
+          </Button>
+        </div>
       </div>
 
       {/* Info Cards */}

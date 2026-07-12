@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -83,11 +83,16 @@ export type Database = {
       bug_reports: {
         Row: {
           actual_result: string
+          admin_feedback: string | null
+          admin_score: number | null
+          attempt_id: string | null
           challenge_id: string | null
           created_at: string | null
           expected_result: string
           id: string
           reported_severity: Database["public"]["Enums"]["severity_level"]
+          reviewed_at: string | null
+          reviewed_by: string | null
           status: Database["public"]["Enums"]["report_status"] | null
           steps_to_reproduce: string
           title: string
@@ -95,11 +100,16 @@ export type Database = {
         }
         Insert: {
           actual_result: string
+          admin_feedback?: string | null
+          admin_score?: number | null
+          attempt_id?: string | null
           challenge_id?: string | null
           created_at?: string | null
           expected_result: string
           id?: string
           reported_severity: Database["public"]["Enums"]["severity_level"]
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: Database["public"]["Enums"]["report_status"] | null
           steps_to_reproduce: string
           title: string
@@ -107,17 +117,29 @@ export type Database = {
         }
         Update: {
           actual_result?: string
+          admin_feedback?: string | null
+          admin_score?: number | null
+          attempt_id?: string | null
           challenge_id?: string | null
           created_at?: string | null
           expected_result?: string
           id?: string
           reported_severity?: Database["public"]["Enums"]["severity_level"]
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: Database["public"]["Enums"]["report_status"] | null
           steps_to_reproduce?: string
           title?: string
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "bug_reports_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "challenge_attempts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "bug_reports_challenge_id_fkey"
             columns: ["challenge_id"]
@@ -126,7 +148,87 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "bug_reports_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "bug_reports_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenge_attempts: {
+        Row: {
+          admin_feedback: string | null
+          challenge_id: string
+          created_at: string
+          earned_xp: number | null
+          final_score: number | null
+          id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          started_at: string
+          status: string
+          submitted_at: string | null
+          updated_at: string
+          user_id: string
+          xp_awarded: boolean
+        }
+        Insert: {
+          admin_feedback?: string | null
+          challenge_id: string
+          created_at?: string
+          earned_xp?: number | null
+          final_score?: number | null
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          started_at?: string
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+          user_id: string
+          xp_awarded?: boolean
+        }
+        Update: {
+          admin_feedback?: string | null
+          challenge_id?: string
+          created_at?: string
+          earned_xp?: number | null
+          final_score?: number | null
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          started_at?: string
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+          user_id?: string
+          xp_awarded?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_attempts_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_attempts_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_attempts_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"

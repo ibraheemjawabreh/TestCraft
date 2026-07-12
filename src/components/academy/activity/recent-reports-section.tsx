@@ -2,6 +2,7 @@ import { FileText } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { FormattedDate } from '@/components/ui/formatted-date'
 import type { Dictionary } from '@/i18n/types'
 import type { Locale } from '@/i18n/config'
 import type { TesterActivityReport } from '@/lib/academy/activity'
@@ -10,16 +11,6 @@ interface RecentReportsSectionProps {
   reports: TesterActivityReport[]
   dictionary: Dictionary
   locale: Locale
-}
-
-function formatDate(value: string | null, locale: Locale): string {
-  if (!value) return '-'
-
-  return new Intl.DateTimeFormat(locale, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(new Date(value))
 }
 
 export function RecentReportsSection({ reports, dictionary, locale }: RecentReportsSectionProps) {
@@ -50,7 +41,7 @@ export function RecentReportsSection({ reports, dictionary, locale }: RecentRepo
                     )}
                   </div>
                   <span className="shrink-0 text-xs text-muted-foreground">
-                    {formatDate(report.createdAt, locale)}
+                    <FormattedDate value={report.createdAt} locale={locale} fallback="-" dateStyle="medium" />
                   </span>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -64,7 +55,7 @@ export function RecentReportsSection({ reports, dictionary, locale }: RecentRepo
                         ? dictionary.academy.pendingReview
                         : report.status === 'Reviewed'
                           ? dictionary.academy.reviewed
-                          : dictionary.academy.needsImprovement}
+                          : dictionary.academy.rejectedReports}
                     </Badge>
                   )}
                 </div>

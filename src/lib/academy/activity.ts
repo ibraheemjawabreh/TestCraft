@@ -6,6 +6,7 @@ import type { Database } from '@/types/database.types'
 type BugReport = Database['public']['Tables']['bug_reports']['Row']
 type AiEvaluation = Database['public']['Tables']['ai_evaluations']['Row']
 type UserBadge = Database['public']['Tables']['user_badges']['Row']
+type ChallengeAttempt = Database['public']['Tables']['challenge_attempts']['Row']
 
 type Result<T> =
   | { data: T; error: null }
@@ -43,6 +44,13 @@ interface UserBadgeRow extends Pick<UserBadge, 'badge_id' | 'earned_at'> {
   badges: JoinedBadge | JoinedBadge[] | null
 }
 
+interface ReviewedAttemptRow extends Pick<
+  ChallengeAttempt,
+  'id' | 'status' | 'final_score' | 'earned_xp' | 'admin_feedback' | 'reviewed_at'
+> {
+  challenges: JoinedChallenge | JoinedChallenge[] | null
+}
+
 export interface TesterActivityReport {
   id: string
   title: string
@@ -69,10 +77,21 @@ export interface TesterActivityBadge {
   earnedAt: string | null
 }
 
+export interface TesterActivityAttempt {
+  id: string
+  challengeTitle: string | null
+  status: string
+  finalScore: number | null
+  earnedXp: number | null
+  adminFeedback: string | null
+  reviewedAt: string | null
+}
+
 export interface TesterActivity {
   recentReports: TesterActivityReport[]
   recentAiFeedback: TesterActivityAiFeedback[]
   badges: TesterActivityBadge[]
+  reviewedAttempts: TesterActivityAttempt[]
 }
 
 function firstJoined<T>(value: T | T[] | null): T | null {
@@ -87,7 +106,7 @@ export async function getTesterActivity(userId: string): Promise<Result<TesterAc
   try {
     const supabase = await createClient()
 
-    const [reportsResult, aiFeedbackResult, badgesResult] = await Promise.all([
+    const [reportsResult, aiFeedbackResult, badgesResult, attemptsResult] = await Promise.all([
       supabase
         .from('bug_reports')
         .select(`
@@ -130,15 +149,31 @@ export async function getTesterActivity(userId: string): Promise<Result<TesterAc
         `)
         .eq('user_id', userId)
         .order('earned_at', { ascending: false }),
+      supabase
+        .from('challenge_attempts')
+        .select(`
+          id,
+          status,
+          final_score,
+          earned_xp,
+          admin_feedback,
+          reviewed_at,
+          challenges ( title )
+        `)
+        .eq('user_id', userId)
+        .not('reviewed_at', 'is', null)
+        .order('reviewed_at', { ascending: false })
+        .limit(8),
     ])
 
-    if (reportsResult.error || aiFeedbackResult.error || badgesResult.error) {
+    if (reportsResult.error || aiFeedbackResult.error || badgesResult.error || attemptsResult.error) {
       return { data: null, error: 'Failed to load activity.' }
     }
 
     const reportRows = (reportsResult.data ?? []) as unknown as RecentReportRow[]
     const feedbackRows = (aiFeedbackResult.data ?? []) as unknown as RecentAiFeedbackRow[]
     const badgeRows = (badgesResult.data ?? []) as unknown as UserBadgeRow[]
+    const attemptRows = (attemptsResult.data ?? []) as unknown as ReviewedAttemptRow[]
 
     return {
       data: {
@@ -169,6 +204,15 @@ export async function getTesterActivity(userId: string): Promise<Result<TesterAc
             earnedAt: userBadge.earned_at,
           }
         }),
+        reviewedAttempts: attemptRows.map((attempt) => ({
+          id: attempt.id,
+          challengeTitle: firstJoined(attempt.challenges)?.title ?? null,
+          status: attempt.status,
+          finalScore: attempt.final_score,
+          earnedXp: attempt.earned_xp,
+          adminFeedback: attempt.admin_feedback,
+          reviewedAt: attempt.reviewed_at,
+        })),
       },
       error: null,
     }

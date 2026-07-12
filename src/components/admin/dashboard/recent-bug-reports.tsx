@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { FormattedDate } from '@/components/ui/formatted-date'
 import type { Locale } from '@/i18n/config'
 import type { Dictionary } from '@/i18n/types'
 import type { RecentBugReport } from '@/lib/admin/dashboard'
@@ -20,10 +21,6 @@ interface RecentBugReportsProps {
 
 export function RecentBugReports({ dictionary, locale, reports }: RecentBugReportsProps) {
   const t = dictionary.admin.dashboard
-  const dateFormatter = new Intl.DateTimeFormat(locale, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  })
 
   return (
     <Card className="border-border/50 bg-card/70">
@@ -56,7 +53,7 @@ export function RecentBugReports({ dictionary, locale, reports }: RecentBugRepor
                   <TableCell>{report.username ?? t.noData}</TableCell>
                   <TableCell>{report.challengeTitle ?? t.noData}</TableCell>
                   <TableCell className="whitespace-nowrap text-muted-foreground">
-                    {report.createdAt ? dateFormatter.format(new Date(report.createdAt)) : t.noData}
+                    <FormattedDate value={report.createdAt} locale={locale} fallback={t.noData} dateStyle="medium" timeStyle="short" />
                   </TableCell>
                 </TableRow>
               ))}

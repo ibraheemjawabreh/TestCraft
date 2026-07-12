@@ -7,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { FormattedDate } from '@/components/ui/formatted-date'
 import { getDictionary } from '@/i18n/get-dictionary'
 import { type Locale } from '@/i18n/config'
 import { createClient } from '@/lib/supabase/server'
@@ -84,11 +85,6 @@ export default async function AdminReportsReviewPage({
     }
   })
 
-  const dateFormatter = new Intl.DateTimeFormat(locale, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  })
-
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -129,8 +125,8 @@ export default async function AdminReportsReviewPage({
                   <TableCell>{report.severity}</TableCell>
                   <TableCell>{report.aiScore ?? dictionary.admin.dashboard.noData}</TableCell>
                   <TableCell>{report.earnedXp ?? dictionary.admin.dashboard.noData}</TableCell>
-                  <TableCell className="whitespace-nowrap text-muted-foreground">
-                    {report.createdAt ? dateFormatter.format(new Date(report.createdAt)) : dictionary.admin.dashboard.noData}
+                  <TableCell className="whitespace-nowrap text-muted-foreground text-sm">
+                    <FormattedDate value={report.createdAt} locale={locale} fallback={dictionary.admin.dashboard.noData} dateStyle="medium" timeStyle="short" />
                   </TableCell>
                 </TableRow>
               ))}

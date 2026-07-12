@@ -2,6 +2,7 @@ import Image from 'next/image'
 import { Award } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { FormattedDate } from '@/components/ui/formatted-date'
 import type { Dictionary } from '@/i18n/types'
 import type { Locale } from '@/i18n/config'
 import type { TesterActivityBadge } from '@/lib/academy/activity'
@@ -10,16 +11,6 @@ interface UserBadgesSectionProps {
   badges: TesterActivityBadge[]
   dictionary: Dictionary
   locale: Locale
-}
-
-function formatDate(value: string | null, locale: Locale): string {
-  if (!value) return '-'
-
-  return new Intl.DateTimeFormat(locale, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(new Date(value))
 }
 
 export function UserBadgesSection({ badges, dictionary, locale }: UserBadgesSectionProps) {
@@ -61,9 +52,9 @@ export function UserBadgesSection({ badges, dictionary, locale }: UserBadgesSect
                     <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">
                       {badge.description}
                     </p>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      {formatDate(badge.earnedAt, locale)}
-                    </p>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      <FormattedDate value={badge.earnedAt} locale={locale} fallback="-" dateStyle="medium" />
+                    </span>
                   </div>
                 </div>
               </div>

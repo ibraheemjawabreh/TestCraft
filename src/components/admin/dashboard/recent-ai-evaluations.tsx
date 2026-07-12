@@ -7,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { FormattedDate } from '@/components/ui/formatted-date'
 import type { Locale } from '@/i18n/config'
 import type { Dictionary } from '@/i18n/types'
 import type { RecentAiEvaluation } from '@/lib/admin/dashboard'
@@ -23,10 +24,6 @@ export function RecentAiEvaluations({
   evaluations,
 }: RecentAiEvaluationsProps) {
   const t = dictionary.admin.dashboard
-  const dateFormatter = new Intl.DateTimeFormat(locale, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  })
 
   return (
     <Card className="border-border/50 bg-card/70">
@@ -53,9 +50,7 @@ export function RecentAiEvaluations({
                   <TableCell>{evaluation.earnedXp}</TableCell>
                   <TableCell>{evaluation.reportTitle ?? t.noData}</TableCell>
                   <TableCell className="whitespace-nowrap text-muted-foreground">
-                    {evaluation.evaluatedAt
-                      ? dateFormatter.format(new Date(evaluation.evaluatedAt))
-                      : t.noData}
+                    <FormattedDate value={evaluation.evaluatedAt} locale={locale} fallback={t.noData} dateStyle="medium" timeStyle="short" />
                   </TableCell>
                 </TableRow>
               ))}

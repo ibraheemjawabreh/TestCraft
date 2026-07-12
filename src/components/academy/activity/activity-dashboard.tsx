@@ -5,6 +5,7 @@ import type { TesterActivity } from '@/lib/academy/activity'
 import { RecentAiFeedbackSection } from './recent-ai-feedback-section'
 import { RecentReportsSection } from './recent-reports-section'
 import { UserBadgesSection } from './user-badges-section'
+import { ReviewedAttemptsSection } from './reviewed-attempts-section'
 
 interface ActivityDashboardProps {
   activity: TesterActivity
@@ -31,6 +32,11 @@ export function ActivityDashboard({ activity, dictionary, locale }: ActivityDash
           />
           <RecentAiFeedbackSection
             feedback={activity.recentAiFeedback}
+            dictionary={dictionary}
+            locale={locale}
+          />
+          <ReviewedAttemptsSection
+            attempts={activity.reviewedAttempts}
             dictionary={dictionary}
             locale={locale}
           />

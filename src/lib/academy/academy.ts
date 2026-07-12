@@ -128,6 +128,12 @@ export async function getAcademyDashboardData(
       reported_severity: row.reported_severity,
       status: row.status,
       created_at: row.created_at,
+      // New fields from migration
+      attempt_id: null,
+      admin_feedback: null,
+      admin_score: null,
+      reviewed_at: null,
+      reviewed_by: null,
       challenge_title: Array.isArray(row.challenges)
         ? (row.challenges[0]?.title ?? null)
         : ((row.challenges as { title: string } | null)?.title ?? null),

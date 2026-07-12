@@ -43,18 +43,11 @@ type Result<T> =
  * Derives user challenge status from their bug reports for that challenge.
  * Derives status only from the tester's submitted reports.
  */
-function deriveStatus(
-  reports: Pick<BugReport, 'status'>[],
-): ChallengeStatus {
-  if (!reports || reports.length === 0) return 'not_started'
-
-  const statuses = reports.map((r) => r.status)
-
-  if (statuses.some((s) => s === 'Reviewed')) return 'reviewed'
-  if (statuses.some((s) => s === 'Pending')) return 'pending_review'
-  if (statuses.every((s) => s === 'Rejected')) return 'needs_improvement'
-
-  return 'pending_review'
+function deriveStatus(attemptStatus: string | null): ChallengeStatus {
+  if (!attemptStatus || attemptStatus === 'in_progress') return 'not_started'
+  if (attemptStatus === 'approved') return 'reviewed'
+  if (attemptStatus === 'needs_improvement' || attemptStatus === 'rejected') return 'needs_improvement'
+  return 'pending_review' // covers 'submitted', 'under_review'
 }
 
 /**
@@ -129,13 +122,16 @@ export async function getChallengeForTester(
       }
     }
 
-    const { data: reports } = await supabase
-      .from('bug_reports')
+    const { data: attempt } = await supabase
+      .from('challenge_attempts')
       .select('status')
       .eq('user_id', userId)
       .eq('challenge_id', challengeId)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .single()
 
-    const userStatus = deriveStatus(reports ?? [])
+    const userStatus = deriveStatus(attempt?.status ?? null)
     const localizedChallenge: TesterChallenge = {
       id: challenge.id,
       title: localizedString(challengeRow, locale, 'title', 'title'),

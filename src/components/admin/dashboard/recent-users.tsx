@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { FormattedDate } from '@/components/ui/formatted-date'
 import type { Locale } from '@/i18n/config'
 import type { Dictionary } from '@/i18n/types'
 import type { RecentUser } from '@/lib/admin/dashboard'
@@ -20,10 +21,6 @@ interface RecentUsersProps {
 
 export function RecentUsers({ dictionary, locale, users }: RecentUsersProps) {
   const t = dictionary.admin.dashboard
-  const dateFormatter = new Intl.DateTimeFormat(locale, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  })
 
   return (
     <Card className="border-border/50 bg-card/70">
@@ -56,7 +53,7 @@ export function RecentUsers({ dictionary, locale, users }: RecentUsersProps) {
                   <TableCell>{user.totalXp ?? 0}</TableCell>
                   <TableCell>{user.currentLevel ?? 1}</TableCell>
                   <TableCell className="whitespace-nowrap text-muted-foreground">
-                    {user.createdAt ? dateFormatter.format(new Date(user.createdAt)) : t.noData}
+                    <FormattedDate value={user.createdAt} locale={locale} fallback={t.noData} dateStyle="medium" timeStyle="short" />
                   </TableCell>
                 </TableRow>
               ))}

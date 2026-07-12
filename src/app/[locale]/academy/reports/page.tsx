@@ -39,7 +39,7 @@ export default async function AcademyReportsPage({
             <p className="text-muted-foreground">{dictionary.academy.failedToLoad}</p>
           </div>
         ) : (
-          <ReportsTable reports={reports ?? []} dictionary={dictionary} />
+          <ReportsTable reports={reports ?? []} dictionary={dictionary} locale={locale} />
         )}
       </div>
     </AcademyLayout>

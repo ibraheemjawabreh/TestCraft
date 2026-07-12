@@ -2,6 +2,7 @@ import { Bot, Zap } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { FormattedDate } from '@/components/ui/formatted-date'
 import type { Dictionary } from '@/i18n/types'
 import type { Locale } from '@/i18n/config'
 import type { TesterActivityAiFeedback } from '@/lib/academy/activity'
@@ -10,16 +11,6 @@ interface RecentAiFeedbackSectionProps {
   feedback: TesterActivityAiFeedback[]
   dictionary: Dictionary
   locale: Locale
-}
-
-function formatDate(value: string | null, locale: Locale): string {
-  if (!value) return '-'
-
-  return new Intl.DateTimeFormat(locale, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(new Date(value))
 }
 
 function excerpt(value: string): string {
@@ -68,7 +59,7 @@ export function RecentAiFeedbackSection({
                     <Zap className="h-3.5 w-3.5" aria-hidden="true" />
                     {activity.earnedXp}: {item.earnedXp}
                   </span>
-                  <span>{activity.evaluatedAt}: {formatDate(item.evaluatedAt, locale)}</span>
+                  <span>{activity.evaluatedAt}: <FormattedDate value={item.evaluatedAt} locale={locale} fallback="-" dateStyle="medium" /></span>
                 </div>
               </div>
             ))}

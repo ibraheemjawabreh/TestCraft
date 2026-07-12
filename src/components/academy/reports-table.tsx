@@ -5,6 +5,8 @@ import { Search, Filter } from 'lucide-react'
 import type { Dictionary } from '@/i18n/types'
 import type { ReportWithChallenge } from '@/lib/academy/reports'
 import type { Database } from '@/types/database.types'
+import type { Locale } from '@/i18n/config'
+import { FormattedDate } from '@/components/ui/formatted-date'
 
 type SeverityLevel = Database['public']['Enums']['severity_level']
 type ReportStatus = Database['public']['Enums']['report_status']
@@ -12,6 +14,7 @@ type ReportStatus = Database['public']['Enums']['report_status']
 interface ReportsTableProps {
   reports: ReportWithChallenge[]
   dictionary: Dictionary
+  locale: Locale
 }
 
 const SEVERITY_STYLE: Record<SeverityLevel, string> = {
@@ -36,7 +39,7 @@ function formatDate(dateStr: string | null): string {
   })
 }
 
-export function ReportsTable({ reports, dictionary }: ReportsTableProps) {
+export function ReportsTable({ reports, dictionary, locale }: ReportsTableProps) {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<ReportStatus | 'all'>('all')
   const [severityFilter, setSeverityFilter] = useState<SeverityLevel | 'all'>('all')
@@ -188,12 +191,12 @@ export function ReportsTable({ reports, dictionary }: ReportsTableProps) {
                             ? dictionary.academy.pendingReview
                             : report.status === 'Reviewed'
                             ? dictionary.academy.reviewed
-                            : dictionary.academy.needsImprovement}
+                            : dictionary.academy.rejectedReports}
                         </span>
                       )}
                     </td>
                     <td className="hidden md:table-cell px-4 py-3.5 text-muted-foreground text-xs">
-                      {formatDate(report.created_at)}
+                      <FormattedDate value={report.created_at} locale={locale} fallback="-" dateStyle="medium" />
                     </td>
                   </tr>
                 ))}

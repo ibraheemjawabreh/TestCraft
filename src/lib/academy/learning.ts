@@ -55,8 +55,11 @@ function toBoolean(value: unknown): boolean {
   return value === true
 }
 
-function deriveChallengeStatus(hasReport: boolean): ChallengeWithStatus['userStatus'] {
-  return hasReport ? 'pending_review' : 'not_started'
+function deriveChallengeStatus(attemptStatus: string | null): ChallengeWithStatus['userStatus'] {
+  if (!attemptStatus || attemptStatus === 'in_progress') return 'not_started'
+  if (attemptStatus === 'approved') return 'reviewed'
+  if (attemptStatus === 'needs_improvement' || attemptStatus === 'rejected') return 'needs_improvement'
+  return 'pending_review' // covers 'submitted', 'under_review'
 }
 
 /**
@@ -172,12 +175,13 @@ export async function getAcademyLearningOverview(
     .map((challenge) => toString(challenge.id))
     .filter((id): id is string => Boolean(id))
 
-  const { data: reportsData } = challengeIds.length > 0
+  const { data: attemptsData } = challengeIds.length > 0
     ? await supabase
-        .from('bug_reports')
-        .select('challenge_id, status')
+        .from('challenge_attempts')
+        .select('challenge_id, status, updated_at')
         .eq('user_id', userId)
         .in('challenge_id', challengeIds)
+        .order('updated_at', { ascending: true })
     : { data: [] }
 
   const completedLessonIds = new Set(
@@ -187,11 +191,19 @@ export async function getAcademyLearningOverview(
       .filter((id): id is string => Boolean(id)),
   )
 
-  const submittedChallengeIds = new Set(
-    ((reportsData ?? []) as RecordRow[])
-      .map((report) => toString(report.challenge_id))
-      .filter((id): id is string => Boolean(id)),
-  )
+  const attemptStatusByChallengeId = new Map<string, string>()
+  const submittedChallengeIds = new Set<string>()
+
+  for (const row of (attemptsData ?? []) as RecordRow[]) {
+    const cid = toString(row.challenge_id)
+    const status = toString(row.status)
+    if (cid && status) {
+      attemptStatusByChallengeId.set(cid, status)
+      if (status !== 'in_progress') {
+        submittedChallengeIds.add(cid)
+      }
+    }
+  }
 
   const challengeByLessonId = new Map<string, RecordRow>()
   for (const challenge of challengeRows) {
@@ -263,7 +275,7 @@ export async function getAcademyLearningOverview(
         scenario: localizedString(challenge, locale, 'scenario', 'scenario') || null,
         instructions: localizedString(challenge, locale, 'instructions', 'instructions') || null,
         sort_order: toNumber(challenge.sort_order, 0),
-        userStatus: deriveChallengeStatus(submittedChallengeIds.has(id)),
+        userStatus: deriveChallengeStatus(attemptStatusByChallengeId.get(id) ?? null),
       }
     })
 

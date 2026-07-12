@@ -1,15 +1,18 @@
 import { BookOpen } from 'lucide-react'
 import type { Dictionary } from '@/i18n/types'
+import type { Locale } from '@/i18n/config'
 import type { Database } from '@/types/database.types'
+import { FormattedDate } from '@/components/ui/formatted-date'
 
 type BugReport = Database['public']['Tables']['bug_reports']['Row']
 
 interface MyChallengeReportsProps {
   dictionary: Dictionary
   reports: BugReport[]
+  locale: Locale
 }
 
-export function MyChallengeReports({ dictionary, reports }: MyChallengeReportsProps) {
+export function MyChallengeReports({ dictionary, reports, locale }: MyChallengeReportsProps) {
   return (
     <div className="overflow-hidden rounded-2xl border border-border/50 bg-card/60 p-6 backdrop-blur-xl shadow-sm">
       <div className="mb-4 flex items-center gap-2">
@@ -42,10 +45,7 @@ export function MyChallengeReports({ dictionary, reports }: MyChallengeReportsPr
                 </span>
                 
                 <span className="text-muted-foreground">
-                  {new Date(report.created_at ?? '').toLocaleDateString(undefined, {
-                    month: 'short',
-                    day: 'numeric',
-                  })}
+                  <FormattedDate value={report.created_at} locale={locale} fallback="-" dateStyle="medium" />
                 </span>
               </div>
             </div>
