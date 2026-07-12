@@ -667,4 +667,44 @@ export const en = {
     reviewed: "Reviewed",
     rejected: "Rejected",
   },
+  marketing: {
+    nav: {
+      tracks: "Tracks",
+      practice: "Practice",
+      community: "Community",
+      pricing: "Pricing",
+      signIn: "Sign In",
+      startFree: "Start Free",
+    },
+    hero: {
+      badge: "The Arabic-first QA training platform",
+      titlePrefix: "Master",
+      titleGradientOne: "Quality Assurance",
+      titleSuffix: "through practical training",
+      subtitle: "Learn QA step by step through structured paths, practical labs, real-world challenges, and professional bug reports designed to build job-ready skills.",
+      primaryCta: "Start Your Journey",
+      secondaryCta: "Explore Tracks",
+    },
+    features: {
+      title: "Everything you need to become a QA professional",
+      subtitle: "From the fundamentals to real-world workflows, TestCraft equips you with skills that matter.",
+      bugHunting: {
+        title: "Bug Hunting",
+        description: "Practice finding bugs inside real scenarios and writing professional reports that help developers fix issues faster.",
+      },
+      automation: {
+        title: "Test Automation",
+        description: "Learn test automation concepts with modern tools like Playwright, Cypress, and Selenium from basics to practice.",
+      },
+      jobReady: {
+        title: "Job-Ready Skills",
+        description: "Build practical QA experience through lessons, challenges, evaluations, and feedback designed for real work environments.",
+      },
+    },
+    footer: {
+      rights: "All rights reserved",
+      privacy: "Privacy Policy",
+      terms: "Terms",
+    },
+  },
 }

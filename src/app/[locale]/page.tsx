@@ -1,9 +1,20 @@
-import { redirect } from 'next/navigation'
+import { type Locale } from '@/i18n/config'
+import { getDictionary } from '@/i18n/get-dictionary'
+import { MarketingHomepage } from '@/components/marketing/marketing-homepage'
+
+interface HomePageProps {
+  params: {
+    locale: Locale
+  }
+}
 
 /**
- * Root route — immediately redirects to the login page.
- * Once a user is authenticated, the middleware will redirect them to /academy.
+ * Public Marketing Homepage — Sunset Tech visual identity.
+ * Replaces the previous redirect-to-login behavior.
+ * Admin and academy routes remain fully protected and unaffected.
  */
-export default function RootPage({ params }: { params: { locale: string } }) {
-  redirect(`/${params.locale}/login`)
+export default async function HomePage({ params: { locale } }: HomePageProps) {
+  const dictionary = await getDictionary(locale)
+
+  return <MarketingHomepage dictionary={dictionary} locale={locale} />
 }
