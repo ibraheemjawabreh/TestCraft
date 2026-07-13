@@ -55,7 +55,7 @@ export function AdminSidebar({ dictionary, locale }: AdminSidebarProps) {
   return (
     <aside className="fixed inset-y-0 start-0 z-50 hidden w-64 flex-col border-e border-border/50 bg-card/40 backdrop-blur-xl sm:flex transition-colors">
       <div className="flex h-16 shrink-0 items-center px-6">
-        <Logo />
+        <Logo locale={locale} />
       </div>
 
       <nav className="flex flex-1 flex-col gap-1.5 overflow-y-auto px-4 py-6">

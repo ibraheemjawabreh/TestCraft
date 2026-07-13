@@ -668,6 +668,10 @@ export const en = {
     rejected: "Rejected",
   },
   marketing: {
+    meta: {
+      title: "TestCraft — Practical QA Training Platform",
+      description: "Learn Quality Assurance step by step through structured paths, practical labs, real-world challenges, and professional bug reports designed to build job-ready skills.",
+    },
     nav: {
       tracks: "Tracks",
       practice: "Practice",

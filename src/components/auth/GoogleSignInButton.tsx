@@ -67,8 +67,7 @@ export function GoogleSignInButton({
       size="xl"
       className={[
         'w-full gap-3',
-        'border-border/50 bg-secondary/30 text-foreground',
-        'hover:border-primary/40 hover:bg-secondary/60',
+        'auth-social-button',
         'active:scale-[0.98]',
         'transition-all duration-200',
       ].join(' ')}

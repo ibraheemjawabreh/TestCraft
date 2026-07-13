@@ -1,3 +1,5 @@
+import type { Metadata } from 'next'
+
 import { type Locale } from '@/i18n/config'
 import { getDictionary } from '@/i18n/get-dictionary'
 import { MarketingHomepage } from '@/components/marketing/marketing-homepage'
@@ -5,6 +7,17 @@ import { MarketingHomepage } from '@/components/marketing/marketing-homepage'
 interface HomePageProps {
   params: {
     locale: Locale
+  }
+}
+
+export async function generateMetadata({
+  params: { locale },
+}: HomePageProps): Promise<Metadata> {
+  const dictionary = await getDictionary(locale)
+
+  return {
+    title: dictionary.marketing.meta.title,
+    description: dictionary.marketing.meta.description,
   }
 }
 

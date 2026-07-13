@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import { TestcraftLogo } from '@/components/marketing/testcraft-logo'
+import { Logo } from '@/components/brand/Logo'
 import { LoginForm } from '@/components/auth/LoginForm'
 import { getDictionary } from '@/i18n/get-dictionary'
 import { type Locale } from '@/i18n/config'
@@ -18,13 +18,10 @@ export default async function LoginPage({ params: { locale } }: { params: { loca
 
   return (
     <main
-      className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-12 transition-colors"
-      style={{
-        background: '#0f172a',
-      }}
+      className="auth-page relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-12 transition-colors"
     >
       {/* ── Top-right Controls ────────────────────────────────────────── */}
-      <div className="absolute top-6 end-6 z-50 flex items-center gap-4 animate-fade-in-up">
+      <div className="auth-controls absolute top-5 end-5 z-50 flex items-center gap-3 rounded-full px-3 py-2 shadow-lg backdrop-blur-xl animate-fade-in-up">
         <ThemeToggle dictionary={dictionary} />
         <LanguageSwitcher dictionary={dictionary} locale={locale} />
       </div>
@@ -34,13 +31,13 @@ export default async function LoginPage({ params: { locale } }: { params: { loca
       {/* Top-left Sunset orange orb */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -left-64 -top-64 h-[600px] w-[600px] rounded-full bg-[#f97316]/18 blur-[120px] animate-glow-pulse"
+        className="pointer-events-none absolute -left-64 -top-64 h-[600px] w-[600px] rounded-full bg-[#f97316]/30 blur-[120px] animate-glow-pulse"
       />
 
       {/* Bottom-right Gold orb */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -bottom-64 -right-64 h-[600px] w-[600px] rounded-full bg-[#fbbf24]/12 blur-[120px] animate-glow-pulse [animation-delay:2.5s]"
+        className="pointer-events-none absolute -bottom-64 -right-64 h-[600px] w-[600px] rounded-full bg-[#fbbf24]/20 blur-[120px] animate-glow-pulse [animation-delay:2.5s]"
       />
 
       {/* Center ambient glow */}
@@ -61,7 +58,7 @@ export default async function LoginPage({ params: { locale } }: { params: { loca
         {/* Subtle outer glow ring */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -inset-px rounded-2xl opacity-[0.15]"
+          className="pointer-events-none absolute -inset-px rounded-2xl opacity-70 blur-[1px]"
           style={{
             background: 'linear-gradient(135deg, #f97316, #fbbf24)',
           }}
@@ -71,24 +68,20 @@ export default async function LoginPage({ params: { locale } }: { params: { loca
         <div
           className={[
             'relative rounded-2xl',
-            'border border-[#334155]/60',
-            'bg-[#1e293b]/75 backdrop-blur-2xl',
-            'px-8 py-9',
+            'auth-card backdrop-blur-2xl',
+            'px-8 py-10',
             'sm:px-10',
           ].join(' ')}
-          style={{
-            boxShadow: '0 20px 40px -15px rgba(15, 23, 42, 0.7), 0 0 0 1px rgba(249, 115, 22, 0.05)',
-          }}
         >
           {/* ── Logo ─────────────────────────────────────────────────── */}
-          <TestcraftLogo locale={locale} size="sm" />
+          <Logo locale={locale} />
 
           {/* ── Heading ──────────────────────────────────────────────────── */}
           <div className="mt-7 mb-6">
-            <h1 className="font-heading text-[2.15rem] font-bold leading-[1.1] tracking-[-0.03em] text-[#f8fafc]">
+            <h1 className="auth-heading font-heading text-[2.15rem] font-bold leading-[1.1] tracking-[-0.03em]">
               {dictionary.auth.welcomeBack}
             </h1>
-            <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-[#94a3b8]">
+            <p className="auth-subtitle mt-3 text-[0.9375rem] leading-relaxed">
               {dictionary.auth.continueYourJourney}
             </p>
           </div>

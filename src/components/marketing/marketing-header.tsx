@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { LogIn, Rocket, Menu, X } from 'lucide-react'
 import { useState } from 'react'
 
-import { TestcraftLogo } from '@/components/marketing/testcraft-logo'
+import { Logo } from '@/components/brand/Logo'
+import { LanguageSwitcher } from '@/components/language/language-switcher'
 import type { Dictionary } from '@/i18n/types'
 import type { Locale } from '@/i18n/config'
 
@@ -36,7 +37,7 @@ export function MarketingHeader({ dictionary, locale }: MarketingHeaderProps) {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
 
         {/* ── Left: Logo ─────────────────────────────────────────────────── */}
-        <TestcraftLogo locale={locale} size="sm" />
+        <Logo locale={locale} />
 
         {/* ── Center: Nav (desktop only) ─────────────────────────────────── */}
         <nav
@@ -56,6 +57,11 @@ export function MarketingHeader({ dictionary, locale }: MarketingHeaderProps) {
 
         {/* ── Right: CTAs ────────────────────────────────────────────────── */}
         <div className="flex items-center gap-2">
+          {/* Language Switcher */}
+          <div className="hidden sm:block me-2">
+            <LanguageSwitcher dictionary={dictionary} locale={locale} />
+          </div>
+
           {/* Sign In */}
           <Link
             href={`/${locale}/login`}
@@ -114,6 +120,11 @@ export function MarketingHeader({ dictionary, locale }: MarketingHeaderProps) {
               <LogIn className="h-4 w-4" />
               {t.signIn}
             </Link>
+            
+            <div className="mt-4 px-4 border-t border-[#334155]/60 pt-4 flex items-center justify-between">
+              <span className="text-sm font-medium text-[#94a3b8]">{dictionary.language?.switchLanguage || 'Language'}</span>
+              <LanguageSwitcher dictionary={dictionary} locale={locale} />
+            </div>
           </nav>
         </div>
       )}

@@ -118,3 +118,120 @@
   outline: 2px solid hsl(263 83% 58%);
   outline-offset: 2px;
 }
+
+/* Authentication pages adapt to both application themes while keeping the warm brand palette. */
+.auth-page {
+  background:
+    radial-gradient(circle at 12% 15%, rgba(249, 115, 22, 0.18), transparent 30%),
+    radial-gradient(circle at 88% 82%, rgba(251, 191, 36, 0.16), transparent 28%),
+    linear-gradient(145deg, #fff7ed 0%, #fffbeb 45%, #eff6ff 100%);
+}
+
+.auth-card {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 28px 80px -32px rgba(15, 23, 42, 0.3), 0 0 48px -30px rgba(249, 115, 22, 0.4);
+}
+
+.auth-controls {
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.auth-heading {
+  color: #0f172a;
+}
+
+.auth-subtitle {
+  color: #475569;
+}
+
+.auth-form input {
+  border-color: rgba(148, 163, 184, 0.48);
+  background-color: rgba(255, 255, 255, 0.88);
+  color: #0f172a;
+}
+
+.auth-form input::placeholder {
+  color: #64748b;
+}
+
+.auth-form input:hover {
+  border-color: rgba(251, 191, 36, 0.38);
+}
+
+.auth-form input:focus-visible {
+  border-color: #ea580c;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.16);
+}
+
+.auth-form label {
+  color: #334155;
+}
+
+.auth-social-button {
+  border-color: rgba(148, 163, 184, 0.48) !important;
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  color: #0f172a !important;
+}
+
+.auth-social-button:hover {
+  border-color: rgba(234, 88, 12, 0.6) !important;
+  background-color: #fff7ed !important;
+}
+
+.dark .auth-page {
+  background:
+    radial-gradient(circle at 12% 15%, rgba(249, 115, 22, 0.22), transparent 30%),
+    radial-gradient(circle at 88% 82%, rgba(251, 191, 36, 0.16), transparent 28%),
+    linear-gradient(145deg, #0b1220 0%, #111c31 48%, #0f172a 100%);
+}
+
+.dark .auth-card {
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(22, 34, 56, 0.9);
+  box-shadow: 0 28px 80px -28px rgba(0, 0, 0, 0.9), 0 0 50px -25px rgba(249, 115, 22, 0.55);
+}
+
+.dark .auth-controls {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(2, 6, 23, 0.35);
+}
+
+.dark .auth-heading {
+  color: #f8fafc;
+}
+
+.dark .auth-subtitle {
+  color: #cbd5e1;
+}
+
+.dark .auth-form input {
+  border-color: rgba(148, 163, 184, 0.28);
+  background-color: rgba(15, 23, 42, 0.72);
+  color: #f8fafc;
+}
+
+.dark .auth-form input::placeholder {
+  color: #94a3b8;
+}
+
+.dark .auth-form input:focus-visible {
+  border-color: #fbbf24;
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.16);
+}
+
+.dark .auth-form label {
+  color: #e2e8f0;
+}
+
+.dark .auth-social-button {
+  border-color: rgba(148, 163, 184, 0.35) !important;
+  background-color: rgba(15, 23, 42, 0.68) !important;
+  color: #f8fafc !important;
+}
+
+.dark .auth-social-button:hover {
+  border-color: rgba(251, 191, 36, 0.55) !important;
+  background-color: rgba(30, 41, 59, 0.95) !important;
+}

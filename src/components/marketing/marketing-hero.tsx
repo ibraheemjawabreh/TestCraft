@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Sparkles, Rocket, ArrowRight } from 'lucide-react'
 
-import { TestcraftLogo } from '@/components/marketing/testcraft-logo'
+import { Logo } from '@/components/brand/Logo'
 import type { Dictionary } from '@/i18n/types'
 import type { Locale } from '@/i18n/config'
 
@@ -121,13 +121,14 @@ export function MarketingHero({ dictionary, locale }: MarketingHeroProps) {
 
         {/* Hero Logo Icon — large centered mark */}
         <div
-          className="mt-20 opacity-60"
+          className="mt-20 opacity-60 pointer-events-none"
           style={{
             filter: 'drop-shadow(0 0 40px rgba(249,115,22,0.35))',
+            transform: 'scale(1.5)',
           }}
           aria-hidden="true"
         >
-          <TestcraftLogo variant="icon-only" size="lg" locale={locale} />
+          <Logo locale={locale} />
         </div>
 
         {/* Floating stats strip */}

@@ -112,7 +112,7 @@ export function LoginForm({ dictionary, locale }: { dictionary: any; locale: str
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         noValidate // Let Zod handle validation, not the browser
-        className="space-y-5"
+        className="auth-form space-y-5"
         aria-label="Sign in form"
       >
         {/* ── Auth error banner ──────────────────────────────────────────── */}

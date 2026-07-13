@@ -1,14 +1,19 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import type { Locale } from '@/i18n/config'
 
 /**
  * TestCraft brand logo — uses TestCraft_logo.png + Wordmark
  * Server Component — zero client bundle cost.
  */
-export function Logo() {
+interface LogoProps {
+  locale: Locale
+}
+
+export function Logo({ locale }: LogoProps) {
   return (
     <Link
-      href="/"
+      href={`/${locale}`}
       className="inline-flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
       aria-label="TestCraft — go to home"
     >

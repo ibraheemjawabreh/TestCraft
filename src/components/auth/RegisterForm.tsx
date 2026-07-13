@@ -251,7 +251,7 @@ export function RegisterForm({ dictionary, locale }: { dictionary: any; locale: 
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         noValidate
-        className="space-y-4"
+        className="auth-form space-y-4"
         aria-label="Create account form"
       >
         {/* ── Auth error banner ──────────────────────────────────────────── */}

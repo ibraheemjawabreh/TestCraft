@@ -27,7 +27,7 @@ export function TesterHeader({ dictionary, locale, username }: TesterHeaderProps
     <header className="sticky top-0 z-40 border-b border-border/50 bg-card/60 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:px-6 lg:h-16 lg:flex-row lg:items-center lg:justify-between lg:py-0">
         <div className="flex items-center justify-between gap-4">
-          <Logo />
+          <Logo locale={locale} />
           <div className="flex items-center gap-2 lg:hidden">
             <ThemeToggle dictionary={dictionary} />
             <LanguageSwitcher dictionary={dictionary} locale={locale} />
