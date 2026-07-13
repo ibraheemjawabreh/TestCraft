@@ -13,6 +13,7 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import type { Locale } from '@/i18n/config'
 import {
   Form,
   FormControl,
@@ -24,7 +25,7 @@ import {
 
 type FormState = 'idle' | 'success' | 'error'
 
-function ForgotPasswordForm() {
+function ForgotPasswordForm({ locale }: { locale: Locale }) {
   const [formState, setFormState] = useState<FormState>('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -42,7 +43,7 @@ function ForgotPasswordForm() {
     const supabase = createClient()
 
     const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
-      redirectTo: `${window.location.origin}/auth/callback?next=/update-password`,
+      redirectTo: `${window.location.origin}/auth/callback?locale=${locale}&next=/update-password`,
     })
 
     if (error) {
@@ -71,7 +72,7 @@ function ForgotPasswordForm() {
           </p>
         </div>
         <Link
-          href="/login"
+          href={`/${locale}/login`}
           className="mt-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
         >
           Back to sign in
@@ -85,7 +86,7 @@ function ForgotPasswordForm() {
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         noValidate
-        className="space-y-5"
+        className="auth-form space-y-5"
       >
         {formState === 'error' && errorMessage && (
           <div
@@ -148,17 +149,21 @@ function ForgotPasswordForm() {
   )
 }
 
-export default function ForgotPasswordPage() {
+export default function ForgotPasswordPage({
+  params: { locale },
+}: {
+  params: { locale: Locale }
+}) {
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#050510] px-4 py-12">
+    <main className="auth-page relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-12">
       {/* Background orbs */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -left-64 -top-64 h-[500px] w-[500px] rounded-full bg-[#7c3aed]/20 blur-[100px] animate-glow-pulse"
+        className="pointer-events-none absolute -left-64 -top-64 h-[500px] w-[500px] rounded-full bg-[#f97316]/25 blur-[100px] animate-glow-pulse"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -bottom-64 -right-64 h-[500px] w-[500px] rounded-full bg-[#22d3ee]/12 blur-[100px] animate-glow-pulse [animation-delay:2.5s]"
+        className="pointer-events-none absolute -bottom-64 -right-64 h-[500px] w-[500px] rounded-full bg-[#fbbf24]/20 blur-[100px] animate-glow-pulse [animation-delay:2.5s]"
       />
       <div
         aria-hidden="true"
@@ -166,11 +171,11 @@ export default function ForgotPasswordPage() {
       />
 
       <div className="relative z-10 w-full max-w-[420px] animate-fade-in-up">
-        <div className="rounded-2xl border border-[#7c3aed]/14 bg-[#0f0f1f]/75 backdrop-blur-2xl px-8 py-9 shadow-card sm:px-10">
+        <div className="auth-card rounded-2xl backdrop-blur-2xl px-8 py-10 sm:px-10">
 
           {/* Back link */}
           <Link
-            href="/login"
+            href={`/${locale}/login`}
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors duration-150 mb-7"
           >
             <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
@@ -178,15 +183,15 @@ export default function ForgotPasswordPage() {
           </Link>
 
           <div className="mb-7">
-            <h1 className="font-heading text-2xl font-extrabold tracking-tight text-white">
+            <h1 className="auth-heading font-heading text-2xl font-extrabold tracking-tight">
               Forgot password?
             </h1>
-            <p className="mt-2 text-sm text-[#8892b0]">
+            <p className="auth-subtitle mt-2 text-sm">
               Enter your email and we&apos;ll send you a link to reset your password.
             </p>
           </div>
 
-          <ForgotPasswordForm />
+          <ForgotPasswordForm locale={locale} />
         </div>
       </div>
     </main>

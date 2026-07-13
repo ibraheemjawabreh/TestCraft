@@ -22,11 +22,11 @@ export function PracticeConnectionCard({ lesson, dictionary, locale }: PracticeC
 
   if (lesson.related_challenge_id) {
     return (
-      <Card className="border-primary/20 bg-primary/5">
+      <Card className="academy-practice-card">
         <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/15">
-              <Sword className="h-5 w-5 text-primary" aria-hidden="true" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#f97316]/15">
+              <Sword className="h-5 w-5 text-[#f97316]" aria-hidden="true" />
             </div>
             <div className="min-w-0">
               <h2 className="text-sm font-semibold text-foreground">{home.practiceConnected}</h2>
@@ -36,7 +36,7 @@ export function PracticeConnectionCard({ lesson, dictionary, locale }: PracticeC
             </div>
           </div>
 
-          <Button asChild variant="outline" className="shrink-0 border-primary/30 bg-background/40">
+          <Button asChild variant="outline" className="shrink-0 border-[#f97316]/35 bg-white/40 hover:bg-[#fff7ed] dark:bg-white/5 dark:hover:bg-white/10">
             <Link href={`/${locale}/academy/challenges/${lesson.related_challenge_id}`}>
               {home.startChallenge}
             </Link>

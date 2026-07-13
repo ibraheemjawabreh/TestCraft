@@ -29,8 +29,8 @@ export function AcademyLearningHome({
 
   return (
     <div className="space-y-8">
-      <div className="space-y-2">
-        <h1 className="font-heading text-3xl font-extrabold tracking-tight text-foreground">
+      <div className="academy-hero space-y-2 rounded-2xl p-6 sm:p-8">
+        <h1 className="font-heading text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
           {dictionary.academy.home.title.replace('{username}', username)}
         </h1>
         <p className="max-w-3xl text-muted-foreground">{dictionary.academy.home.subtitle}</p>

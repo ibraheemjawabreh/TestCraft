@@ -23,7 +23,7 @@ export function LessonTimeline({ lessons, dictionary, locale }: LessonTimelinePr
   }
 
   return (
-    <Card className="border-border/60 bg-card/75 backdrop-blur-xl">
+    <Card className="academy-surface">
       <CardHeader>
         <CardTitle className="font-heading text-xl">{home.lessonTimeline}</CardTitle>
       </CardHeader>
@@ -42,7 +42,7 @@ export function LessonTimeline({ lessons, dictionary, locale }: LessonTimelinePr
                   className={cn(
                     'h-6 w-6 shrink-0',
                     isCompleted && 'text-green-500',
-                    isCurrent && 'fill-primary/20 text-primary',
+                    isCurrent && 'fill-[#f97316]/20 text-[#f97316]',
                     isLocked && 'text-muted-foreground/45',
                   )}
                   aria-hidden="true"
@@ -57,7 +57,7 @@ export function LessonTimeline({ lessons, dictionary, locale }: LessonTimelinePr
                   className={cn(
                     'rounded-lg border p-4',
                     isCompleted && 'border-green-500/25 bg-green-500/5',
-                    isCurrent && 'border-primary/25 bg-primary/5',
+                    isCurrent && 'border-[#f97316]/25 bg-[#f97316]/5',
                     isLocked && 'border-border/50 bg-secondary/20 opacity-75',
                   )}
                 >

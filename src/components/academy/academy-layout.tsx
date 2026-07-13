@@ -17,10 +17,10 @@ export function AcademyLayout({
   username,
 }: AcademyLayoutProps) {
   return (
-    <div className="min-h-screen bg-background text-foreground transition-colors">
+    <div className="academy-shell min-h-screen text-foreground transition-colors">
       <TesterHeader dictionary={dictionary} locale={locale} username={username} />
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         {children}
       </main>
 

@@ -76,14 +76,14 @@ export function TesterFooter({ dictionary, locale }: TesterFooterProps) {
 
   return (
     <footer
-      className="border-t border-primary/10 bg-background px-4 py-8 text-foreground sm:px-6"
+      className="academy-footer border-t px-4 py-8 text-slate-100 sm:px-6"
       aria-labelledby="tester-footer-title"
     >
       <div className="mx-auto max-w-7xl">
-        <div className="relative overflow-hidden rounded-sm border border-primary/20 bg-card/70 p-6 shadow-card backdrop-blur-xl sm:p-8">
+        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-6 shadow-[0_20px_50px_-30px_rgba(0,0,0,0.9)] backdrop-blur-xl sm:p-8">
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent"
+            className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-[#f97316] to-transparent"
           />
 
           <div className="relative grid gap-8 lg:grid-cols-[1.25fr_0.9fr_0.8fr_0.8fr]">
