@@ -19,9 +19,9 @@ export default async function AcademyChallengesPage({
   return (
     <AcademyLayout dictionary={dictionary} locale={locale} username={profile.username}>
       <div className="space-y-6">
-        <div className="flex items-center gap-3 border-b border-border/50 pb-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-            <Sword className="h-5 w-5 text-primary" aria-hidden="true" />
+        <div className="academy-page-heading flex items-center gap-3 rounded-2xl p-5 sm:p-6">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#f97316]/15">
+            <Sword className="h-5 w-5 text-[#f97316]" aria-hidden="true" />
           </div>
           <div>
             <h1 className="font-heading text-2xl font-bold text-foreground">

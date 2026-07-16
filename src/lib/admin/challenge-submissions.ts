@@ -22,8 +22,6 @@ export async function getAdminChallengeSubmissions(
   try {
     const supabase = await createClient()
 
-    // We need to fetch challenge_attempts, join profiles, and count bug_reports.
-    // Supabase JS allows joining multiple tables. We'll join profiles and bug_reports.
     const { data: attempts, error } = await supabase
       .from('challenge_attempts')
       .select(`
@@ -51,12 +49,14 @@ export async function getAdminChallengeSubmissions(
         status: attempt.status,
         started_at: attempt.started_at,
         submitted_at: attempt.submitted_at,
+        review_started_at: attempt.review_started_at,
         reviewed_at: attempt.reviewed_at,
-        final_score: attempt.final_score,
+        reviewed_by: attempt.reviewed_by,
+        score: attempt.score,
         earned_xp: attempt.earned_xp,
         admin_feedback: attempt.admin_feedback,
-        reviewed_by: attempt.reviewed_by,
-        xp_awarded: attempt.xp_awarded,
+        time_spent_seconds: attempt.time_spent_seconds,
+        is_passed: attempt.is_passed,
         created_at: attempt.created_at,
         updated_at: attempt.updated_at,
         tester_username: profile.username || 'Unknown',

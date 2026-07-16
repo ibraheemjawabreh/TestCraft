@@ -8,10 +8,11 @@ import { z } from 'zod'
 const reviewSchema = z.object({
   attemptId: z.string().uuid(),
   challengeId: z.string().uuid(),
-  status: z.enum(['approved', 'needs_improvement', 'rejected']),
-  finalScore: z.number().int().min(0).max(100),
+  status: z.enum(['approved', 'rejected']),
+  score: z.number().int().min(0).max(100),
   earnedXp: z.number().int().min(0).max(10000),
   adminFeedback: z.string().min(1).max(3000),
+  isPassed: z.boolean(),
   reportUpdates: z.array(
     z.object({
       id: z.string().uuid(),

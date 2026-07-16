@@ -29,6 +29,7 @@ export async function getTesterReports(
         id,
         user_id,
         challenge_id,
+        attempt_id,
         title,
         steps_to_reproduce,
         expected_result,
@@ -36,6 +37,10 @@ export async function getTesterReports(
         reported_severity,
         status,
         created_at,
+        admin_feedback,
+        admin_score,
+        reviewed_at,
+        reviewed_by,
         challenges ( title )
       `)
       .eq('user_id', userId)
@@ -49,6 +54,7 @@ export async function getTesterReports(
       id: row.id,
       user_id: row.user_id,
       challenge_id: row.challenge_id,
+      attempt_id: row.attempt_id,
       title: row.title,
       steps_to_reproduce: row.steps_to_reproduce,
       expected_result: row.expected_result,
@@ -56,12 +62,10 @@ export async function getTesterReports(
       reported_severity: row.reported_severity,
       status: row.status,
       created_at: row.created_at,
-      // New fields from migration (may be null for old records)
-      attempt_id: null,
-      admin_feedback: null,
-      admin_score: null,
-      reviewed_at: null,
-      reviewed_by: null,
+      admin_feedback: row.admin_feedback,
+      admin_score: row.admin_score,
+      reviewed_at: row.reviewed_at,
+      reviewed_by: row.reviewed_by,
       challenge_title: Array.isArray(row.challenges)
         ? (row.challenges[0]?.title ?? null)
         : ((row.challenges as { title: string } | null)?.title ?? null),
@@ -74,7 +78,32 @@ export async function getTesterReports(
 }
 
 /**
- * Fetches the tester's bug reports for a specific challenge.
+ * Fetches the tester's bug reports for a specific attempt.
+ */
+export async function getTesterReportsForAttempt(
+  attemptId: string,
+): Promise<Result<BugReport[]>> {
+  try {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+      .from('bug_reports')
+      .select('*')
+      .eq('attempt_id', attemptId)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      return { data: null, error: 'Failed to load reports.' }
+    }
+
+    return { data: data ?? [], error: null }
+  } catch {
+    return { data: null, error: 'An unexpected error occurred.' }
+  }
+}
+
+/**
+ * Fetches the tester's bug reports for a specific challenge (all attempts combined).
  */
 export async function getTesterReportsForChallenge(
   userId: string,
@@ -111,15 +140,23 @@ export interface SubmitBugReportInput {
 }
 
 /**
- * Submits a bug report on behalf of the authenticated tester.
- * Server-side only. user_id is always set from the validated userId param —
- * never from client input.
+ * Submits a bug report belonging to the tester's current active attempt.
+ *
+ * Flow:
+ * 1. Validate form data via Zod.
+ * 2. Verify the challenge is active.
+ * 3. Find the active attempt (started | submitted).
+ *    - If none exists, create one with status "started".
+ *    - If status is "started", keep it (report is mid-attempt).
+ *    - If status is "submitted", allow adding more reports (admin hasn't started review).
+ *    - Reject if attempt is "reviewing", "approved", or "rejected".
+ * 4. Insert the bug_report with attempt_id.
+ * 5. Keep challenge_progress in sync (non-blocking).
  */
 export async function submitBugReport(
   input: SubmitBugReportInput,
 ): Promise<Result<{ id: string }>> {
   try {
-    // Validate with Zod (strips extra fields)
     const parsed = bugReportSchema.safeParse({
       title: input.title,
       steps_to_reproduce: input.steps_to_reproduce,
@@ -146,44 +183,64 @@ export async function submitBugReport(
       return { data: null, error: 'challenge_not_found' }
     }
 
-    // Find or create challenge_attempt (non-blocking for report creation if possible, but we need attempt_id)
-    let attemptId: string | undefined
+    // Find the current active (mutable) attempt
+    const { data: activeAttempt } = await supabase
+      .from('challenge_attempts')
+      .select('id, status')
+      .eq('user_id', input.userId)
+      .eq('challenge_id', input.challengeId)
+      .in('status', ['started', 'submitted'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
 
-    try {
-      const now = new Date().toISOString()
-      
+    let attemptId: string
+
+    if (!activeAttempt) {
+      // Check if a terminal or reviewing attempt exists
       const { data: existingAttempt } = await supabase
         .from('challenge_attempts')
-        .select('id')
+        .select('id, status')
         .eq('user_id', input.userId)
         .eq('challenge_id', input.challengeId)
+        .in('status', ['reviewing', 'approved', 'rejected'])
+        .order('created_at', { ascending: false })
+        .limit(1)
         .maybeSingle()
 
       if (existingAttempt) {
-        attemptId = existingAttempt.id
-        await supabase
-          .from('challenge_attempts')
-          .update({ status: 'submitted', submitted_at: now })
-          .eq('id', attemptId)
-      } else {
-        const { data: newAttempt } = await supabase
-          .from('challenge_attempts')
-          .insert({
-            user_id: input.userId,
-            challenge_id: input.challengeId,
-            status: 'submitted',
-            started_at: now,
-            submitted_at: now,
-          })
-          .select('id')
-          .single()
-          
-        if (newAttempt) {
-          attemptId = newAttempt.id
+        if (existingAttempt.status === 'reviewing') {
+          return { data: null, error: 'Your submission is currently under review and cannot be modified.' }
+        }
+        if (existingAttempt.status === 'approved') {
+          return { data: null, error: 'This challenge has already been approved.' }
+        }
+        // rejected — create a fresh attempt (retry)
+      }
+
+      const { data: newAttempt, error: insertErr } = await supabase
+        .from('challenge_attempts')
+        .insert({
+          user_id: input.userId,
+          challenge_id: input.challengeId,
+          status: 'started',
+        })
+        .select('id')
+        .single()
+
+      if (insertErr || !newAttempt) {
+        const isConflict = insertErr?.message?.includes('active attempt already exists')
+        return {
+          data: null,
+          error: isConflict
+            ? 'An active attempt already exists.'
+            : 'Failed to create a challenge attempt.',
         }
       }
-    } catch (e) {
-      console.error('Failed to create/update challenge_attempt', e)
+
+      attemptId = newAttempt.id
+    } else {
+      attemptId = activeAttempt.id
     }
 
     const { data: report, error: insertError } = await supabase
@@ -191,7 +248,7 @@ export async function submitBugReport(
       .insert({
         user_id: input.userId,
         challenge_id: input.challengeId,
-        attempt_id: attemptId || null,
+        attempt_id: attemptId,
         title: parsed.data.title,
         steps_to_reproduce: parsed.data.steps_to_reproduce,
         expected_result: parsed.data.expected_result,
@@ -206,37 +263,93 @@ export async function submitBugReport(
       return { data: null, error: 'Failed to submit report. Please try again.' }
     }
 
-    // Update challenge_progress to "submitted" (non-blocking)
-    try {
-      const now = new Date().toISOString()
-      const { data: existingProgress } = await supabase
-        .from('challenge_progress')
-        .select('status')
-        .eq('user_id', input.userId)
-        .eq('challenge_id', input.challengeId)
-        .maybeSingle()
-
-      if (existingProgress) {
-        await supabase
-          .from('challenge_progress')
-          .update({ status: 'submitted', submitted_at: now })
-          .eq('user_id', input.userId)
-          .eq('challenge_id', input.challengeId)
-      } else {
-        await supabase.from('challenge_progress').insert({
-          user_id: input.userId,
-          challenge_id: input.challengeId,
-          status: 'submitted',
-          started_at: now,
-          submitted_at: now,
-        })
-      }
-    } catch {
-      // Non-blocking — report was already saved successfully
-    }
+    // Sync challenge_progress (non-blocking)
+    void syncChallengeProgress(supabase, input.userId, input.challengeId)
 
     return { data: { id: report.id }, error: null }
   } catch {
     return { data: null, error: 'An unexpected error occurred.' }
+  }
+}
+
+/**
+ * Submits the current active attempt, transitioning it from "started" → "submitted".
+ * This marks the challenge as formally submitted for admin review.
+ */
+export async function submitAttempt(
+  userId: string,
+  challengeId: string,
+  attemptId: string,
+  timeSpentSeconds?: number,
+): Promise<Result<{ success: boolean }>> {
+  try {
+    const supabase = await createClient()
+
+    const now = new Date().toISOString()
+
+    const { error } = await supabase
+      .from('challenge_attempts')
+      .update({
+        status: 'submitted',
+        submitted_at: now,
+        ...(timeSpentSeconds !== undefined ? { time_spent_seconds: timeSpentSeconds } : {}),
+      })
+      .eq('id', attemptId)
+      .eq('user_id', userId)
+      .eq('challenge_id', challengeId)
+      .eq('status', 'started') // Only transition from started → submitted
+
+    if (error) {
+      return { data: null, error: 'Failed to submit attempt.' }
+    }
+
+    // Sync challenge_progress (non-blocking)
+    const client = supabase
+    void syncChallengeProgress(client, userId, challengeId, 'submitted', now)
+
+    return { data: { success: true }, error: null }
+  } catch {
+    return { data: null, error: 'An unexpected error occurred.' }
+  }
+}
+
+// ─── Private Helpers ─────────────────────────────────────────────────────────
+
+async function syncChallengeProgress(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  challengeId: string,
+  status?: string,
+  submittedAt?: string,
+): Promise<void> {
+  try {
+    const now = new Date().toISOString()
+    const { data: existingProgress } = await supabase
+      .from('challenge_progress')
+      .select('status')
+      .eq('user_id', userId)
+      .eq('challenge_id', challengeId)
+      .maybeSingle()
+
+    if (existingProgress) {
+      await supabase
+        .from('challenge_progress')
+        .update({
+          status: status ?? 'submitted',
+          submitted_at: submittedAt ?? now,
+        })
+        .eq('user_id', userId)
+        .eq('challenge_id', challengeId)
+    } else {
+      await supabase.from('challenge_progress').insert({
+        user_id: userId,
+        challenge_id: challengeId,
+        status: status ?? 'submitted',
+        started_at: now,
+        submitted_at: submittedAt ?? now,
+      })
+    }
+  } catch {
+    // Non-blocking — report was already saved successfully
   }
 }

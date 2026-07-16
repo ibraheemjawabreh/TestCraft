@@ -28,20 +28,18 @@ interface SubmissionsPageProps {
 }
 
 const statusColors: Record<string, string> = {
-  in_progress: 'bg-zinc-500/15 text-zinc-500 border-zinc-500/30',
+  started: 'bg-zinc-500/15 text-zinc-500 border-zinc-500/30',
   submitted: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30',
-  under_review: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30',
+  reviewing: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30',
   approved: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
-  needs_improvement: 'bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30',
   rejected: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30',
 }
 
 const statusLabels: Record<string, string> = {
-  in_progress: 'In Progress',
+  started: 'In Progress',
   submitted: 'Submitted',
-  under_review: 'Under Review',
+  reviewing: 'Under Review',
   approved: 'Approved',
-  needs_improvement: 'Needs Improvement',
   rejected: 'Rejected',
 }
 
@@ -64,7 +62,7 @@ export default async function ChallengeSubmissionsPage({
   const safeSubmissions = submissions ?? []
 
   const submittedCount = safeSubmissions.filter((s) =>
-    ['submitted', 'under_review'].includes(s.status)
+    ['submitted', 'reviewing'].includes(s.status)
   ).length
   const approvedCount = safeSubmissions.filter((s) => s.status === 'approved').length
 
@@ -137,7 +135,7 @@ export default async function ChallengeSubmissionsPage({
                 <TableHead>{dict.tester}</TableHead>
                 <TableHead>{dict.reportsCount}</TableHead>
                 <TableHead>{dictionary.admin.dashboard.status}</TableHead>
-                <TableHead>{dict.finalScore}</TableHead>
+                <TableHead>Score</TableHead>
                 <TableHead>{dict.earnedXp}</TableHead>
                 <TableHead>{dict.submittedAt}</TableHead>
                 <TableHead>{dict.reviewedAt}</TableHead>
@@ -158,8 +156,8 @@ export default async function ChallengeSubmissionsPage({
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {submission.final_score !== null
-                      ? submission.final_score
+                    {submission.score !== null
+                      ? submission.score
                       : dictionary.admin.dashboard.noData}
                   </TableCell>
                   <TableCell>

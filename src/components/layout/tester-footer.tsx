@@ -92,7 +92,7 @@ export function TesterFooter({ dictionary, locale }: TesterFooterProps) {
                 id="tester-footer-title"
                 className="font-heading text-2xl font-extrabold tracking-tight"
               >
-                <span className="bg-cyber-gradient bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-[#f97316] to-[#fbbf24] bg-clip-text text-transparent">
                   {siteConfig.name}
                 </span>
               </h2>

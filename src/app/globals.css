@@ -244,10 +244,18 @@
     #fffaf5;
 }
 
-.academy-header,
+.academy-header {
+  border-color: rgba(148, 163, 184, 0.28);
+  background: rgba(255, 255, 255, 0.92);
+}
+
 .academy-footer {
+  --foreground: 220 20% 96%;
+  --muted-foreground: 215 20% 72%;
+  --border: 215 20% 28%;
+  --primary: 24 95% 53%;
   border-color: rgba(255, 255, 255, 0.1);
-  background: rgba(15, 23, 42, 0.94);
+  background: rgba(15, 23, 42, 0.96);
 }
 
 .academy-hero {
@@ -300,4 +308,103 @@
   border-color: rgba(249, 115, 22, 0.25);
   background: linear-gradient(120deg, rgba(124, 45, 18, 0.28), rgba(15, 23, 42, 0.82));
   box-shadow: 0 18px 45px -35px rgba(249, 115, 22, 0.7);
+}
+
+.academy-page-heading {
+  border: 1px solid rgba(249, 115, 22, 0.18);
+  background: linear-gradient(135deg, rgba(255, 247, 237, 0.9), rgba(255, 251, 235, 0.7));
+}
+
+.academy-filter {
+  border: 1px solid rgba(148, 163, 184, 0.38);
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.academy-filter:focus {
+  border-color: rgba(234, 88, 12, 0.75);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.14);
+  outline: none;
+}
+
+.academy-challenge-card,
+.academy-data-surface {
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 18px 45px -35px rgba(15, 23, 42, 0.32);
+  backdrop-filter: blur(18px);
+}
+
+.academy-challenge-card:hover {
+  border-color: rgba(249, 115, 22, 0.42);
+  box-shadow: 0 20px 46px -30px rgba(234, 88, 12, 0.22);
+  transform: translateY(-2px);
+}
+
+.dark .academy-page-heading {
+  border-color: rgba(249, 115, 22, 0.22);
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.78));
+}
+
+.dark .academy-filter {
+  border-color: rgba(148, 163, 184, 0.26);
+  background: rgba(15, 23, 42, 0.7);
+}
+
+.dark .academy-challenge-card,
+.dark .academy-data-surface {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(22, 34, 56, 0.78);
+  box-shadow: 0 18px 45px -35px rgba(0, 0, 0, 0.85);
+}
+
+/* Admin command center: shared visual frame without changing admin behaviour. */
+.admin-shell {
+  background:
+    radial-gradient(circle at 92% 3%, rgba(249, 115, 22, 0.12), transparent 25%),
+    radial-gradient(circle at 20% 96%, rgba(251, 191, 36, 0.1), transparent 28%),
+    #fffaf5;
+}
+
+.admin-sidebar,
+.admin-topbar {
+  border-color: rgba(148, 163, 184, 0.28);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.admin-surface {
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 18px 45px -35px rgba(15, 23, 42, 0.34);
+  backdrop-filter: blur(18px);
+}
+
+.admin-page-heading {
+  border: 1px solid rgba(249, 115, 22, 0.18);
+  background: linear-gradient(135deg, rgba(255, 247, 237, 0.92), rgba(255, 251, 235, 0.7));
+}
+
+.dark .admin-shell {
+  background:
+    radial-gradient(circle at 92% 3%, rgba(249, 115, 22, 0.15), transparent 25%),
+    radial-gradient(circle at 20% 96%, rgba(251, 191, 36, 0.1), transparent 28%),
+    #0b1220;
+}
+
+.dark .academy-header,
+.dark .academy-footer,
+.dark .admin-sidebar,
+.dark .admin-topbar {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.94);
+}
+
+.dark .admin-surface {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(22, 34, 56, 0.78);
+  box-shadow: 0 18px 45px -35px rgba(0, 0, 0, 0.85);
+}
+
+.dark .admin-page-heading {
+  border-color: rgba(249, 115, 22, 0.22);
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.78));
 }

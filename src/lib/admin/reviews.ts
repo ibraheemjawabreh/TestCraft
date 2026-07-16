@@ -17,8 +17,9 @@ export interface ReviewQueueItem {
   reportsCount: number
   status: string
   submittedAt: string | null
-  finalScore: number | null
+  score: number | null
   earnedXp: number | null
+  isPassed: boolean | null
 }
 
 type Result<T> =
@@ -38,8 +39,9 @@ export async function getAdminReviewQueue(): Promise<Result<ReviewQueueItem[]>> 
         challenge_id,
         status,
         submitted_at,
-        final_score,
+        score,
         earned_xp,
+        is_passed,
         profiles!challenge_attempts_user_id_fkey ( username ),
         challenges!challenge_attempts_challenge_id_fkey ( title ),
         bug_reports ( count )
@@ -60,8 +62,9 @@ export async function getAdminReviewQueue(): Promise<Result<ReviewQueueItem[]>> 
       reportsCount: attempt.bug_reports?.[0]?.count ?? 0,
       status: attempt.status,
       submittedAt: attempt.submitted_at,
-      finalScore: attempt.final_score,
+      score: attempt.score,
       earnedXp: attempt.earned_xp,
+      isPassed: attempt.is_passed,
     }))
 
     return { data: queue, error: null }

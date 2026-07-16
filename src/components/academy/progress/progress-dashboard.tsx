@@ -30,14 +30,14 @@ export function ProgressDashboard({ progress, dictionary }: ProgressDashboardPro
 
   return (
     <div className="space-y-8">
-      <div className="space-y-2">
+      <div className="academy-page-heading space-y-2 rounded-2xl p-6 sm:p-8">
         <h1 className="font-heading text-3xl font-extrabold tracking-tight text-foreground">
           {labels.title}
         </h1>
         <p className="max-w-3xl text-muted-foreground">{labels.subtitle}</p>
       </div>
 
-      <Card className="overflow-hidden border-primary/20 bg-card/75 backdrop-blur-xl">
+      <Card className="academy-surface overflow-hidden">
         <CardContent className="p-6">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex min-w-0 items-center gap-4">
@@ -47,7 +47,7 @@ export function ProgressDashboard({ progress, dictionary }: ProgressDashboardPro
                   alt={progress.profile.username}
                   width={72}
                   height={72}
-                  className="h-[72px] w-[72px] rounded-lg object-cover ring-2 ring-primary/25"
+                  className="h-[72px] w-[72px] rounded-xl object-cover ring-2 ring-[#f97316]/30"
                 />
               ) : (
                 <div className="flex h-[72px] w-[72px] items-center justify-center rounded-lg bg-cyber-gradient text-2xl font-bold text-white">
@@ -66,7 +66,7 @@ export function ProgressDashboard({ progress, dictionary }: ProgressDashboardPro
 
             <div className="w-full max-w-xl space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="font-semibold text-primary">
+                <span className="font-semibold text-[#ea580c]">
                   {progress.totalXp.toLocaleString()} {dictionary.academy.xp}
                 </span>
                 <span className="text-muted-foreground">

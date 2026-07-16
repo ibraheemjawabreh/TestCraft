@@ -53,7 +53,7 @@ export function AdminSidebar({ dictionary, locale }: AdminSidebarProps) {
   ]
 
   return (
-    <aside className="fixed inset-y-0 start-0 z-50 hidden w-64 flex-col border-e border-border/50 bg-card/40 backdrop-blur-xl sm:flex transition-colors">
+    <aside className="admin-sidebar fixed inset-y-0 start-0 z-50 hidden w-64 flex-col backdrop-blur-xl sm:flex transition-colors">
       <div className="flex h-16 shrink-0 items-center px-6">
         <Logo locale={locale} />
       </div>
@@ -71,14 +71,14 @@ export function AdminSidebar({ dictionary, locale }: AdminSidebarProps) {
               className={[
                 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
                 isActive
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground',
+                  ? 'bg-[#f97316]/15 text-[#fbbf24]'
+                  : 'text-slate-600 hover:bg-[#f97316]/10 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white',
               ].join(' ')}
             >
               <item.icon
                 className={[
                   'h-5 w-5 shrink-0 transition-colors',
-                  isActive ? 'text-primary' : 'text-muted-foreground/70',
+                  isActive ? 'text-[#f97316] dark:text-[#fbbf24]' : 'text-slate-500 dark:text-slate-400',
                 ].join(' ')}
                 aria-hidden="true"
               />
@@ -88,13 +88,13 @@ export function AdminSidebar({ dictionary, locale }: AdminSidebarProps) {
         })}
       </nav>
 
-      <div className="mt-auto p-4 border-t border-border/50">
+      <div className="mt-auto border-t border-white/10 p-4">
         <form action="/auth/signout" method="POST">
           <button
             type="submit"
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-destructive/10 hover:text-destructive"
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-rose-500/10 hover:text-rose-700 dark:text-slate-300 dark:hover:text-rose-300"
           >
-            <LogOut className="h-5 w-5 shrink-0 text-muted-foreground/70" aria-hidden="true" />
+            <LogOut className="h-5 w-5 shrink-0 text-slate-500 dark:text-slate-400" aria-hidden="true" />
             {dictionary.navigation.logout}
           </button>
         </form>

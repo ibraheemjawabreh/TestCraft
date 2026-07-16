@@ -28,7 +28,7 @@ export default async function AdminOverviewPage({ params: { locale } }: AdminPag
   return (
     <div className="space-y-8 animate-fade-in-up">
       {/* Header section */}
-      <div>
+      <div className="admin-page-heading rounded-2xl p-6 sm:p-8">
         <h1 className="font-heading text-3xl md:text-4xl font-bold tracking-tight text-foreground">
           {t.title}
         </h1>
@@ -45,11 +45,11 @@ export default async function AdminOverviewPage({ params: { locale } }: AdminPag
         <>
           {/* Priority Review CTA */}
           {(result.data.stats.pendingReviews > 0 || result.data.stats.pendingReports > 0) && (
-            <Card className="border-primary/20 bg-primary/5 shadow-sm">
+            <Card className="border-[#f97316]/25 bg-[#f97316]/5 shadow-[0_18px_45px_-35px_rgba(234,88,12,0.45)]">
               <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6">
                 <div className="flex items-center gap-4">
-                  <div className="rounded-full bg-primary/20 p-3">
-                    <ClipboardCheck className="h-6 w-6 text-primary" />
+                  <div className="rounded-full bg-[#f97316]/15 p-3">
+                    <ClipboardCheck className="h-6 w-6 text-[#ea580c]" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg">{t.pendingReviews}</h3>

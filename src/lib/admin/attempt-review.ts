@@ -2,6 +2,7 @@ import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/types/database.types'
+import type { AttemptStatus } from '@/types/database'
 
 type BugReport = Database['public']['Tables']['bug_reports']['Row']
 type ChallengeAttempt = Database['public']['Tables']['challenge_attempts']['Row']
@@ -29,7 +30,6 @@ export async function getAdminAttemptReview(
   try {
     const supabase = await createClient()
 
-    // Fetch the attempt with the related user profile and challenge
     const { data: attempt, error: attemptError } = await supabase
       .from('challenge_attempts')
       .select(`
@@ -56,7 +56,6 @@ export async function getAdminAttemptReview(
       return { data: null, error: 'Attempt not found.' }
     }
 
-    // Fetch the submitted bug reports for this attempt
     const { data: reports, error: reportsError } = await supabase
       .from('bug_reports')
       .select('*')
@@ -67,7 +66,6 @@ export async function getAdminAttemptReview(
       return { data: null, error: 'Failed to fetch bug reports.' }
     }
 
-    // Fetch the hidden bugs for this challenge (Admin only view)
     const { data: hiddenBugs, error: bugsError } = await supabase
       .from('hidden_bugs')
       .select('bug_title, actual_severity, bonus_xp')
@@ -86,12 +84,14 @@ export async function getAdminAttemptReview(
           status: attempt.status,
           started_at: attempt.started_at,
           submitted_at: attempt.submitted_at,
+          review_started_at: attempt.review_started_at,
           reviewed_at: attempt.reviewed_at,
-          final_score: attempt.final_score,
+          reviewed_by: attempt.reviewed_by,
+          score: attempt.score,
           earned_xp: attempt.earned_xp,
           admin_feedback: attempt.admin_feedback,
-          reviewed_by: attempt.reviewed_by,
-          xp_awarded: attempt.xp_awarded,
+          time_spent_seconds: attempt.time_spent_seconds,
+          is_passed: attempt.is_passed,
           created_at: attempt.created_at,
           updated_at: attempt.updated_at,
         },
@@ -111,10 +111,11 @@ export async function getAdminAttemptReview(
 export interface SaveReviewInput {
   attemptId: string
   challengeId: string
-  status: 'approved' | 'needs_improvement' | 'rejected'
-  finalScore: number
+  status: Extract<AttemptStatus, 'approved' | 'rejected'>
+  score: number
   earnedXp: number
   adminFeedback: string
+  isPassed: boolean
   reportUpdates: { id: string; status: 'Pending' | 'Reviewed' | 'Rejected' }[]
 }
 
@@ -122,16 +123,15 @@ export async function saveAdminAttemptReview(input: SaveReviewInput): Promise<Da
   try {
     const supabase = await createClient()
 
-    // 1. Get the current admin user
     const { data: { user }, error: userError } = await supabase.auth.getUser()
     if (userError || !user) {
       return { data: null, error: 'Unauthorized.' }
     }
 
-    // 2. Fetch the attempt to check current state (xp_awarded and user_id)
+    // Fetch the attempt to verify it exists and get the user_id for XP award
     const { data: attempt, error: attemptError } = await supabase
       .from('challenge_attempts')
-      .select('user_id, xp_awarded')
+      .select('user_id, status, is_passed')
       .eq('id', input.attemptId)
       .eq('challenge_id', input.challengeId)
       .single()
@@ -140,31 +140,26 @@ export async function saveAdminAttemptReview(input: SaveReviewInput): Promise<Da
       return { data: null, error: 'Attempt not found.' }
     }
 
-    // 3. Begin updates. We do these sequentially for simplicity and safety.
-    const now = new Date().toISOString()
-    const isApproved = input.status === 'approved'
-    const shouldAwardXp = isApproved && !attempt.xp_awarded
+    // Prevent re-reviewing already-terminal attempts (idempotent protection)
+    const alreadyReviewed = attempt.status === 'approved' || attempt.status === 'rejected'
+    const shouldAwardXp = input.status === 'approved' && !alreadyReviewed && !attempt.is_passed
 
-    // 4. Update bug report statuses before marking the attempt as reviewed.
-    // A successful response must never leave the tester's reports as Pending.
+    const now = new Date().toISOString()
+
+    // 1. Update bug report statuses
     if (input.reportUpdates.length > 0) {
       const reportUpdateResults = await Promise.all(
         input.reportUpdates.map((ru) => {
           let finalStatus = ru.status
-          // Auto-resolve pending reports based on overall attempt decision
           if (finalStatus === 'Pending') {
-            if (isApproved) {
-              finalStatus = 'Reviewed'
-            } else if (input.status === 'rejected' || input.status === 'needs_improvement') {
-              finalStatus = 'Rejected'
-            }
+            finalStatus = input.status === 'approved' ? 'Reviewed' : 'Rejected'
           }
 
           return supabase
             .from('bug_reports')
             .update({ status: finalStatus })
             .eq('id', ru.id)
-            .eq('attempt_id', input.attemptId) // security measure
+            .eq('attempt_id', input.attemptId)
         })
       )
 
@@ -175,17 +170,17 @@ export async function saveAdminAttemptReview(input: SaveReviewInput): Promise<Da
       }
     }
 
-    // 5. Mark the attempt as reviewed only after its reports are updated.
+    // 2. Mark the attempt as reviewed
     const { error: updateAttemptError } = await supabase
       .from('challenge_attempts')
       .update({
         status: input.status,
-        final_score: input.finalScore,
+        score: input.score,
         earned_xp: input.earnedXp,
         admin_feedback: input.adminFeedback,
+        is_passed: input.isPassed,
         reviewed_by: user.id,
         reviewed_at: now,
-        xp_awarded: attempt.xp_awarded || shouldAwardXp,
       })
       .eq('id', input.attemptId)
       .eq('challenge_id', input.challengeId)
@@ -195,21 +190,19 @@ export async function saveAdminAttemptReview(input: SaveReviewInput): Promise<Da
       return { data: null, error: 'Failed to update attempt.' }
     }
 
-    // 6. Award XP if needed
+    // 3. Award XP if this is the first approval
     if (shouldAwardXp && input.earnedXp > 0) {
-      // Supabase Postgres function `increment_user_xp` would be ideal, but we can do a read-modify-write
-      // However, we need to be careful with concurrency. In this MVP, we assume admin is the only one reviewing.
       const { data: profile } = await supabase
         .from('profiles')
         .select('total_xp')
         .eq('id', attempt.user_id)
         .single()
-        
+
       if (profile) {
         await supabase
           .from('profiles')
           .update({
-            total_xp: (profile.total_xp || 0) + input.earnedXp
+            total_xp: (profile.total_xp || 0) + input.earnedXp,
           })
           .eq('id', attempt.user_id)
       }
@@ -218,6 +211,37 @@ export async function saveAdminAttemptReview(input: SaveReviewInput): Promise<Da
     return { data: true, error: null }
   } catch (error) {
     console.error('saveAdminAttemptReview unexpected error:', error)
+    return { data: null, error: 'An unexpected error occurred.' }
+  }
+}
+
+/**
+ * Marks an attempt as "reviewing" (admin has started reviewing it).
+ */
+export async function startAttemptReview(
+  attemptId: string,
+  challengeId: string,
+): Promise<DataResult<boolean>> {
+  try {
+    const supabase = await createClient()
+    const now = new Date().toISOString()
+
+    const { error } = await supabase
+      .from('challenge_attempts')
+      .update({
+        status: 'reviewing',
+        review_started_at: now,
+      })
+      .eq('id', attemptId)
+      .eq('challenge_id', challengeId)
+      .eq('status', 'submitted')
+
+    if (error) {
+      return { data: null, error: 'Failed to start review.' }
+    }
+
+    return { data: true, error: null }
+  } catch {
     return { data: null, error: 'An unexpected error occurred.' }
   }
 }

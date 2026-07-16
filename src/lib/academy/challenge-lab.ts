@@ -104,8 +104,8 @@ export async function getTesterChallengeLab(
       .eq('challenge_id', challengeId)
       .order('created_at', { ascending: false })
 
-    // Upsert challenge_progress to "in_progress" (non-blocking)
-    await upsertProgressInProgress(supabase, challengeId, userId)
+    // Ensure an active attempt exists and upsert challenge_progress (non-blocking)
+    await ensureActiveAttemptAndProgress(supabase, challengeId, userId)
 
     return {
       data: {
@@ -120,39 +120,66 @@ export async function getTesterChallengeLab(
 }
 
 /**
- * Upserts challenge_progress to "in_progress" if the tester hasn't
- * already submitted. This is non-blocking — failures are silently
- * ignored so they never prevent the lab from loading.
+ * Ensures an active attempt exists for this user+challenge (creates one if not)
+ * and upserts challenge_progress. Non-blocking — failures are silently ignored.
  */
-async function upsertProgressInProgress(
+async function ensureActiveAttemptAndProgress(
   supabase: Awaited<ReturnType<typeof createClient>>,
   challengeId: string,
   userId: string,
 ): Promise<void> {
   try {
-    // Check if progress already exists
-    const { data: existing } = await supabase
+    const now = new Date().toISOString()
+
+    // ── 1. Ensure a started attempt exists ──────────────────────────────────
+    const { data: activeAttempt } = await supabase
+      .from('challenge_attempts')
+      .select('id, status')
+      .eq('user_id', userId)
+      .eq('challenge_id', challengeId)
+      .in('status', ['started', 'submitted', 'reviewing'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (!activeAttempt) {
+      // Check for terminal attempts — only auto-create if none exist at all
+      const { data: terminalAttempt } = await supabase
+        .from('challenge_attempts')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('challenge_id', challengeId)
+        .in('status', ['approved', 'rejected'])
+        .limit(1)
+        .maybeSingle()
+
+      if (!terminalAttempt) {
+        await supabase
+          .from('challenge_attempts')
+          .insert({
+            user_id: userId,
+            challenge_id: challengeId,
+            status: 'started',
+          })
+      }
+    }
+
+    // ── 2. Upsert challenge_progress ────────────────────────────────────────
+    const { data: existingProgress } = await supabase
       .from('challenge_progress')
       .select('status')
       .eq('user_id', userId)
       .eq('challenge_id', challengeId)
       .maybeSingle()
 
-    // Don't overwrite if already submitted/reviewed
-    if (existing && existing.status !== 'not_started') {
-      return
-    }
-
-    const now = new Date().toISOString()
-
-    if (!existing) {
+    if (!existingProgress) {
       await supabase.from('challenge_progress').insert({
         user_id: userId,
         challenge_id: challengeId,
         status: 'in_progress',
         started_at: now,
       })
-    } else {
+    } else if (existingProgress.status === 'not_started') {
       await supabase
         .from('challenge_progress')
         .update({ status: 'in_progress', started_at: now })

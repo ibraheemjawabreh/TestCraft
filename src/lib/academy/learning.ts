@@ -56,10 +56,13 @@ function toBoolean(value: unknown): boolean {
 }
 
 function deriveChallengeStatus(attemptStatus: string | null): ChallengeWithStatus['userStatus'] {
-  if (!attemptStatus || attemptStatus === 'in_progress') return 'not_started'
-  if (attemptStatus === 'approved') return 'reviewed'
-  if (attemptStatus === 'needs_improvement' || attemptStatus === 'rejected') return 'needs_improvement'
-  return 'pending_review' // covers 'submitted', 'under_review'
+  if (!attemptStatus) return 'not_started'
+  if (attemptStatus === 'started') return 'in_progress'
+  if (attemptStatus === 'submitted') return 'pending_review'
+  if (attemptStatus === 'reviewing') return 'reviewing'
+  if (attemptStatus === 'approved') return 'approved'
+  if (attemptStatus === 'rejected') return 'rejected'
+  return 'not_started'
 }
 
 /**
@@ -178,7 +181,7 @@ export async function getAcademyLearningOverview(
   const { data: attemptsData } = challengeIds.length > 0
     ? await supabase
         .from('challenge_attempts')
-        .select('challenge_id, status, updated_at')
+        .select('id, challenge_id, status, updated_at')
         .eq('user_id', userId)
         .in('challenge_id', challengeIds)
         .order('updated_at', { ascending: true })
@@ -192,6 +195,7 @@ export async function getAcademyLearningOverview(
   )
 
   const attemptStatusByChallengeId = new Map<string, string>()
+  const activeAttemptIdByChallengeId = new Map<string, string>()
   const submittedChallengeIds = new Set<string>()
 
   for (const row of (attemptsData ?? []) as RecordRow[]) {
@@ -199,7 +203,11 @@ export async function getAcademyLearningOverview(
     const status = toString(row.status)
     if (cid && status) {
       attemptStatusByChallengeId.set(cid, status)
-      if (status !== 'in_progress') {
+      if (toString(row.id)) {
+        activeAttemptIdByChallengeId.set(cid, toString(row.id)!)
+      }
+      // A challenge is considered "submitted" if the attempt is not just started
+      if (status !== 'started') {
         submittedChallengeIds.add(cid)
       }
     }
@@ -276,6 +284,7 @@ export async function getAcademyLearningOverview(
         instructions: localizedString(challenge, locale, 'instructions', 'instructions') || null,
         sort_order: toNumber(challenge.sort_order, 0),
         userStatus: deriveChallengeStatus(attemptStatusByChallengeId.get(id) ?? null),
+        activeAttemptId: activeAttemptIdByChallengeId.get(id) ?? null,
       }
     })
 

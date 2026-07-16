@@ -10,6 +10,13 @@
 /** Possible values for profiles.role (user_role enum in DB). */
 export type UserRole = 'tester' | 'company' | 'admin'
 
+/**
+ * Possible status values for challenge_attempts.
+ * Lifecycle: started → submitted → reviewing → approved | rejected
+ */
+export type AttemptStatus = 'started' | 'submitted' | 'reviewing' | 'approved' | 'rejected'
+
+
 // ─── Table Types ─────────────────────────────────────────────────────────────
 
 /**

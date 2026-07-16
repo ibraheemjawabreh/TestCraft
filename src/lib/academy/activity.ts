@@ -46,7 +46,7 @@ interface UserBadgeRow extends Pick<UserBadge, 'badge_id' | 'earned_at'> {
 
 interface ReviewedAttemptRow extends Pick<
   ChallengeAttempt,
-  'id' | 'status' | 'final_score' | 'earned_xp' | 'admin_feedback' | 'reviewed_at'
+  'id' | 'status' | 'score' | 'earned_xp' | 'admin_feedback' | 'reviewed_at'
 > {
   challenges: JoinedChallenge | JoinedChallenge[] | null
 }
@@ -81,7 +81,7 @@ export interface TesterActivityAttempt {
   id: string
   challengeTitle: string | null
   status: string
-  finalScore: number | null
+  score: number | null
   earnedXp: number | null
   adminFeedback: string | null
   reviewedAt: string | null
@@ -154,7 +154,7 @@ export async function getTesterActivity(userId: string): Promise<Result<TesterAc
         .select(`
           id,
           status,
-          final_score,
+          score,
           earned_xp,
           admin_feedback,
           reviewed_at,
@@ -208,7 +208,7 @@ export async function getTesterActivity(userId: string): Promise<Result<TesterAc
           id: attempt.id,
           challengeTitle: firstJoined(attempt.challenges)?.title ?? null,
           status: attempt.status,
-          finalScore: attempt.final_score,
+          score: attempt.score,
           earnedXp: attempt.earned_xp,
           adminFeedback: attempt.admin_feedback,
           reviewedAt: attempt.reviewed_at,

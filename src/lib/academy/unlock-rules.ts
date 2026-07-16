@@ -60,16 +60,17 @@ export async function checkLessonUnlockStatus(userId: string, lessonId: string):
     .maybeSingle()
 
   if (requiredChallenge && requiredChallenge.unlock_after_lesson) {
-    // Check if the user has submitted this challenge
-    const { data: challengeProgress } = await supabase
-      .from('challenge_progress')
-      .select('status')
+    // Check if the user has an approved and passed attempt for this challenge
+    const { data: passedAttempt } = await supabase
+      .from('challenge_attempts')
+      .select('id')
       .eq('user_id', userId)
       .eq('challenge_id', requiredChallenge.id)
+      .eq('is_passed', true)
+      .limit(1)
       .maybeSingle()
 
-    const hasSubmitted = challengeProgress && 
-      ['submitted', 'reviewed', 'needs_improvement'].includes(challengeProgress.status)
+    const hasSubmitted = !!passedAttempt
 
     if (!hasSubmitted) {
       return { isUnlocked: false, reason: 'challenge_required' }

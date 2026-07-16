@@ -39,7 +39,7 @@ export function TesterHeader({ dictionary, locale, username }: TesterHeaderProps
             <Link
               key={item.href}
               href={item.href}
-              className="shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-300 transition-all hover:bg-white/10 hover:text-white"
+              className="shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition-all hover:bg-[#f97316]/10 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
             >
               {item.label}
             </Link>
@@ -52,7 +52,7 @@ export function TesterHeader({ dictionary, locale, username }: TesterHeaderProps
 
           <div className="flex items-center gap-2 rounded-lg border border-[#fbbf24]/25 bg-[#f97316]/10 px-3 py-1.5">
             <User className="h-3.5 w-3.5 text-[#fbbf24]" aria-hidden="true" />
-            <span className="max-w-[140px] truncate text-sm font-medium text-slate-100">
+            <span className="max-w-[140px] truncate text-sm font-medium text-slate-800 dark:text-slate-100">
               {username}
             </span>
           </div>
@@ -60,7 +60,7 @@ export function TesterHeader({ dictionary, locale, username }: TesterHeaderProps
           <form action="/auth/signout" method="POST">
             <button
               type="submit"
-              className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-slate-300 transition-all hover:bg-white/10 hover:text-white"
+              className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-slate-600 transition-all hover:bg-[#f97316]/10 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
             >
               <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
               <span>{dictionary.navigation.logout}</span>

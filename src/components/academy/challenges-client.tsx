@@ -61,7 +61,7 @@ export function ChallengesClient({ challenges, dictionary, locale }: ChallengesC
   }, [challenges, search, difficultyFilter, sort])
 
   const selectClass =
-    'rounded-lg border border-border/60 bg-background/60 px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors'
+    'academy-filter rounded-lg px-3 py-2 text-sm text-foreground transition-colors'
 
   return (
     <div className="space-y-5">
@@ -77,7 +77,7 @@ export function ChallengesClient({ challenges, dictionary, locale }: ChallengesC
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={dictionary.academy.searchPlaceholder}
-            className="block w-full rounded-lg border border-border/60 bg-background/60 py-2 ps-10 pe-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
+            className="academy-filter block w-full rounded-lg py-2 ps-10 pe-4 text-sm text-foreground placeholder:text-muted-foreground transition-colors"
           />
         </div>
         <div className="flex gap-2">

@@ -169,48 +169,54 @@ export type Database = {
           challenge_id: string
           created_at: string
           earned_xp: number | null
-          final_score: number | null
           id: string
+          is_passed: boolean | null
+          review_started_at: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          score: number | null
           started_at: string
           status: string
           submitted_at: string | null
+          time_spent_seconds: number | null
           updated_at: string
           user_id: string
-          xp_awarded: boolean
         }
         Insert: {
           admin_feedback?: string | null
           challenge_id: string
           created_at?: string
           earned_xp?: number | null
-          final_score?: number | null
           id?: string
+          is_passed?: boolean | null
+          review_started_at?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          score?: number | null
           started_at?: string
           status?: string
           submitted_at?: string | null
+          time_spent_seconds?: number | null
           updated_at?: string
           user_id: string
-          xp_awarded?: boolean
         }
         Update: {
           admin_feedback?: string | null
           challenge_id?: string
           created_at?: string
           earned_xp?: number | null
-          final_score?: number | null
           id?: string
+          is_passed?: boolean | null
+          review_started_at?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          score?: number | null
           started_at?: string
           status?: string
           submitted_at?: string | null
+          time_spent_seconds?: number | null
           updated_at?: string
           user_id?: string
-          xp_awarded?: boolean
         }
         Relationships: [
           {

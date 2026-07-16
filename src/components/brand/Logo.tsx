@@ -26,9 +26,9 @@ export function Logo({ locale }: LogoProps) {
         className="h-10 w-auto object-contain"
       />
       {/* ── Wordmark ──────────────────────────────────────────────────── */}
-      <span className="font-heading text-[1.1rem] font-semibold tracking-[-0.01em] text-white select-none">
+      <span className="font-heading text-[1.1rem] font-semibold tracking-[-0.01em] text-slate-900 dark:text-white select-none">
         Test
-        <span className="bg-cyber-gradient bg-clip-text text-transparent font-bold">
+        <span className="bg-gradient-to-r from-[#f97316] to-[#fbbf24] bg-clip-text text-transparent font-bold">
           Craft
         </span>
       </span>

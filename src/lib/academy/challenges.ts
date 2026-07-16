@@ -2,19 +2,21 @@ import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/types/database.types'
+import { type AttemptStatus } from '@/types/database'
 import { type Locale } from '@/i18n/config'
 import { localizedString } from '@/lib/i18n/content'
 import { getAcademyLearningOverview } from '@/lib/academy/learning'
 
 type Challenge = Database['public']['Tables']['challenges']['Row']
-type BugReport = Database['public']['Tables']['bug_reports']['Row']
 type Difficulty = Challenge['difficulty']
 
 export type ChallengeStatus =
   | 'not_started'
+  | 'in_progress'
   | 'pending_review'
-  | 'reviewed'
-  | 'needs_improvement'
+  | 'reviewing'
+  | 'approved'
+  | 'rejected'
 
 export interface TesterChallenge {
   id: string
@@ -33,6 +35,7 @@ export interface TesterChallenge {
 
 export interface ChallengeWithStatus extends TesterChallenge {
   userStatus: ChallengeStatus
+  activeAttemptId: string | null
 }
 
 type Result<T> =
@@ -40,19 +43,19 @@ type Result<T> =
   | { data: null; error: string }
 
 /**
- * Derives user challenge status from their bug reports for that challenge.
- * Derives status only from the tester's submitted reports.
+ * Maps the attempt status from the database to the UI challenge status.
  */
-function deriveStatus(attemptStatus: string | null): ChallengeStatus {
-  if (!attemptStatus || attemptStatus === 'in_progress') return 'not_started'
-  if (attemptStatus === 'approved') return 'reviewed'
-  if (attemptStatus === 'needs_improvement' || attemptStatus === 'rejected') return 'needs_improvement'
-  return 'pending_review' // covers 'submitted', 'under_review'
+export function deriveStatus(attemptStatus: AttemptStatus | string | null): ChallengeStatus {
+  if (!attemptStatus || attemptStatus === 'started') return 'in_progress'
+  if (attemptStatus === 'submitted') return 'pending_review'
+  if (attemptStatus === 'reviewing') return 'reviewing'
+  if (attemptStatus === 'approved') return 'approved'
+  if (attemptStatus === 'rejected') return 'rejected'
+  return 'not_started'
 }
 
 /**
  * Fetches all active challenges and computes per-challenge status for the tester.
- * Uses only active public challenge fields and tester report status.
  */
 export async function getActiveChallengesForTester(
   userId: string,
@@ -69,13 +72,13 @@ export async function getActiveChallengesForTester(
 /**
  * Fetches a single active challenge for the tester.
  * Returns null if challenge doesn't exist or is inactive.
- * Uses only active public challenge fields and tester report status.
+ * Automatically creates a "started" attempt if none exists.
  */
 export async function getChallengeForTester(
   challengeId: string,
   userId: string,
   locale: Locale,
-): Promise<Result<{ challenge: TesterChallenge; userStatus: ChallengeStatus }>> {
+): Promise<Result<{ challenge: TesterChallenge; userStatus: ChallengeStatus; activeAttemptId: string | null }>> {
   try {
     const supabase = await createClient()
 
@@ -122,16 +125,56 @@ export async function getChallengeForTester(
       }
     }
 
-    const { data: attempt } = await supabase
+    // Find the most recent active (non-terminal) attempt, or the most recent overall
+    const { data: activeAttempt } = await supabase
       .from('challenge_attempts')
-      .select('status')
+      .select('id, status')
       .eq('user_id', userId)
       .eq('challenge_id', challengeId)
-      .order('updated_at', { ascending: false })
+      .in('status', ['started', 'submitted', 'reviewing'])
+      .order('created_at', { ascending: false })
       .limit(1)
-      .single()
+      .maybeSingle()
 
-    const userStatus = deriveStatus(attempt?.status ?? null)
+    let attemptId: string | null = activeAttempt?.id ?? null
+    let attemptStatus: string | null = activeAttempt?.status ?? null
+
+    if (!activeAttempt) {
+      // Check for a terminal attempt (approved/rejected)
+      const { data: lastAttempt } = await supabase
+        .from('challenge_attempts')
+        .select('id, status')
+        .eq('user_id', userId)
+        .eq('challenge_id', challengeId)
+        .in('status', ['approved', 'rejected'])
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (lastAttempt) {
+        // Use the last terminal attempt for display — no auto-create on approved/rejected
+        attemptId = lastAttempt.id
+        attemptStatus = lastAttempt.status
+      } else {
+        // No attempt at all — auto-create a "started" attempt
+        const { data: newAttempt } = await supabase
+          .from('challenge_attempts')
+          .insert({
+            user_id: userId,
+            challenge_id: challengeId,
+            status: 'started',
+          })
+          .select('id')
+          .single()
+
+        if (newAttempt) {
+          attemptId = newAttempt.id
+          attemptStatus = 'started'
+        }
+      }
+    }
+
+    const userStatus = deriveStatus(attemptStatus)
     const localizedChallenge: TesterChallenge = {
       id: challenge.id,
       title: localizedString(challengeRow, locale, 'title', 'title'),
@@ -147,7 +190,73 @@ export async function getChallengeForTester(
       sort_order: challenge.sort_order,
     }
 
-    return { data: { challenge: localizedChallenge, userStatus }, error: null }
+    return { data: { challenge: localizedChallenge, userStatus, activeAttemptId: attemptId }, error: null }
+  } catch {
+    return { data: null, error: 'An unexpected error occurred.' }
+  }
+}
+
+/**
+ * Creates a fresh "started" attempt for a user on a challenge.
+ * Fails if an active attempt already exists.
+ */
+export async function createChallengeAttempt(
+  userId: string,
+  challengeId: string,
+): Promise<Result<{ id: string }>> {
+  try {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+      .from('challenge_attempts')
+      .insert({
+        user_id: userId,
+        challenge_id: challengeId,
+        status: 'started',
+      })
+      .select('id')
+      .single()
+
+    if (error || !data) {
+      const isConflict = error?.message?.includes('active attempt already exists')
+      return {
+        data: null,
+        error: isConflict ? 'active_attempt_exists' : 'Failed to create attempt.',
+      }
+    }
+
+    return { data: { id: data.id }, error: null }
+  } catch {
+    return { data: null, error: 'An unexpected error occurred.' }
+  }
+}
+
+/**
+ * Gets the current active attempt for a user on a challenge.
+ * Returns null data (not an error) if no active attempt exists.
+ */
+export async function getActiveAttempt(
+  userId: string,
+  challengeId: string,
+): Promise<Result<{ id: string; status: string } | null>> {
+  try {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+      .from('challenge_attempts')
+      .select('id, status')
+      .eq('user_id', userId)
+      .eq('challenge_id', challengeId)
+      .in('status', ['started', 'submitted', 'reviewing'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (error) {
+      return { data: null, error: 'Failed to fetch active attempt.' }
+    }
+
+    return { data: data ?? null, error: null }
   } catch {
     return { data: null, error: 'An unexpected error occurred.' }
   }

@@ -150,16 +150,15 @@ export async function getPathTimeline(userId: string, pathId: string, locale: Lo
   let challengeProgressSet = new Set<string>()
   if (challenges && challenges.length > 0) {
     const challengeIds = challenges.map(c => c.id)
-    const { data: cp } = await supabase
-      .from('challenge_progress')
-      .select('challenge_id, status')
+    const { data: passedAttempts } = await supabase
+      .from('challenge_attempts')
+      .select('challenge_id')
       .eq('user_id', userId)
       .in('challenge_id', challengeIds)
+      .eq('is_passed', true)
       
-    cp?.forEach(p => {
-      if (['submitted', 'reviewed', 'needs_improvement'].includes(p.status)) {
-        challengeProgressSet.add(p.challenge_id)
-      }
+    passedAttempts?.forEach(p => {
+      challengeProgressSet.add(p.challenge_id)
     })
   }
 

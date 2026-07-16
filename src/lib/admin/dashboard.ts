@@ -63,7 +63,7 @@ export async function getAdminDashboardOverview(): Promise<AdminDashboardResult>
     recentReportsResult,
     recentUsersResult,
   ] = await Promise.all([
-    supabase.from('challenge_attempts').select('*', { count: 'exact', head: true }).in('status', ['pending', 'needs_improvement']),
+    supabase.from('challenge_attempts').select('*', { count: 'exact', head: true }).in('status', ['submitted', 'reviewing']),
     supabase.from('bug_reports').select('*', { count: 'exact', head: true }).eq('status', 'Pending'),
     supabase.from('profiles').select('*', { count: 'exact', head: true }), // For this MVP, all profiles are considered 'active' users
     supabase.from('challenges').select('*', { count: 'exact', head: true }).eq('is_active', true),

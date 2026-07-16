@@ -18,10 +18,6 @@ const statusConfig = {
     color: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
     icon: CheckCircle2,
   },
-  needs_improvement: {
-    color: 'bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30',
-    icon: AlertCircle,
-  },
   rejected: {
     color: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30',
     icon: XCircle,
@@ -62,8 +58,8 @@ export function ReviewedAttemptsSection({ attempts, dictionary, locale }: Review
                     </span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    {attempt.finalScore !== null && (
-                      <span className="text-xs text-muted-foreground">Score: {attempt.finalScore}</span>
+                    {attempt.score !== null && (
+                      <span className="text-xs text-muted-foreground">Score: {attempt.score}</span>
                     )}
                     {attempt.earnedXp !== null && (
                       <Badge variant="outline" className="bg-background/60 text-primary border-primary/30">
@@ -75,8 +71,6 @@ export function ReviewedAttemptsSection({ attempts, dictionary, locale }: Review
                         {StatusIcon && <StatusIcon className="h-3 w-3 mr-1" />}
                         {attempt.status === 'approved'
                           ? dictionary.academy.reviewed
-                          : attempt.status === 'needs_improvement'
-                          ? dictionary.academy.needsImprovement
                           : 'Rejected'}
                       </Badge>
                     )}

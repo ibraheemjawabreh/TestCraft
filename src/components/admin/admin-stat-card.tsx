@@ -9,16 +9,16 @@ interface AdminStatCardProps {
 
 export function AdminStatCard({ title, value, icon, description }: AdminStatCardProps) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-card/60 p-6 shadow-sm backdrop-blur-xl transition-all hover:shadow-md hover:border-primary/30">
+    <div className="admin-surface relative overflow-hidden rounded-2xl p-6 transition-all hover:shadow-md">
       {/* Decorative top glow */}
       <div
         aria-hidden="true"
-        className="absolute -top-12 -right-12 h-24 w-24 rounded-full bg-primary/10 blur-[30px]"
+        className="absolute -top-12 -right-12 h-24 w-24 rounded-full bg-[#f97316]/15 blur-[30px]"
       />
       
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f97316]/15 text-[#ea580c]">
           {icon}
         </div>
       </div>

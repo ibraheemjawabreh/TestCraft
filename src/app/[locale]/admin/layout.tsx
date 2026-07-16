@@ -27,7 +27,7 @@ export default async function AdminLayout({ children, params: { locale } }: Admi
   const dictionary = await getDictionary(locale)
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground transition-colors">
+    <div className="admin-shell flex min-h-screen text-foreground transition-colors">
       {/* Sidebar (Desktop) */}
       <AdminSidebar dictionary={dictionary} locale={locale} />
       

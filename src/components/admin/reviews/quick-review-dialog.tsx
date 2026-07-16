@@ -45,11 +45,13 @@ export function QuickReviewDialog({
   const [error, setError] = useState<string | null>(null)
 
   // Form state
-  const [status, setStatus] = useState<'approved' | 'needs_improvement' | 'rejected'>('approved')
+  const [status, setStatus] = useState<'approved' | 'rejected'>('approved')
   const [score, setScore] = useState<number>(0)
   const [xp, setXp] = useState<number>(0)
   const [feedback, setFeedback] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  const isTerminal = data?.attempt?.status === 'approved' || data?.attempt?.status === 'rejected'
 
   useEffect(() => {
     if (attemptId && challengeId) {
@@ -61,8 +63,8 @@ export function QuickReviewDialog({
             setError(res.error || tDash.failedToLoad)
           } else {
             setData(res.data)
-            setStatus(res.data.attempt.status === 'pending' ? 'approved' : res.data.attempt.status as any)
-            setScore(res.data.attempt.final_score ?? 100)
+            setStatus(res.data.attempt.status === 'rejected' ? 'rejected' : 'approved')
+            setScore(res.data.attempt.score ?? 100)
             setXp(res.data.attempt.earned_xp ?? res.data.challenge.base_xp_reward ?? 0)
             setFeedback(res.data.attempt.admin_feedback ?? '')
           }
@@ -92,9 +94,10 @@ export function QuickReviewDialog({
       attemptId,
       challengeId,
       status,
-      finalScore: score,
+      score,
       earnedXp: xp,
       adminFeedback: feedback,
+      isPassed: status === 'approved',
       reportUpdates,
     })
 
@@ -170,10 +173,10 @@ export function QuickReviewDialog({
                 </div>
               )}
 
-              {data.attempt.xp_awarded && (
+              {isTerminal && (
                 <div className="rounded-lg bg-secondary/50 p-3 text-sm flex items-center gap-2 text-muted-foreground">
                   <Check className="h-4 w-4 text-green-500" />
-                  {t.xpAlreadyAwarded}
+                  This attempt has already been reviewed.
                 </div>
               )}
 
@@ -186,7 +189,6 @@ export function QuickReviewDialog({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="approved">{t.approve}</SelectItem>
-                      <SelectItem value="needs_improvement">{t.needsImprovement}</SelectItem>
                       <SelectItem value="rejected">{t.reject}</SelectItem>
                     </SelectContent>
                   </Select>
@@ -206,7 +208,7 @@ export function QuickReviewDialog({
                     type="number" 
                     value={xp} 
                     onChange={(e) => setXp(Number(e.target.value))} 
-                    disabled={data.attempt.xp_awarded}
+                    disabled={isTerminal}
                   />
                 </div>
               </div>

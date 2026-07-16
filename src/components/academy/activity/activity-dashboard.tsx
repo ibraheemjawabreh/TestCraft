@@ -16,7 +16,7 @@ interface ActivityDashboardProps {
 export function ActivityDashboard({ activity, dictionary, locale }: ActivityDashboardProps) {
   return (
     <div className="space-y-8">
-      <div className="space-y-2">
+      <div className="academy-page-heading space-y-2 rounded-2xl p-6 sm:p-8">
         <h1 className="font-heading text-3xl font-extrabold tracking-tight text-foreground">
           {dictionary.academy.activity.title}
         </h1>
