@@ -95,6 +95,7 @@ export const en = {
     nav: {
       dashboard: "Dashboard",
       reviews: "Reviews",
+      modules: "Modules",
       lessons: "Lessons",
       challenges: "Challenges",
       users: "Users",

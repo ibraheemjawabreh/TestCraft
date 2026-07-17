@@ -13,6 +13,7 @@ interface DataResult<T> {
 export interface Lesson {
   id: string
   learning_path_id: string
+  module_id: string | null
   title_en: string | null
   title_ar: string | null
   slug: string
@@ -59,6 +60,7 @@ export async function getAdminLessons(locale: Locale = 'en'): Promise<DataResult
     return {
       id: row.id,
       learning_path_id: row.learning_path_id,
+      module_id: row.module_id,
       title_en: row.title_en,
       title_ar: row.title_ar,
       slug: row.slug,
@@ -107,6 +109,7 @@ export async function getAdminLessonById(id: string, locale: Locale = 'en'): Pro
     data: {
       id: data.id,
       learning_path_id: data.learning_path_id,
+      module_id: data.module_id,
       title_en: data.title_en,
       title_ar: data.title_ar,
       slug: data.slug,
@@ -138,6 +141,7 @@ export async function createLesson(input: LessonFormValues): Promise<DataResult<
     .from('lessons')
     .insert({
       learning_path_id: input.learning_path_id,
+      module_id: input.module_id || null,
       title: input.title_en, // required field in DB
       content: input.content_en, // required field in DB
       title_en: input.title_en,
@@ -177,6 +181,7 @@ export async function updateLesson(id: string, input: LessonFormValues): Promise
     .from('lessons')
     .update({
       learning_path_id: input.learning_path_id,
+      module_id: input.module_id || null,
       title: input.title_en, // required field in DB
       content: input.content_en, // required field in DB
       title_en: input.title_en,

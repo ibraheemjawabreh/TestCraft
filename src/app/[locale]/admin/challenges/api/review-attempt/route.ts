@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import { saveAdminAttemptReview } from '@/lib/admin/attempt-review'
+import { completeChallengeAndUnlockNext } from '@/lib/academy/services/ProgressService'
+import { createClient } from '@/lib/supabase/server'
 import type { Locale } from '@/i18n/config'
 import { z } from 'zod'
 
@@ -42,6 +44,25 @@ export async function POST(
 
     if (result.error) {
       return NextResponse.json({ error: result.error }, { status: 500 })
+    }
+
+    // If challenge is approved and passed, trigger module completion + next module unlock
+    if (parsed.data.status === 'approved' && parsed.data.isPassed) {
+      // Fetch the attempt's user_id
+      const supabase = await createClient()
+      const { data: attempt } = await supabase
+        .from('challenge_attempts')
+        .select('user_id')
+        .eq('id', parsed.data.attemptId)
+        .single()
+
+      if (attempt?.user_id) {
+        await completeChallengeAndUnlockNext(
+          attempt.user_id,
+          parsed.data.challengeId,
+          parsed.data.earnedXp
+        )
+      }
     }
 
     revalidatePath('/', 'layout')

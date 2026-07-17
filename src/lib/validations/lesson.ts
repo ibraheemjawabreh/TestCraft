@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 export const lessonSchema = z.object({
   learning_path_id: z.string().uuid('required'),
+  module_id: z.string().uuid('required').nullable().optional(),
   title_en: z
     .string()
     .min(3, 'titleMin')

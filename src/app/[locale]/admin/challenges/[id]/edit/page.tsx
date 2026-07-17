@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { getDictionary } from '@/i18n/get-dictionary'
 import { getAdminChallengeById } from '@/lib/admin/challenges'
 import { getAdminLessons } from '@/lib/admin/lessons'
+import { getAdminModules } from '@/lib/admin/modules'
 import { ChallengeForm } from '@/components/admin/challenges/challenge-form'
 import { Button } from '@/components/ui/button'
 import type { Locale } from '@/i18n/config'
@@ -20,9 +21,10 @@ export default async function EditChallengePage({ params: { locale, id } }: Edit
   const dictionary = await getDictionary(locale)
   const isRtl = locale === 'ar'
 
-  const [{ data: challenge }, lessonsResult] = await Promise.all([
+  const [{ data: challenge }, lessonsResult, modulesResult] = await Promise.all([
     getAdminChallengeById(id),
     getAdminLessons(),
+    getAdminModules(),
   ])
 
   if (!challenge) {
@@ -53,6 +55,10 @@ export default async function EditChallengePage({ params: { locale, id } }: Edit
             id: l.id,
             title: locale === 'ar' ? l.title_ar || l.title_en || '' : l.title_en || l.title_ar || '',
             learning_path_title: l.learning_path_title
+          }))}
+          moduleOptions={(modulesResult.data ?? []).map(m => ({
+            id: m.id,
+            title: locale === 'ar' ? m.title_ar || m.title_en : m.title_en || m.title_ar || '',
           }))}
           dictionary={dictionary.admin.challenges}
           validationDictionary={dictionary.validation}

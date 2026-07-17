@@ -83,9 +83,26 @@ create index idx_challenge_attempts_user_challenge on public.challenge_attempts(
 
 -- ─── 7. Restore bug_reports.attempt_id FK ────────────────────────────────────
 
--- Re-add the FK (it was dropped by cascade when we dropped the table)
-alter table public.bug_reports
-  add column if not exists attempt_id uuid references public.challenge_attempts(id) on delete set null;
+-- The column 'attempt_id' still exists, but the constraint was dropped.
+-- We must drop any old constraint if it somehow exists, set orphaned IDs to null, and add the FK.
+do $$
+begin
+  -- 1. Set any orphaned attempt_id to null
+  update public.bug_reports 
+  set attempt_id = null 
+  where attempt_id is not null 
+    and attempt_id not in (select id from public.challenge_attempts);
+    
+  -- 2. Add the constraint
+  if not exists (
+      select 1 from information_schema.table_constraints 
+      where constraint_name = 'bug_reports_attempt_id_fkey'
+  ) then
+      alter table public.bug_reports
+        add constraint bug_reports_attempt_id_fkey
+        foreign key (attempt_id) references public.challenge_attempts(id) on delete set null;
+  end if;
+end $$;
 
 -- ─── 8. Updated_at trigger ───────────────────────────────────────────────────
 

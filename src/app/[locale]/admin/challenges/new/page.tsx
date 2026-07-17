@@ -5,6 +5,7 @@ import { getDictionary } from '@/i18n/get-dictionary'
 import { ChallengeForm } from '@/components/admin/challenges/challenge-form'
 import { Button } from '@/components/ui/button'
 import { getAdminLessons } from '@/lib/admin/lessons'
+import { getAdminModules } from '@/lib/admin/modules'
 import type { Locale } from '@/i18n/config'
 
 interface NewChallengePageProps {
@@ -13,7 +14,10 @@ interface NewChallengePageProps {
 
 export default async function NewChallengePage({ params: { locale } }: NewChallengePageProps) {
   const dictionary = await getDictionary(locale)
-  const lessonsResult = await getAdminLessons()
+  const [lessonsResult, modulesResult] = await Promise.all([
+    getAdminLessons(),
+    getAdminModules(),
+  ])
   const isRtl = locale === 'ar'
 
   return (
@@ -39,6 +43,10 @@ export default async function NewChallengePage({ params: { locale } }: NewChalle
             id: l.id,
             title: locale === 'ar' ? l.title_ar || l.title_en || '' : l.title_en || l.title_ar || '',
             learning_path_title: l.learning_path_title
+          }))}
+          moduleOptions={(modulesResult.data ?? []).map(m => ({
+            id: m.id,
+            title: locale === 'ar' ? m.title_ar || m.title_en : m.title_en || m.title_ar || '',
           }))}
           dictionary={dictionary.admin.challenges}
           validationDictionary={dictionary.validation}

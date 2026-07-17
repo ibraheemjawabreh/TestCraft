@@ -4,6 +4,7 @@ import { getDictionary } from '@/i18n/get-dictionary'
 import { type Locale } from '@/i18n/config'
 import { getAdminLessonById } from '@/lib/admin/lessons'
 import { getAdminLearningPaths } from '@/lib/admin/learning-paths'
+import { getAdminModules } from '@/lib/admin/modules'
 import { LessonForm } from '@/components/admin/lessons/lesson-form'
 
 export default async function AdminEditLessonPage({
@@ -13,9 +14,10 @@ export default async function AdminEditLessonPage({
 }) {
   const dictionary = await getDictionary(locale)
 
-  const [lessonResult, pathsResult] = await Promise.all([
+  const [lessonResult, pathsResult, modulesResult] = await Promise.all([
     getAdminLessonById(id),
     getAdminLearningPaths(),
+    getAdminModules(),
   ])
 
   if (!lessonResult.data) {
@@ -24,6 +26,7 @@ export default async function AdminEditLessonPage({
 
   const lesson = lessonResult.data
   const paths = pathsResult.data ?? []
+  const modules = modulesResult.data ?? []
 
   return (
     <div className="space-y-6">
@@ -36,11 +39,13 @@ export default async function AdminEditLessonPage({
       <div className="rounded-xl border border-border/50 bg-card/40 p-6 backdrop-blur-sm">
         <LessonForm
           paths={paths}
+          modules={modules}
           dictionary={dictionary}
           locale={locale}
           initialData={{
             id: lesson.id,
             learning_path_id: lesson.learning_path_id,
+            module_id: lesson.module_id,
             title_en: lesson.title_en || '',
             title_ar: lesson.title_ar || '',
             slug: lesson.slug,

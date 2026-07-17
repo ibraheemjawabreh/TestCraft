@@ -95,6 +95,7 @@ export const ar = {
     nav: {
       dashboard: "لوحة التحكم",
       reviews: "المراجعات",
+      modules: "الفصول",
       lessons: "الدروس",
       challenges: "التحديات",
       users: "المستخدمون",

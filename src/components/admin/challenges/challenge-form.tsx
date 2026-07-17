@@ -38,6 +38,11 @@ interface LessonOption {
   learning_path_title: string | null
 }
 
+interface ModuleOption {
+  id: string
+  title: string
+}
+
 interface ChallengeDictionary {
   englishTitle: string
   arabicTitle: string
@@ -73,6 +78,7 @@ interface ChallengeFormProps {
   mode: 'create' | 'edit'
   challenge?: Challenge
   lessonOptions: LessonOption[]
+  moduleOptions: ModuleOption[]
   dictionary: ChallengeDictionary
   validationDictionary: ValidationDictionary
   locale: Locale
@@ -94,6 +100,7 @@ export function ChallengeForm({
   mode,
   challenge,
   lessonOptions,
+  moduleOptions,
   dictionary,
   validationDictionary,
   locale,
@@ -113,6 +120,7 @@ export function ChallengeForm({
       instructions_en: challengeField(challenge, 'instructions_en') ?? challenge?.instructions ?? '',
       instructions_ar: challengeField(challenge, 'instructions_ar') ?? '',
       lesson_id: challenge?.lesson_id ?? null,
+      module_id: challenge?.module_id ?? null,
       challenge_type: challenge?.challenge_type ?? 'bug_report',
       lab_template: challenge?.lab_template ?? '',
       difficulty: challenge?.difficulty ?? 'Beginner',
@@ -320,6 +328,35 @@ export function ChallengeForm({
                     {lessonOptions.map((lesson) => (
                       <SelectItem key={lesson.id} value={lesson.id}>
                         {lesson.learning_path_title ? `${lesson.learning_path_title} / ${lesson.title}` : lesson.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage>{translateError(fieldState.error?.message)}</FormMessage>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="module_id"
+            render={({ field, fieldState }) => (
+              <FormItem>
+                <FormLabel>Linked Module (Module Challenge)</FormLabel>
+                <Select
+                  value={field.value ?? 'none'}
+                  onValueChange={(value) => field.onChange(value === 'none' ? null : value)}
+                >
+                  <FormControl>
+                    <SelectTrigger className="bg-card/60 border-border/50">
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="none">No Linked Module</SelectItem>
+                    {moduleOptions.map((mod) => (
+                      <SelectItem key={mod.id} value={mod.id}>
+                        {mod.title}
                       </SelectItem>
                     ))}
                   </SelectContent>

@@ -306,6 +306,7 @@ export type Database = {
           is_required: boolean
           lab_template: string | null
           lesson_id: string | null
+          module_id: string | null
           scenario: string | null
           scenario_ar: string | null
           scenario_en: string | null
@@ -330,6 +331,7 @@ export type Database = {
           is_required?: boolean
           lab_template?: string | null
           lesson_id?: string | null
+          module_id?: string | null
           scenario?: string | null
           scenario_ar?: string | null
           scenario_en?: string | null
@@ -354,6 +356,7 @@ export type Database = {
           is_required?: boolean
           lab_template?: string | null
           lesson_id?: string | null
+          module_id?: string | null
           scenario?: string | null
           scenario_ar?: string | null
           scenario_en?: string | null
@@ -369,6 +372,13 @@ export type Database = {
             columns: ["lesson_id"]
             isOneToOne: false
             referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenges_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "learning_modules"
             referencedColumns: ["id"]
           },
         ]
@@ -401,6 +411,119 @@ export type Database = {
             columns: ["challenge_id"]
             isOneToOne: false
             referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_modules: {
+        Row: {
+          id: string
+          learning_path_id: string
+          title_en: string
+          title_ar: string | null
+          description_en: string | null
+          description_ar: string | null
+          slug: string
+          sort_order: number
+          is_published: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          learning_path_id: string
+          title_en: string
+          title_ar?: string | null
+          description_en?: string | null
+          description_ar?: string | null
+          slug: string
+          sort_order?: number
+          is_published?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          learning_path_id?: string
+          title_en?: string
+          title_ar?: string | null
+          description_en?: string | null
+          description_ar?: string | null
+          slug?: string
+          sort_order?: number
+          is_published?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_modules_learning_path_id_fkey"
+            columns: ["learning_path_id"]
+            isOneToOne: false
+            referencedRelation: "learning_paths"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_path_progress: {
+        Row: {
+          id: string
+          user_id: string
+          learning_path_id: string
+          completion_percentage: number
+          completed_modules: number
+          completed_lessons: number
+          completed_challenges: number
+          current_module_id: string | null
+          current_lesson_id: string | null
+          current_challenge_id: string | null
+          last_activity_at: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          learning_path_id: string
+          completion_percentage?: number
+          completed_modules?: number
+          completed_lessons?: number
+          completed_challenges?: number
+          current_module_id?: string | null
+          current_lesson_id?: string | null
+          current_challenge_id?: string | null
+          last_activity_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          learning_path_id?: string
+          completion_percentage?: number
+          completed_modules?: number
+          completed_lessons?: number
+          completed_challenges?: number
+          current_module_id?: string | null
+          current_lesson_id?: string | null
+          current_challenge_id?: string | null
+          last_activity_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lpp_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lpp_path_id_fkey"
+            columns: ["learning_path_id"]
+            isOneToOne: false
+            referencedRelation: "learning_paths"
             referencedColumns: ["id"]
           },
         ]
@@ -452,25 +575,40 @@ export type Database = {
       }
       lesson_progress: {
         Row: {
-          completed_at: string | null
-          created_at: string
-          last_opened_at: string
-          lesson_id: string
+          id: string
           user_id: string
+          lesson_id: string
+          status: 'not_started' | 'in_progress' | 'completed'
+          started_at: string
+          completed_at: string | null
+          last_opened_at: string
+          time_spent_seconds: number
+          created_at: string
+          updated_at: string
         }
         Insert: {
-          completed_at?: string | null
-          created_at?: string
-          last_opened_at?: string
-          lesson_id: string
+          id?: string
           user_id: string
+          lesson_id: string
+          status?: 'not_started' | 'in_progress' | 'completed'
+          started_at?: string
+          completed_at?: string | null
+          last_opened_at?: string
+          time_spent_seconds?: number
+          created_at?: string
+          updated_at?: string
         }
         Update: {
-          completed_at?: string | null
-          created_at?: string
-          last_opened_at?: string
-          lesson_id?: string
+          id?: string
           user_id?: string
+          lesson_id?: string
+          status?: 'not_started' | 'in_progress' | 'completed'
+          started_at?: string
+          completed_at?: string | null
+          last_opened_at?: string
+          time_spent_seconds?: number
+          created_at?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -489,6 +627,60 @@ export type Database = {
           },
         ]
       }
+      module_progress: {
+        Row: {
+          id: string
+          user_id: string
+          module_id: string
+          status: 'locked' | 'available' | 'in_progress' | 'completed'
+          completion_percentage: number
+          completed_lessons: number
+          total_lessons: number
+          completed_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          module_id: string
+          status?: 'locked' | 'available' | 'in_progress' | 'completed'
+          completion_percentage?: number
+          completed_lessons?: number
+          total_lessons?: number
+          completed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          module_id?: string
+          status?: 'locked' | 'available' | 'in_progress' | 'completed'
+          completion_percentage?: number
+          completed_lessons?: number
+          total_lessons?: number
+          completed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_progress_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_progress_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "learning_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lessons: {
         Row: {
           content: string
@@ -500,6 +692,7 @@ export type Database = {
           id: string
           is_published: boolean
           learning_path_id: string
+          module_id: string | null
           objectives: string[]
           objectives_ar: string[]
           objectives_en: string[]
@@ -523,6 +716,7 @@ export type Database = {
           id?: string
           is_published?: boolean
           learning_path_id: string
+          module_id?: string | null
           objectives?: string[]
           objectives_ar?: string[]
           objectives_en?: string[]
@@ -546,6 +740,7 @@ export type Database = {
           id?: string
           is_published?: boolean
           learning_path_id?: string
+          module_id?: string | null
           objectives?: string[]
           objectives_ar?: string[]
           objectives_en?: string[]
@@ -565,6 +760,13 @@ export type Database = {
             columns: ["learning_path_id"]
             isOneToOne: false
             referencedRelation: "learning_paths"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lessons_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "learning_modules"
             referencedColumns: ["id"]
           },
         ]
@@ -647,6 +849,9 @@ export type Database = {
       report_status: "Pending" | "Reviewed" | "Rejected"
       severity_level: "Low" | "Medium" | "High" | "Critical"
       user_role: "tester" | "admin"
+      lesson_progress_status: "not_started" | "in_progress" | "completed"
+      challenge_progress_status: "locked" | "available" | "in_progress" | "submitted" | "approved" | "rejected" | "completed"
+      module_status: "locked" | "available" | "in_progress" | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -778,6 +983,9 @@ export const Constants = {
       report_status: ["Pending", "Reviewed", "Rejected"],
       severity_level: ["Low", "Medium", "High", "Critical"],
       user_role: ["tester", "admin"],
+      lesson_progress_status: ["not_started", "in_progress", "completed"],
+      challenge_progress_status: ["locked", "available", "in_progress", "submitted", "approved", "rejected", "completed"],
+      module_status: ["locked", "available", "in_progress", "completed"],
     },
   },
 } as const

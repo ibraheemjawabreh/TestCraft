@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle2, ArrowRight, Sword, Loader2 } from 'lucide-react'
-import { markLessonCompleted } from '@/lib/academy/learning'
+import { actionCompleteLesson } from '@/lib/academy/actions/progress-actions'
 import type { Dictionary } from '@/i18n/types'
 import type { Locale } from '@/i18n/config'
 
@@ -34,7 +34,7 @@ export function LessonActions({
 
   const handleMarkComplete = () => {
     startTransition(async () => {
-      const result = await markLessonCompleted(userId, lessonId)
+      const result = await actionCompleteLesson(userId, lessonId, locale)
       if (result.data) {
         setCompleted(true)
         setSuccessMsg(dictionary.learning.lessonCompleted)

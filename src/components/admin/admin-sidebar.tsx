@@ -11,6 +11,7 @@ import {
   BarChart3,
   Settings,
   LogOut,
+  Layers,
 } from 'lucide-react'
 
 import { Logo } from '@/components/brand/Logo'
@@ -21,6 +22,7 @@ interface AdminSidebarDictionary {
     nav: {
       dashboard: string
       reviews: string
+      modules: string
       lessons: string
       challenges: string
       users: string
@@ -45,6 +47,7 @@ export function AdminSidebar({ dictionary, locale }: AdminSidebarProps) {
   const navItems = [
     { name: nav.dashboard, href: `/${locale}/admin`, icon: LayoutDashboard, exact: true },
     { name: nav.reviews, href: `/${locale}/admin/reviews`, icon: ClipboardCheck, exact: false },
+    { name: nav.modules || 'Modules', href: `/${locale}/admin/modules`, icon: Layers, exact: false },
     { name: nav.lessons, href: `/${locale}/admin/lessons`, icon: BookOpen, exact: false },
     { name: nav.challenges, href: `/${locale}/admin/challenges`, icon: Sword, exact: false },
     { name: nav.users, href: `/${locale}/admin/users`, icon: Users, exact: false },

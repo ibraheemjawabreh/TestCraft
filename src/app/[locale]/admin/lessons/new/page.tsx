@@ -1,6 +1,7 @@
 import { getDictionary } from '@/i18n/get-dictionary'
 import { type Locale } from '@/i18n/config'
 import { getAdminLearningPaths } from '@/lib/admin/learning-paths'
+import { getAdminModules } from '@/lib/admin/modules'
 import { LessonForm } from '@/components/admin/lessons/lesson-form'
 
 export default async function AdminNewLessonPage({
@@ -9,8 +10,12 @@ export default async function AdminNewLessonPage({
   params: { locale: Locale }
 }) {
   const dictionary = await getDictionary(locale)
-  const pathsResult = await getAdminLearningPaths()
+  const [pathsResult, modulesResult] = await Promise.all([
+    getAdminLearningPaths(),
+    getAdminModules(),
+  ])
   const paths = pathsResult.data ?? []
+  const modules = modulesResult.data ?? []
 
   return (
     <div className="space-y-6">
@@ -24,7 +29,7 @@ export default async function AdminNewLessonPage({
         {paths.length === 0 ? (
           <p className="text-sm text-muted-foreground">{dictionary.learning.noPaths}</p>
         ) : (
-          <LessonForm paths={paths} dictionary={dictionary} locale={locale} />
+          <LessonForm paths={paths} modules={modules} dictionary={dictionary} locale={locale} />
         )}
       </div>
     </div>

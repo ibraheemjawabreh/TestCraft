@@ -13,12 +13,13 @@ import type { Locale } from '@/i18n/config'
 
 interface LessonFormProps {
   paths: LearningPathWithLessonCount[]
+  modules: any[]
   dictionary: Dictionary
   locale: Locale
   initialData?: LessonFormValues & { id: string }
 }
 
-export function LessonForm({ paths, dictionary, locale, initialData }: LessonFormProps) {
+export function LessonForm({ paths, modules, dictionary, locale, initialData }: LessonFormProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [serverError, setServerError] = useState<string | null>(null)
@@ -37,6 +38,7 @@ export function LessonForm({ paths, dictionary, locale, initialData }: LessonFor
     resolver: zodResolver(lessonSchema),
     defaultValues: initialData ?? {
       learning_path_id: paths[0]?.id ?? '',
+      module_id: null,
       title_en: '',
       title_ar: '',
       slug: '',
@@ -133,6 +135,17 @@ export function LessonForm({ paths, dictionary, locale, initialData }: LessonFor
             ))}
           </select>
           {errors.learning_path_id && <p className="text-xs text-destructive">{errors.learning_path_id.message}</p>}
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="block text-sm font-medium text-foreground">Module</label>
+          <select {...register('module_id')} className={inputClass} disabled={isPending}>
+            <option value="">No Module</option>
+            {modules.map((mod) => (
+              <option key={mod.id} value={mod.id}>{locale === 'ar' ? mod.title_ar || mod.title_en : mod.title_en || mod.title_ar}</option>
+            ))}
+          </select>
+          {errors.module_id && <p className="text-xs text-destructive">{errors.module_id.message}</p>}
         </div>
 
         <div className="space-y-1.5">
