@@ -69,13 +69,33 @@ export async function getLessonWithModuleGate(
 
     const is_completed = !!progress?.completed_at
 
-    // Get related module challenge
-    const { data: challenge } = await supabase
-      .from('challenges')
-      .select('id')
-      .eq('module_id', lesson.module_id ?? '')
-      .eq('is_active', true)
-      .maybeSingle()
+    let isLastInModule = true
+    if (lesson.module_id) {
+      const { count } = await supabase
+        .from('lessons')
+        .select('*', { count: 'exact', head: true })
+        .eq('module_id', lesson.module_id)
+        .eq('is_published', true)
+        .gt('sort_order', lesson.sort_order)
+
+      if (count && count > 0) {
+        isLastInModule = false
+      }
+    }
+
+    let challengeId = null
+    if (isLastInModule) {
+      let query = supabase.from('challenges').select('id').eq('is_active', true)
+      
+      if (lesson.module_id) {
+        query = query.eq('module_id', lesson.module_id)
+      } else {
+        query = query.eq('lesson_id', lesson.id)
+      }
+
+      const { data: challenge } = await query.maybeSingle()
+      challengeId = challenge?.id ?? null
+    }
 
     const moduleData = lesson.learning_modules as any
 
@@ -96,7 +116,7 @@ export async function getLessonWithModuleGate(
         is_completed,
         is_locked: false,
         lock_reason: 'unlocked',
-        related_challenge_id: challenge?.id ?? null,
+        related_challenge_id: challengeId,
       },
       error: null,
     }

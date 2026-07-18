@@ -8,12 +8,14 @@ import type { Locale } from '@/i18n/config'
  */
 interface LogoProps {
   locale: Locale
+  href?: string
 }
 
-export function Logo({ locale }: LogoProps) {
+export function Logo({ locale, href }: LogoProps) {
+  const linkHref = href ?? `/${locale}`
   return (
     <Link
-      href={`/${locale}`}
+      href={linkHref}
       className="inline-flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
       aria-label="TestCraft — go to home"
     >

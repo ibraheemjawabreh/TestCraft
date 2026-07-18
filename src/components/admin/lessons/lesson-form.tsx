@@ -17,9 +17,12 @@ interface LessonFormProps {
   dictionary: Dictionary
   locale: Locale
   initialData?: LessonFormValues & { id: string }
+  onSuccess?: () => void
+  defaultPathId?: string
+  defaultModuleId?: string
 }
 
-export function LessonForm({ paths, modules, dictionary, locale, initialData }: LessonFormProps) {
+export function LessonForm({ paths, modules, dictionary, locale, initialData, onSuccess, defaultPathId, defaultModuleId }: LessonFormProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [serverError, setServerError] = useState<string | null>(null)
@@ -37,8 +40,8 @@ export function LessonForm({ paths, modules, dictionary, locale, initialData }: 
   } = useForm<LessonFormValues>({
     resolver: zodResolver(lessonSchema),
     defaultValues: initialData ?? {
-      learning_path_id: paths[0]?.id ?? '',
-      module_id: null,
+      learning_path_id: defaultPathId ?? paths[0]?.id ?? '',
+      module_id: defaultModuleId ?? null,
       title_en: '',
       title_ar: '',
       slug: '',
@@ -79,7 +82,9 @@ export function LessonForm({ paths, modules, dictionary, locale, initialData }: 
       }
 
       setSuccessMessage(isEditing ? dictionary.learning.lessonUpdated : dictionary.learning.lessonCreated)
-      if (!isEditing && result.data) {
+      if (onSuccess) {
+        onSuccess()
+      } else if (!isEditing && result.data) {
         router.push(`/${locale}/admin/lessons/${result.data.id}`)
       } else {
         router.refresh()

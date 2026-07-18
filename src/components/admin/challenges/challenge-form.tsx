@@ -121,9 +121,9 @@ export function ChallengeForm({
       instructions_ar: challengeField(challenge, 'instructions_ar') ?? '',
       lesson_id: challenge?.lesson_id ?? null,
       module_id: challenge?.module_id ?? null,
-      challenge_type: challenge?.challenge_type ?? 'bug_report',
+      challenge_type: (challenge?.challenge_type as any) ?? 'bug_report',
       lab_template: challenge?.lab_template ?? '',
-      difficulty: challenge?.difficulty ?? 'Beginner',
+      difficulty: (challenge?.difficulty as any) ?? 'Beginner',
       base_xp_reward: challenge?.base_xp_reward ?? 100,
       is_required: challengeBoolean(challenge, 'is_required', true),
       is_active: challenge?.is_active ?? true,
@@ -372,9 +372,22 @@ export function ChallengeForm({
             render={({ field, fieldState }) => (
               <FormItem>
                 <FormLabel>{dictionary.challengeType}</FormLabel>
-                <FormControl>
-                  <Input {...field} className="bg-card/60 border-border/50" />
-                </FormControl>
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                >
+                  <FormControl>
+                    <SelectTrigger className="bg-card/60 border-border/50">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="bug_report">Bug Report</SelectItem>
+                    <SelectItem value="test_cases">Test Cases</SelectItem>
+                    <SelectItem value="api_testing">API Testing</SelectItem>
+                    <SelectItem value="automation">Automation</SelectItem>
+                  </SelectContent>
+                </Select>
                 <FormMessage>{translateError(fieldState.error?.message)}</FormMessage>
               </FormItem>
             )}

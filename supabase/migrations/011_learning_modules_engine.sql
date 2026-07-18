@@ -366,3 +366,5 @@ GRANT SELECT, INSERT, UPDATE         ON public.learning_path_progress  TO authen
 --      npx supabase gen types typescript --project-id YOUR_ID --schema public > src/types/database.types.ts
 --   2. Restart dev server: npm run dev
 -- ───────────────────────────────────────────────────────────────────────────────
+
+NOTIFY pgrst, 'reload schema';

@@ -14,9 +14,11 @@ interface ModuleFormProps {
   paths: LearningPathWithLessonCount[]
   locale: Locale
   initialData?: ModuleFormValues & { id: string }
+  onSuccess?: () => void
+  defaultPathId?: string
 }
 
-export function ModuleForm({ paths, locale, initialData }: ModuleFormProps) {
+export function ModuleForm({ paths, locale, initialData, onSuccess, defaultPathId }: ModuleFormProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [serverError, setServerError] = useState<string | null>(null)
@@ -33,7 +35,7 @@ export function ModuleForm({ paths, locale, initialData }: ModuleFormProps) {
   } = useForm<ModuleFormValues>({
     resolver: zodResolver(moduleSchema),
     defaultValues: initialData ?? {
-      learning_path_id: paths[0]?.id ?? '',
+      learning_path_id: defaultPathId ?? paths[0]?.id ?? '',
       title_en: '',
       title_ar: '',
       slug: '',
@@ -59,7 +61,9 @@ export function ModuleForm({ paths, locale, initialData }: ModuleFormProps) {
       }
 
       setSuccessMessage(isEditing ? 'Module updated successfully.' : 'Module created successfully.')
-      if (!isEditing && result.data) {
+      if (onSuccess) {
+        onSuccess()
+      } else if (!isEditing && result.data) {
         router.push(`/${locale}/admin/modules`)
       } else {
         router.refresh()

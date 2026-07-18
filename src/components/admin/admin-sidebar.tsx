@@ -6,12 +6,10 @@ import {
   LayoutDashboard,
   ClipboardCheck,
   BookOpen,
-  Sword,
   Users,
   BarChart3,
   Settings,
   LogOut,
-  Layers,
 } from 'lucide-react'
 
 import { Logo } from '@/components/brand/Logo'
@@ -22,9 +20,7 @@ interface AdminSidebarDictionary {
     nav: {
       dashboard: string
       reviews: string
-      modules: string
-      lessons: string
-      challenges: string
+      curriculum: string
       users: string
       analytics: string
       settings: string
@@ -47,9 +43,7 @@ export function AdminSidebar({ dictionary, locale }: AdminSidebarProps) {
   const navItems = [
     { name: nav.dashboard, href: `/${locale}/admin`, icon: LayoutDashboard, exact: true },
     { name: nav.reviews, href: `/${locale}/admin/reviews`, icon: ClipboardCheck, exact: false },
-    { name: nav.modules || 'Modules', href: `/${locale}/admin/modules`, icon: Layers, exact: false },
-    { name: nav.lessons, href: `/${locale}/admin/lessons`, icon: BookOpen, exact: false },
-    { name: nav.challenges, href: `/${locale}/admin/challenges`, icon: Sword, exact: false },
+    { name: nav.curriculum || 'Curriculum', href: `/${locale}/admin/curriculum`, icon: BookOpen, exact: false },
     { name: nav.users, href: `/${locale}/admin/users`, icon: Users, exact: false },
     { name: nav.analytics, href: `/${locale}/admin/analytics`, icon: BarChart3, exact: false },
     { name: nav.settings, href: `/${locale}/admin/settings`, icon: Settings, exact: false },
@@ -58,7 +52,7 @@ export function AdminSidebar({ dictionary, locale }: AdminSidebarProps) {
   return (
     <aside className="admin-sidebar fixed inset-y-0 start-0 z-50 hidden w-64 flex-col backdrop-blur-xl sm:flex transition-colors">
       <div className="flex h-16 shrink-0 items-center px-6">
-        <Logo locale={locale} />
+        <Logo locale={locale} href={`/${locale}/admin`} />
       </div>
 
       <nav className="flex flex-1 flex-col gap-1.5 overflow-y-auto px-4 py-6">
