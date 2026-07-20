@@ -43,10 +43,10 @@ export function ChallengeLabPage({
 
   const difficultyConf = DIFFICULTY_CONFIG[challenge.difficulty]
 
-  // Render the appropriate lab based on lab_template
+  // Render the appropriate lab based on lab_template_slug
   const renderLab = () => {
-    switch (challenge.lab_template) {
-      case 'login_form_bug_hunt':
+    switch (challenge.lab_template_slug) {
+      case 'login-form-bug-hunt':
         return <LoginFormBugHuntLab dictionary={dictionary} />
       default:
         return (
@@ -130,6 +130,7 @@ export function ChallengeLabPage({
               
               <BugReportForm 
                 challengeId={challenge.id} 
+                labTemplateId={challenge.lab_template_id}
                 dictionary={dictionary}
               />
             </div>

@@ -15,7 +15,8 @@ export interface ChallengeLabData {
   difficulty: ChallengeRow['difficulty']
   base_xp_reward: number
   challenge_type: string
-  lab_template: string | null
+  lab_template_id: string | null
+  lab_template_slug: string | null
   scenario: string | null
   instructions: string | null
   is_active: boolean | null
@@ -64,7 +65,10 @@ export async function getTesterChallengeLab(
         difficulty,
         base_xp_reward,
         challenge_type,
-        lab_template,
+        lab_template_id,
+        lab_templates (
+          slug
+        ),
         scenario,
         scenario_en,
         scenario_ar,
@@ -90,7 +94,8 @@ export async function getTesterChallengeLab(
       difficulty: challenge.difficulty,
       base_xp_reward: challenge.base_xp_reward,
       challenge_type: challenge.challenge_type,
-      lab_template: challenge.lab_template,
+      lab_template_id: challenge.lab_template_id,
+      lab_template_slug: (challenge.lab_templates as any)?.slug ?? null,
       scenario: localizedString(challengeRow, locale, 'scenario', 'scenario') || null,
       instructions: localizedString(challengeRow, locale, 'instructions', 'instructions') || null,
       is_active: challenge.is_active,

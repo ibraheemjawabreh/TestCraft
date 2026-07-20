@@ -43,6 +43,13 @@ interface ModuleOption {
   title: string
 }
 
+export interface LabTemplateOption {
+  id: string
+  name: string
+  slug: string
+  is_active: boolean
+}
+
 interface ChallengeDictionary {
   englishTitle: string
   arabicTitle: string
@@ -79,6 +86,7 @@ interface ChallengeFormProps {
   challenge?: Challenge
   lessonOptions: LessonOption[]
   moduleOptions: ModuleOption[]
+  labTemplateOptions: LabTemplateOption[]
   dictionary: ChallengeDictionary
   validationDictionary: ValidationDictionary
   locale: Locale
@@ -101,6 +109,7 @@ export function ChallengeForm({
   challenge,
   lessonOptions,
   moduleOptions,
+  labTemplateOptions,
   dictionary,
   validationDictionary,
   locale,
@@ -121,6 +130,7 @@ export function ChallengeForm({
       instructions_ar: challengeField(challenge, 'instructions_ar') ?? '',
       lesson_id: challenge?.lesson_id ?? null,
       module_id: challenge?.module_id ?? null,
+      lab_template_id: challenge?.lab_template_id ?? null,
       challenge_type: (challenge?.challenge_type as any) ?? 'bug_report',
       lab_template: challenge?.lab_template ?? '',
       difficulty: (challenge?.difficulty as any) ?? 'Beginner',
@@ -395,13 +405,28 @@ export function ChallengeForm({
 
           <FormField
             control={form.control}
-            name="lab_template"
+            name="lab_template_id"
             render={({ field, fieldState }) => (
               <FormItem>
                 <FormLabel>{dictionary.labTemplate}</FormLabel>
-                <FormControl>
-                  <Input {...field} className="bg-card/60 border-border/50" />
-                </FormControl>
+                <Select
+                  value={field.value ?? 'none'}
+                  onValueChange={(value) => field.onChange(value === 'none' ? null : value)}
+                >
+                  <FormControl>
+                    <SelectTrigger className="bg-card/60 border-border/50">
+                      <SelectValue placeholder="Select Lab Template" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="none">No Lab Template (Theory only)</SelectItem>
+                    {labTemplateOptions.map((lab) => (
+                      <SelectItem key={lab.id} value={lab.id}>
+                        {lab.name} {lab.is_active ? '' : '(Inactive)'}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage>{translateError(fieldState.error?.message)}</FormMessage>
               </FormItem>
             )}

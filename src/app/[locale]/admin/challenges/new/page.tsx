@@ -6,6 +6,7 @@ import { ChallengeForm } from '@/components/admin/challenges/challenge-form'
 import { Button } from '@/components/ui/button'
 import { getAdminLessons } from '@/lib/admin/lessons'
 import { getAdminModules } from '@/lib/admin/modules'
+import { getLabTemplateOptions } from '@/lib/admin/lab-templates'
 import type { Locale } from '@/i18n/config'
 
 interface NewChallengePageProps {
@@ -14,9 +15,10 @@ interface NewChallengePageProps {
 
 export default async function NewChallengePage({ params: { locale } }: NewChallengePageProps) {
   const dictionary = await getDictionary(locale)
-  const [lessonsResult, modulesResult] = await Promise.all([
+  const [lessonsResult, modulesResult, labTemplatesResult] = await Promise.all([
     getAdminLessons(),
     getAdminModules(),
+    getLabTemplateOptions(locale),
   ])
   const isRtl = locale === 'ar'
 
@@ -48,6 +50,7 @@ export default async function NewChallengePage({ params: { locale } }: NewChalle
             id: m.id,
             title: locale === 'ar' ? m.title_ar || m.title_en : m.title_en || m.title_ar || '',
           }))}
+          labTemplateOptions={labTemplatesResult.data ?? []}
           dictionary={dictionary.admin.challenges}
           validationDictionary={dictionary.validation}
           locale={locale}

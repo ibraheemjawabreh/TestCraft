@@ -28,6 +28,7 @@ export interface TesterChallenge {
   lesson_id: string | null
   challenge_type: string
   lab_template: string | null
+  lab_template_id: string | null
   scenario: string | null
   instructions: string | null
   sort_order: number
@@ -98,6 +99,7 @@ export async function getChallengeForTester(
         lesson_id,
         challenge_type,
         lab_template,
+        lab_template_id,
         scenario,
         scenario_en,
         scenario_ar,
@@ -185,6 +187,7 @@ export async function getChallengeForTester(
       lesson_id: challenge.lesson_id,
       challenge_type: challenge.challenge_type,
       lab_template: challenge.lab_template,
+      lab_template_id: challenge.lab_template_id ?? null,
       scenario: localizedString(challengeRow, locale, 'scenario', 'scenario') || null,
       instructions: localizedString(challengeRow, locale, 'instructions', 'instructions') || null,
       sort_order: challenge.sort_order,

@@ -25,6 +25,7 @@ export const challengeSchema = z.object({
   instructions_ar: z.string().max(5000, 'descriptionMax').optional().or(z.literal('')),
   lesson_id: z.string().uuid('required').nullable().optional(),
   module_id: z.string().uuid('required').nullable().optional(),
+  lab_template_id: z.string().uuid('required').nullable().optional(),
   challenge_type: z.enum(['bug_report', 'test_cases', 'api_testing', 'automation'], {
     required_error: 'required',
   }).default('bug_report'),
@@ -50,6 +51,8 @@ export const hiddenBugSchema = z.object({
     .string()
     .min(3, 'bugTitleMin')
     .max(160, 'bugTitleMax'),
+  description: z.string().max(1000, 'descriptionMax').optional().or(z.literal('')),
+  bug_identifier: z.string().max(80, 'titleMax').optional().or(z.literal('')),
   actual_severity: z.enum(['Low', 'Medium', 'High', 'Critical'], {
     required_error: 'required',
   }),
@@ -58,6 +61,7 @@ export const hiddenBugSchema = z.object({
     .int()
     .min(0, 'bonusXpMin')
     .max(1000, 'bonusXpMax'),
+  is_active: z.boolean().default(true),
 })
 
 export type HiddenBugFormValues = z.infer<typeof hiddenBugSchema>

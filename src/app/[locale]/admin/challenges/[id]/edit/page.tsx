@@ -6,6 +6,7 @@ import { getDictionary } from '@/i18n/get-dictionary'
 import { getAdminChallengeById } from '@/lib/admin/challenges'
 import { getAdminLessons } from '@/lib/admin/lessons'
 import { getAdminModules } from '@/lib/admin/modules'
+import { getLabTemplateOptions } from '@/lib/admin/lab-templates'
 import { ChallengeForm } from '@/components/admin/challenges/challenge-form'
 import { Button } from '@/components/ui/button'
 import type { Locale } from '@/i18n/config'
@@ -21,10 +22,11 @@ export default async function EditChallengePage({ params: { locale, id } }: Edit
   const dictionary = await getDictionary(locale)
   const isRtl = locale === 'ar'
 
-  const [{ data: challenge }, lessonsResult, modulesResult] = await Promise.all([
+  const [{ data: challenge }, lessonsResult, modulesResult, labTemplatesResult] = await Promise.all([
     getAdminChallengeById(id),
     getAdminLessons(),
     getAdminModules(),
+    getLabTemplateOptions(locale),
   ])
 
   if (!challenge) {
@@ -60,6 +62,7 @@ export default async function EditChallengePage({ params: { locale, id } }: Edit
             id: m.id,
             title: locale === 'ar' ? m.title_ar || m.title_en : m.title_en || m.title_ar || '',
           }))}
+          labTemplateOptions={labTemplatesResult.data ?? []}
           dictionary={dictionary.admin.challenges}
           validationDictionary={dictionary.validation}
           locale={locale}

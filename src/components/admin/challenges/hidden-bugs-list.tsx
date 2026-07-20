@@ -33,6 +33,9 @@ interface BugsListDictionary {
   noHiddenBugs: string
   saveChallenge: string
   somethingWentWrong: string
+  bugIdentifier?: string
+  description?: string
+  active?: string
 }
 
 interface ValidationDictionary {
@@ -117,16 +120,21 @@ export function HiddenBugsList({
             <TableHeader>
               <TableRow className="border-border/50 hover:bg-transparent">
                 <TableHead className="text-start">{dictionary.bugTitle}</TableHead>
+                <TableHead className="text-start">{dictionary.bugIdentifier ?? 'Identifier'}</TableHead>
                 <TableHead className="text-start">{dictionary.actualSeverity}</TableHead>
                 <TableHead className="text-start">{dictionary.bonusXp}</TableHead>
+                <TableHead className="text-start">{dictionary.active ?? 'Status'}</TableHead>
                 <TableHead className="text-end">{dictionary.actions}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {bugs.map((bug) => (
                 <TableRow key={bug.id} className="border-border/50">
-                  <TableCell className="font-medium text-foreground max-w-[300px] truncate">
+                  <TableCell className="font-medium text-foreground max-w-[200px] truncate">
                     {bug.bug_title}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground font-mono text-sm max-w-[150px] truncate">
+                    {bug.bug_identifier || '-'}
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className={severityColor[bug.actual_severity] ?? ''}>
@@ -135,6 +143,11 @@ export function HiddenBugsList({
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     +{bug.bonus_xp} XP
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={bug.is_active ? 'bg-emerald-500/10 text-emerald-500' : 'bg-zinc-500/10 text-zinc-500'}>
+                      {bug.is_active ? 'Active' : 'Inactive'}
+                    </Badge>
                   </TableCell>
                   <TableCell className="text-end">
                     <div className="flex items-center justify-end gap-1">

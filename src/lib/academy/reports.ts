@@ -29,6 +29,7 @@ export async function getTesterReports(
         id,
         user_id,
         challenge_id,
+        lab_template_id,
         attempt_id,
         title,
         steps_to_reproduce,
@@ -54,6 +55,7 @@ export async function getTesterReports(
       id: row.id,
       user_id: row.user_id,
       challenge_id: row.challenge_id,
+      lab_template_id: row.lab_template_id,
       attempt_id: row.attempt_id,
       title: row.title,
       steps_to_reproduce: row.steps_to_reproduce,
@@ -132,6 +134,7 @@ export async function getTesterReportsForChallenge(
 export interface SubmitBugReportInput {
   userId: string
   challengeId: string
+  labTemplateId: string | null
   title: string
   steps_to_reproduce: string
   expected_result: string
@@ -248,6 +251,7 @@ export async function submitBugReport(
       .insert({
         user_id: input.userId,
         challenge_id: input.challengeId,
+        lab_template_id: input.labTemplateId,
         attempt_id: attemptId,
         title: parsed.data.title,
         steps_to_reproduce: parsed.data.steps_to_reproduce,

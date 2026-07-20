@@ -13,6 +13,7 @@ type SeverityLevel = Database['public']['Enums']['severity_level']
 
 interface BugReportFormProps {
   challengeId: string
+  labTemplateId: string | null
   dictionary: Dictionary
 }
 
@@ -39,7 +40,7 @@ function resolveValidationMessage(key: string, dictionary: Dictionary): string {
   return map[key] ?? key
 }
 
-export function BugReportForm({ challengeId, dictionary }: BugReportFormProps) {
+export function BugReportForm({ challengeId, labTemplateId, dictionary }: BugReportFormProps) {
   const router = useRouter()
   const [serverError, setServerError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
@@ -68,7 +69,7 @@ export function BugReportForm({ challengeId, dictionary }: BugReportFormProps) {
         const res = await fetch('/api/academy/reports', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...data, challengeId }),
+          body: JSON.stringify({ ...data, challengeId, labTemplateId }),
         })
 
         const json = (await res.json()) as { error?: string }

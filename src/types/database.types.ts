@@ -90,6 +90,7 @@ export type Database = {
           created_at: string | null
           expected_result: string
           id: string
+          lab_template_id: string | null
           reported_severity: Database["public"]["Enums"]["severity_level"]
           reviewed_at: string | null
           reviewed_by: string | null
@@ -107,6 +108,7 @@ export type Database = {
           created_at?: string | null
           expected_result: string
           id?: string
+          lab_template_id?: string | null
           reported_severity: Database["public"]["Enums"]["severity_level"]
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -124,6 +126,7 @@ export type Database = {
           created_at?: string | null
           expected_result?: string
           id?: string
+          lab_template_id?: string | null
           reported_severity?: Database["public"]["Enums"]["severity_level"]
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -305,6 +308,7 @@ export type Database = {
           is_active: boolean | null
           is_required: boolean
           lab_template: string | null
+          lab_template_id: string | null
           lesson_id: string | null
           module_id: string | null
           scenario: string | null
@@ -330,6 +334,7 @@ export type Database = {
           is_active?: boolean | null
           is_required?: boolean
           lab_template?: string | null
+          lab_template_id?: string | null
           lesson_id?: string | null
           module_id?: string | null
           scenario?: string | null
@@ -355,6 +360,7 @@ export type Database = {
           is_active?: boolean | null
           is_required?: boolean
           lab_template?: string | null
+          lab_template_id?: string | null
           lesson_id?: string | null
           module_id?: string | null
           scenario?: string | null
@@ -381,29 +387,45 @@ export type Database = {
             referencedRelation: "learning_modules"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "challenges_lab_template_id_fkey"
+            columns: ["lab_template_id"]
+            isOneToOne: false
+            referencedRelation: "lab_templates"
+            referencedColumns: ["id"]
+          },
         ]
       }
       hidden_bugs: {
         Row: {
           actual_severity: Database["public"]["Enums"]["severity_level"]
           bonus_xp: number | null
+          bug_identifier: string | null
           bug_title: string
           challenge_id: string | null
+          description: string | null
           id: string
+          is_active: boolean
         }
         Insert: {
           actual_severity: Database["public"]["Enums"]["severity_level"]
           bonus_xp?: number | null
+          bug_identifier?: string | null
           bug_title: string
           challenge_id?: string | null
+          description?: string | null
           id?: string
+          is_active?: boolean
         }
         Update: {
           actual_severity?: Database["public"]["Enums"]["severity_level"]
           bonus_xp?: number | null
+          bug_identifier?: string | null
           bug_title?: string
           challenge_id?: string | null
+          description?: string | null
           id?: string
+          is_active?: boolean
         }
         Relationships: [
           {
@@ -414,6 +436,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      lab_templates: {
+        Row: {
+          configuration: Json
+          created_at: string
+          description_ar: string | null
+          description_en: string | null
+          id: string
+          is_active: boolean
+          lab_type: string
+          name_ar: string | null
+          name_en: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          configuration?: Json
+          created_at?: string
+          description_ar?: string | null
+          description_en?: string | null
+          id?: string
+          is_active?: boolean
+          lab_type?: string
+          name_ar?: string | null
+          name_en: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          configuration?: Json
+          created_at?: string
+          description_ar?: string | null
+          description_en?: string | null
+          id?: string
+          is_active?: boolean
+          lab_type?: string
+          name_ar?: string | null
+          name_en?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       learning_modules: {
         Row: {

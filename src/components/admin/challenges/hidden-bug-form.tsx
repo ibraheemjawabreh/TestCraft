@@ -44,6 +44,9 @@ interface BugDictionary {
   editHiddenBug: string
   saveChallenge: string
   somethingWentWrong: string
+  bugIdentifier?: string
+  description?: string
+  active?: string
 }
 
 interface ValidationDictionary {
@@ -80,6 +83,9 @@ export function HiddenBugForm({
       bug_title: bug?.bug_title ?? '',
       actual_severity: bug?.actual_severity ?? 'Medium',
       bonus_xp: bug?.bonus_xp ?? 50,
+      description: bug?.description ?? '',
+      bug_identifier: bug?.bug_identifier ?? '',
+      is_active: bug?.is_active ?? true,
     },
   })
 
@@ -196,6 +202,58 @@ export function HiddenBugForm({
                       className="bg-background/50 border-border/50"
                     />
                   </FormControl>
+                  <FormMessage>{translateError(fieldState.error?.message)}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            {/* Bug Identifier */}
+            <FormField
+              control={form.control}
+              name="bug_identifier"
+              render={({ field, fieldState }) => (
+                <FormItem>
+                  <FormLabel>{dictionary.bugIdentifier ?? 'Bug Identifier (Tech ID)'}</FormLabel>
+                  <FormControl>
+                    <Input {...field} className="bg-background/50 border-border/50" placeholder="e.g. auth_bypass_01" />
+                  </FormControl>
+                  <FormMessage>{translateError(fieldState.error?.message)}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            {/* Description */}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field, fieldState }) => (
+                <FormItem>
+                  <FormLabel>{dictionary.description ?? 'Description'}</FormLabel>
+                  <FormControl>
+                    <Input {...field} className="bg-background/50 border-border/50" />
+                  </FormControl>
+                  <FormMessage>{translateError(fieldState.error?.message)}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            {/* Active Status */}
+            <FormField
+              control={form.control}
+              name="is_active"
+              render={({ field, fieldState }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border border-border/50 bg-background/50 p-4">
+                  <FormControl>
+                    <input
+                      type="checkbox"
+                      checked={field.value}
+                      onChange={field.onChange}
+                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>{dictionary.active ?? 'Active'}</FormLabel>
+                  </div>
                   <FormMessage>{translateError(fieldState.error?.message)}</FormMessage>
                 </FormItem>
               )}

@@ -280,6 +280,7 @@ export async function getAcademyLearningOverview(
         lesson_id: toString(challenge.lesson_id),
         challenge_type: toString(challenge.challenge_type) ?? 'bug_hunt',
         lab_template: toString(challenge.lab_template),
+        lab_template_id: toString(challenge.lab_template_id),
         scenario: localizedString(challenge, locale, 'scenario', 'scenario') || null,
         instructions: localizedString(challenge, locale, 'instructions', 'instructions') || null,
         sort_order: toNumber(challenge.sort_order, 0),

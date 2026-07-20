@@ -209,14 +209,14 @@ function ChallengeItemRow({
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-foreground truncate">{title}</p>
       </div>
-      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${difficultyColors[challenge.difficulty] || 'text-slate-400 bg-slate-500/10'}`}>
+      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${difficultyColors[challenge.difficulty] || 'text-slate-400 bg-slate-500/10'} shrink-0`}>
         {challenge.difficulty}
       </span>
-      <div className="flex items-center gap-1 text-xs text-amber-500">
+      <div className="flex items-center gap-1 text-xs text-amber-500 shrink-0">
         <Zap className="h-3.5 w-3.5" />
         {challenge.base_xp_reward} {dict.xp}
       </div>
-      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${challenge.is_active ? 'text-green-400 bg-green-500/10' : 'text-slate-400 bg-slate-500/10'}`}>
+      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${challenge.is_active ? 'text-green-400 bg-green-500/10' : 'text-slate-400 bg-slate-500/10'} shrink-0`}>
         {challenge.is_active ? dict.active : dict.inactive}
       </span>
     </div>
@@ -248,14 +248,14 @@ function LessonItemRow({
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-foreground truncate">{title || 'Untitled'}</p>
       </div>
-      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+      <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
         <Clock className="h-3 w-3" />
         {lesson.estimated_minutes} {dict.minutes}
       </div>
-      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${lesson.is_published ? 'text-green-400 bg-green-500/10' : 'text-yellow-400 bg-yellow-500/10'}`}>
+      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${lesson.is_published ? 'text-green-400 bg-green-500/10' : 'text-yellow-400 bg-yellow-500/10'} shrink-0`}>
         {lesson.is_published ? dict.published : dict.drafts}
       </span>
-      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
         <button
           onClick={() => onTogglePublish(lesson.id, !lesson.is_published)}
           className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
@@ -322,7 +322,7 @@ function ModuleCardComponent({
   return (
     <div className="rounded-xl border border-border/40 bg-card/20 backdrop-blur-sm overflow-hidden transition-all hover:border-border/60">
       {/* Module Header */}
-      <div className="flex items-center gap-3 px-4 py-3">
+      <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 px-4 py-3">
         <button
           onClick={() => setExpanded(!expanded)}
           className="text-muted-foreground hover:text-foreground transition-colors"
@@ -334,7 +334,7 @@ function ModuleCardComponent({
           <h4 className="text-sm font-semibold text-foreground truncate">{title}</h4>
           {description && <p className="text-xs text-muted-foreground truncate mt-0.5">{description}</p>}
         </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           <span>{mod.lessons.length} {dict.lessons}</span>
           <span>•</span>
           <span>{mod.challenges.length} {dict.challenges}</span>
@@ -475,7 +475,7 @@ function PathCard({
           {expanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
         </button>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-3">
             <Route className="h-5 w-5 text-primary flex-shrink-0" aria-hidden="true" />
             <h3 className="text-lg font-bold text-foreground truncate">{title || 'Untitled Path'}</h3>
             <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${path.is_active ? 'text-green-400 bg-green-500/10' : 'text-yellow-400 bg-yellow-500/10'}`}>
@@ -485,7 +485,7 @@ function PathCard({
           {description && (
             <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{description}</p>
           )}
-          <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-muted-foreground">
             <span className="flex items-center gap-1"><Layers className="h-3.5 w-3.5" /> {path.modules.length} {dict.modules}</span>
             <span className="flex items-center gap-1"><BookOpen className="h-3.5 w-3.5" /> {totalLessons} {dict.lessons}</span>
             <span className="flex items-center gap-1"><Sword className="h-3.5 w-3.5" /> {totalChallenges} {dict.challenges}</span>
@@ -836,7 +836,7 @@ export function CurriculumManager({
       <StatsBar stats={stats} dict={dict} />
 
       {/* Search & Filter Bar */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between flex-wrap">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <input
@@ -847,8 +847,8 @@ export function CurriculumManager({
             className="w-full rounded-lg border border-border/50 bg-card/30 py-2.5 ps-10 pe-4 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all"
           />
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-secondary/30 rounded-lg p-1 mr-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1 bg-secondary/30 rounded-lg p-1 mr-2">
             {(['all', 'published', 'drafts'] as const).map((f) => (
               <button
                 key={f}

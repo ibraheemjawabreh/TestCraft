@@ -19,27 +19,36 @@ export function LoginFormBugHuntLab({ dictionary }: LoginFormBugHuntLabProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    
+    // Bug: Loading state is set, but we don't disable the button in the UI! (User can spam click)
     setIsLoading(true)
 
     // Simulate network delay
     setTimeout(() => {
       setIsLoading(false)
       
-      // Bug 1: Email validation is completely missing/bypassed.
-      // A proper form would validate email format here or via HTML5 type="email" + required.
-      // But we just accept anything.
-      
-      // Bug 2: Password validation is missing or accepts very short passwords.
-      // A proper form would enforce min length (e.g. 8 chars).
-      // Here we just accept it if it's not totally empty (or even if it is, let's say we just show generic error if both are empty).
-
+      // Bug 1: Generic error for empty fields instead of specific field validation
       if (!email || !password) {
-        setError(dictionary.auth.invalidCredentials)
+        setError(dictionary.challengeLab?.loginLab?.emptyFieldsError || 'Please fill in all fields.')
         return
       }
 
-      // Simulate a generic auth failure since this is a sandboxed lab
-      setError(dictionary.auth.invalidCredentials)
+      // Bug 2: SQL Injection exposure
+      if (email.includes("'") || email.includes('"')) {
+        setError('500 Internal Server Error: syntax error at or near "\'"')
+        return
+      }
+
+      // Bug 3: Weak password accepted (Simulate success if they use test/test)
+      if (email === 'admin@admin.com' && password === '123') {
+        setError('Success: Logged in (Bug: Default weak credentials accepted!)')
+        return
+      }
+
+      // Default simulated failure
+      const isEnglish = dictionary.auth.login === 'Log in'
+      const invalidAuthMsg = isEnglish ? 'Invalid email or password.' : 'البريد الإلكتروني أو كلمة المرور غير صحيحة.'
+      setError(invalidAuthMsg)
     }, 800)
   }
 
@@ -149,8 +158,9 @@ export function LoginFormBugHuntLab({ dictionary }: LoginFormBugHuntLabProps) {
 
           <button
             type="submit"
-            disabled={isLoading}
-            className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60 transition-all"
+            // Bug: Button is not actually disabled during loading, allowing multiple submissions
+            // disabled={isLoading} 
+            className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition-all"
           >
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />

@@ -7,6 +7,7 @@ type SeverityLevel = Database['public']['Enums']['severity_level']
 
 interface RequestBody {
   challengeId: string
+  labTemplateId?: string | null
   title: string
   steps_to_reproduce: string
   expected_result: string
@@ -56,6 +57,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const result = await submitBugReport({
       userId: user.id,
       challengeId: body.challengeId,
+      labTemplateId: body.labTemplateId ?? null,
       title: body.title,
       steps_to_reproduce: body.steps_to_reproduce,
       expected_result: body.expected_result,

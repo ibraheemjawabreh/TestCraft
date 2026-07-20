@@ -44,6 +44,9 @@ export async function createHiddenBug(
       bug_title: input.bug_title,
       actual_severity: input.actual_severity,
       bonus_xp: input.bonus_xp,
+      description: input.description || null,
+      bug_identifier: input.bug_identifier || null,
+      is_active: input.is_active ?? true,
     })
     .select()
     .single()
@@ -70,6 +73,9 @@ export async function updateHiddenBug(
       bug_title: input.bug_title,
       actual_severity: input.actual_severity,
       bonus_xp: input.bonus_xp,
+      description: input.description || null,
+      bug_identifier: input.bug_identifier || null,
+      is_active: input.is_active ?? true,
     })
     .eq('id', id)
     .select()

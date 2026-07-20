@@ -40,7 +40,7 @@ export default async function ChallengeDetailsPage({
   const { challenge } = challengeData
 
   // If this challenge has a lab_template, delegate entirely to ChallengeLabPage
-  if (challenge.lab_template) {
+  if (challenge.lab_template_id || challenge.lab_template) {
     const { data: labData, error: labError } = await getTesterChallengeLab(id, user.id, locale)
     
     if (labError || !labData) {
