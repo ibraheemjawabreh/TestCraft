@@ -157,6 +157,7 @@ export async function getAcademyLearningOverview(
             base_xp_reward,
             is_active,
             lesson_id,
+            module_id,
             challenge_type,
             lab_template,
             scenario,
@@ -166,7 +167,10 @@ export async function getAcademyLearningOverview(
             instructions_en,
             instructions_ar,
             sort_order,
-            is_required
+            is_required,
+            practical_app_key,
+            workflow_type,
+            status
           `)
           .eq('is_active', true)
           .in('lesson_id', lessonIds)
@@ -264,9 +268,16 @@ export async function getAcademyLearningOverview(
 
   const practiceChallenges: ChallengeWithStatus[] = challengeRows
     .filter((challenge) => {
-      const lessonId = toString(challenge.lesson_id)
-      const lesson = lessonItems.find((item) => item.id === lessonId)
-      return lesson?.is_unlocked === true
+      const wf = toString(challenge.workflow_type) ?? 'legacy'
+      const statusValue = toString(challenge.status) ?? (challenge.is_active ? 'published' : 'draft')
+
+      // Must be published
+      if (statusValue !== 'published') return false
+
+      // Practical challenges must have a valid practical_app_key
+      if (wf === 'practical' && !toString(challenge.practical_app_key)) return false
+
+      return true
     })
     .map((challenge) => {
       const id = toString(challenge.id) ?? ''
@@ -279,6 +290,8 @@ export async function getAcademyLearningOverview(
         is_active: true,
         lesson_id: toString(challenge.lesson_id),
         challenge_type: toString(challenge.challenge_type) ?? 'bug_hunt',
+        workflow_type: toString(challenge.workflow_type) ?? 'legacy',
+        practical_app_key: toString(challenge.practical_app_key) ?? null,
         lab_template: toString(challenge.lab_template),
         lab_template_id: toString(challenge.lab_template_id),
         scenario: localizedString(challenge, locale, 'scenario', 'scenario') || null,

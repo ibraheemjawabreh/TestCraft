@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
-import { updateChallenge } from '@/lib/admin/challenges'
-import { challengeSchema } from '@/lib/validations/challenge'
+import { updatePracticalChallenge } from '@/lib/admin/practical-challenges'
+import { practicalChallengeSchema } from '@/lib/validations/practical-challenge'
 import type { Locale } from '@/i18n/config'
 
 export async function POST(
@@ -9,7 +9,6 @@ export async function POST(
   { params: { locale } }: { params: { locale: Locale } }
 ) {
   try {
-    // Enforce admin access
     await requireAdmin(locale)
 
     const body = await request.json()
@@ -19,14 +18,12 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid ID' }, { status: 400 })
     }
     
-    // Validate payload
-    const parsed = challengeSchema.safeParse(input)
+    const parsed = practicalChallengeSchema.safeParse(input)
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 })
     }
 
-    const result = await updateChallenge(id, parsed.data)
-
+    const result = await updatePracticalChallenge(id, parsed.data)
     if (result.error) {
       return NextResponse.json({ error: result.error }, { status: 500 })
     }

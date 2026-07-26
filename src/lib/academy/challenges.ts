@@ -27,6 +27,8 @@ export interface TesterChallenge {
   is_active: boolean | null
   lesson_id: string | null
   challenge_type: string
+  workflow_type: string
+  practical_app_key: string | null
   lab_template: string | null
   lab_template_id: string | null
   scenario: string | null
@@ -83,7 +85,9 @@ export async function getChallengeForTester(
   try {
     const supabase = await createClient()
 
-    const { data: challenge, error: challengeError } = await supabase
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(challengeId)
+
+    let query = supabase
       .from('challenges')
       .select(`
         id,
@@ -97,6 +101,7 @@ export async function getChallengeForTester(
         base_xp_reward,
         is_active,
         lesson_id,
+        module_id,
         challenge_type,
         lab_template,
         lab_template_id,
@@ -106,23 +111,46 @@ export async function getChallengeForTester(
         instructions,
         instructions_en,
         instructions_ar,
-        sort_order
+        sort_order,
+        workflow_type,
+        status,
+        practical_app_key
       `)
-      .eq('id', challengeId)
-      .eq('is_active', true)
-      .single()
+
+    if (isUuid) {
+      query = query.eq('id', challengeId)
+    } else {
+      query = query.or(`id.eq.${challengeId},slug.eq.${challengeId}`)
+    }
+
+    const { data: challenge, error: challengeError } = await query.maybeSingle()
 
     if (challengeError || !challenge) {
       return { data: null, error: 'challenge_not_found' }
     }
 
-    const overview = await getAcademyLearningOverview(userId, locale)
+    // ── Tester visibility rules ─────────────────────────────────────────────
     const challengeRow = challenge as Record<string, unknown>
-    const lessonId = typeof challengeRow.lesson_id === 'string' ? challengeRow.lesson_id : null
+    const workflowType = (challengeRow.workflow_type as string | null) ?? 'legacy'
+    const statusValue = (challengeRow.status as string | null) ?? (challengeRow.is_active ? 'published' : 'draft')
 
+    // Must be published or active
+    if (statusValue !== 'published' && !challenge.is_active) {
+      return { data: null, error: 'challenge_not_found' }
+    }
+
+    // Practical challenges must have a valid practical_app_key
+    if (workflowType === 'practical' && !challengeRow.practical_app_key) {
+      return { data: null, error: 'challenge_not_found' }
+    }
+    // ── End visibility rules ────────────────────────────────────────────────
+
+    // Check lesson-unlock state (only block if lesson is found and explicitly locked)
+    const lessonId = typeof challengeRow.lesson_id === 'string' ? challengeRow.lesson_id : null
     if (lessonId) {
+      const overview = await getAcademyLearningOverview(userId, locale)
       const linkedLesson = overview.data?.lessons.find((lesson) => lesson.id === lessonId)
-      if (!linkedLesson?.is_unlocked) {
+      if (linkedLesson && linkedLesson.is_unlocked === false) {
         return { data: null, error: 'challenge_not_found' }
       }
     }
@@ -132,7 +160,7 @@ export async function getChallengeForTester(
       .from('challenge_attempts')
       .select('id, status')
       .eq('user_id', userId)
-      .eq('challenge_id', challengeId)
+      .eq('challenge_id', challenge.id)
       .in('status', ['started', 'submitted', 'reviewing'])
       .order('created_at', { ascending: false })
       .limit(1)
@@ -147,7 +175,7 @@ export async function getChallengeForTester(
         .from('challenge_attempts')
         .select('id, status')
         .eq('user_id', userId)
-        .eq('challenge_id', challengeId)
+        .eq('challenge_id', challenge.id)
         .in('status', ['approved', 'rejected'])
         .order('created_at', { ascending: false })
         .limit(1)
@@ -163,7 +191,7 @@ export async function getChallengeForTester(
           .from('challenge_attempts')
           .insert({
             user_id: userId,
-            challenge_id: challengeId,
+            challenge_id: challenge.id,
             status: 'started',
           })
           .select('id')
@@ -186,6 +214,8 @@ export async function getChallengeForTester(
       is_active: challenge.is_active,
       lesson_id: challenge.lesson_id,
       challenge_type: challenge.challenge_type,
+      workflow_type: workflowType,
+      practical_app_key: (challengeRow.practical_app_key as string | null) ?? null,
       lab_template: challenge.lab_template,
       lab_template_id: challenge.lab_template_id ?? null,
       scenario: localizedString(challengeRow, locale, 'scenario', 'scenario') || null,

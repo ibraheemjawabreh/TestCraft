@@ -300,6 +300,7 @@ export const ar = {
       hiddenBugDeleted: "تم حذف الخطأ المخفي بنجاح.",
       somethingWentWrong: "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
       challengeTitle: "العنوان",
+      practicalApplication: "التطبيق العملي",
       description: "الوصف",
       confirmDelete: "هل أنت متأكد من حذف هذا الخطأ المخفي؟",
       viewDetails: "عرض التفاصيل",

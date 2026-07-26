@@ -61,8 +61,8 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
   const [decision, setDecision] = useState<ReviewDecision>(
     attempt.status === 'approved' ? 'approved' : 'rejected'
   )
-  const [score, setScore] = useState<number>(attempt.score ?? 0)
-  const [earnedXp, setEarnedXp] = useState<number>(attempt.earned_xp ?? challenge.base_xp_reward)
+  const [score, setScore] = useState<string>(attempt.score?.toString() ?? '')
+  const [earnedXp, setEarnedXp] = useState<string>(attempt.earned_xp?.toString() ?? challenge.base_xp_reward.toString())
   const [isPassed, setIsPassed] = useState<boolean>(attempt.is_passed ?? false)
   const [adminFeedback, setAdminFeedback] = useState<string>(attempt.admin_feedback ?? '')
   const [reportStatuses, setReportStatuses] = useState<Record<string, 'Pending' | 'Reviewed' | 'Rejected'>>(
@@ -100,8 +100,8 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
           attemptId: attempt.id,
           challengeId: attempt.challenge_id,
           status: decision,
-          score,
-          earnedXp,
+          score: score === '' ? 0 : Number(score),
+          earnedXp: earnedXp === '' ? 0 : Number(earnedXp),
           adminFeedback,
           isPassed,
           reportUpdates: reports.map((r) => ({
@@ -291,7 +291,7 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
                 min={0}
                 max={100}
                 value={score}
-                onChange={(e) => setScore(Number(e.target.value))}
+                onChange={(e) => setScore(e.target.value)}
                 className="w-full rounded-lg border border-border/70 bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
@@ -303,7 +303,7 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
                 min={0}
                 max={10000}
                 value={earnedXp}
-                onChange={(e) => setEarnedXp(Number(e.target.value))}
+                onChange={(e) => setEarnedXp(e.target.value)}
                 className="w-full rounded-lg border border-border/70 bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>

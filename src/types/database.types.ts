@@ -309,16 +309,22 @@ export type Database = {
           is_required: boolean
           lab_template: string | null
           lab_template_id: string | null
+          learning_path_id: string | null
           lesson_id: string | null
           module_id: string | null
+          practical_app_key: string | null
+          practical_app_config: any
           scenario: string | null
           scenario_ar: string | null
           scenario_en: string | null
+          slug: string | null
           sort_order: number
+          status: 'draft' | 'published' | 'archived'
           title: string
           title_ar: string | null
           title_en: string | null
           unlock_after_lesson: boolean
+          workflow_type: 'legacy' | 'practical'
         }
         Insert: {
           base_xp_reward: number
@@ -335,16 +341,22 @@ export type Database = {
           is_required?: boolean
           lab_template?: string | null
           lab_template_id?: string | null
+          learning_path_id?: string | null
           lesson_id?: string | null
           module_id?: string | null
+          practical_app_key?: string | null
+          practical_app_config?: any
           scenario?: string | null
           scenario_ar?: string | null
           scenario_en?: string | null
+          slug?: string | null
           sort_order?: number
+          status?: 'draft' | 'published' | 'archived'
           title: string
           title_ar?: string | null
           title_en?: string | null
           unlock_after_lesson?: boolean
+          workflow_type?: 'legacy' | 'practical'
         }
         Update: {
           base_xp_reward?: number
@@ -361,16 +373,22 @@ export type Database = {
           is_required?: boolean
           lab_template?: string | null
           lab_template_id?: string | null
+          learning_path_id?: string | null
           lesson_id?: string | null
           module_id?: string | null
+          practical_app_key?: string | null
+          practical_app_config?: any
           scenario?: string | null
           scenario_ar?: string | null
           scenario_en?: string | null
+          slug?: string | null
           sort_order?: number
+          status?: 'draft' | 'published' | 'archived'
           title?: string
           title_ar?: string | null
           title_en?: string | null
           unlock_after_lesson?: boolean
+          workflow_type?: 'legacy' | 'practical'
         }
         Relationships: [
           {
@@ -400,6 +418,7 @@ export type Database = {
         Row: {
           actual_severity: Database["public"]["Enums"]["severity_level"]
           bonus_xp: number | null
+          bug_key: string | null
           bug_identifier: string | null
           bug_title: string
           challenge_id: string | null
@@ -410,6 +429,7 @@ export type Database = {
         Insert: {
           actual_severity: Database["public"]["Enums"]["severity_level"]
           bonus_xp?: number | null
+          bug_key?: string | null
           bug_identifier?: string | null
           bug_title: string
           challenge_id?: string | null
@@ -420,6 +440,7 @@ export type Database = {
         Update: {
           actual_severity?: Database["public"]["Enums"]["severity_level"]
           bonus_xp?: number | null
+          bug_key?: string | null
           bug_identifier?: string | null
           bug_title?: string
           challenge_id?: string | null

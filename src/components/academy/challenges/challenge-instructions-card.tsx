@@ -24,9 +24,9 @@ export function ChallengeInstructionsCard({
               {dictionary.challengeLab.scenario}
             </h3>
           </div>
-          <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+          <div className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
             {scenario}
-          </p>
+          </div>
         </div>
       )}
 
@@ -38,9 +38,9 @@ export function ChallengeInstructionsCard({
               {dictionary.challengeLab.instructions}
             </h3>
           </div>
-          <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+          <div className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
             {instructions}
-          </p>
+          </div>
         </div>
       )}
     </div>

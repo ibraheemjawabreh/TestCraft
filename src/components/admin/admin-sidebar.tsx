@@ -10,7 +10,6 @@ import {
   BarChart3,
   Settings,
   LogOut,
-  Beaker,
 } from 'lucide-react'
 
 import { Logo } from '@/components/brand/Logo'
@@ -25,7 +24,6 @@ interface AdminSidebarDictionary {
       users: string
       analytics: string
       settings: string
-      labs?: string
     }
   }
   navigation: {
@@ -47,7 +45,8 @@ export function AdminSidebar({ dictionary, locale }: AdminSidebarProps) {
     { name: nav.reviews, href: `/${locale}/admin/reviews`, icon: ClipboardCheck, exact: false },
     { name: nav.curriculum || 'Curriculum', href: `/${locale}/admin/curriculum`, icon: BookOpen, exact: false },
     { name: nav.users, href: `/${locale}/admin/users`, icon: Users, exact: false },
-    { name: nav.labs || 'Labs', href: `/${locale}/admin/labs`, icon: Beaker, exact: false },
+    // Labs is intentionally hidden from sidebar — route still exists for legacy data access.
+    // { name: nav.labs || 'Labs', href: `/${locale}/admin/labs`, icon: Beaker, exact: false },
     { name: nav.analytics, href: `/${locale}/admin/analytics`, icon: BarChart3, exact: false },
     { name: nav.settings, href: `/${locale}/admin/settings`, icon: Settings, exact: false },
   ]

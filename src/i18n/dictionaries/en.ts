@@ -300,6 +300,7 @@ export const en = {
       hiddenBugDeleted: "Hidden bug deleted successfully.",
       somethingWentWrong: "Something went wrong. Please try again.",
       challengeTitle: "Title",
+      practicalApplication: "Practical App",
       description: "Description",
       confirmDelete: "Are you sure you want to delete this hidden bug?",
       viewDetails: "View Details",

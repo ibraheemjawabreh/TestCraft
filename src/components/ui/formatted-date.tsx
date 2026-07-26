@@ -41,10 +41,12 @@ export function FormattedDate({
     }
   }, [value, locale, dateStyle, timeStyle, fallback])
 
-  // Render nothing on server / before hydration to avoid mismatch
-  if (formatted === null) {
-    return <span className="text-muted-foreground text-sm">—</span>
-  }
-
-  return <span suppressHydrationWarning>{formatted}</span>
+  return (
+    <span 
+      suppressHydrationWarning 
+      className={formatted === null ? "text-muted-foreground text-sm" : ""}
+    >
+      {formatted === null ? "—" : formatted}
+    </span>
+  )
 }

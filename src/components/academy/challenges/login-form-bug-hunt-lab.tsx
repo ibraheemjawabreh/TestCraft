@@ -29,7 +29,7 @@ export function LoginFormBugHuntLab({ dictionary }: LoginFormBugHuntLabProps) {
       
       // Bug 1: Generic error for empty fields instead of specific field validation
       if (!email || !password) {
-        setError(dictionary.challengeLab?.loginLab?.emptyFieldsError || 'Please fill in all fields.')
+        setError((dictionary.challengeLab?.loginLab as any)?.emptyFieldsError || 'Please fill in all fields.')
         return
       }
 

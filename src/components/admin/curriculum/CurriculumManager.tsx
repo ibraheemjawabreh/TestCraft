@@ -19,6 +19,7 @@ import {
   Zap,
   ToggleLeft,
   ToggleRight,
+  Pencil,
 } from 'lucide-react'
 import {
   DndContext,
@@ -230,12 +231,14 @@ function LessonItemRow({
   dict,
   locale,
   onTogglePublish,
+  onEdit,
   onDelete,
 }: {
   lesson: CurriculumLesson
   dict: CurriculumDict['curriculum']
   locale: Locale
   onTogglePublish: (id: string, published: boolean) => void
+  onEdit: (id: string) => void
   onDelete: (id: string) => void
 }) {
   const title = locale === 'ar'
@@ -264,6 +267,13 @@ function LessonItemRow({
           {lesson.is_published ? <ToggleRight className="h-3.5 w-3.5 text-green-400" /> : <ToggleLeft className="h-3.5 w-3.5" />}
         </button>
         <button
+          onClick={() => onEdit(lesson.id)}
+          className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+          title={dict.edit || 'Edit'}
+        >
+          <Pencil className="h-3.5 w-3.5" />
+        </button>
+        <button
           onClick={() => onDelete(lesson.id)}
           className="p-1.5 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
           title={dict.delete}
@@ -283,6 +293,8 @@ function ModuleCardComponent({
   locale,
   onToggleModulePublish,
   onToggleLessonPublish,
+  onEditModule,
+  onEditLesson,
   onDeleteModule,
   onDeleteLesson,
   onAddLesson,
@@ -293,6 +305,8 @@ function ModuleCardComponent({
   locale: Locale
   onToggleModulePublish: (id: string, published: boolean) => void
   onToggleLessonPublish: (id: string, published: boolean) => void
+  onEditModule: (id: string) => void
+  onEditLesson: (id: string) => void
   onDeleteModule: (id: string) => void
   onDeleteLesson: (id: string) => void
   onAddLesson: (moduleId: string, pathId: string) => void
@@ -351,6 +365,13 @@ function ModuleCardComponent({
             {mod.is_published ? <ToggleRight className="h-4 w-4 text-green-400" /> : <ToggleLeft className="h-4 w-4" />}
           </button>
           <button
+            onClick={() => onEditModule(mod.id)}
+            className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+            title={dict.edit || 'Edit'}
+          >
+            <Pencil className="h-4 w-4" />
+          </button>
+          <button
             onClick={() => onDeleteModule(mod.id)}
             className="p-1.5 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
             title={dict.delete}
@@ -375,6 +396,7 @@ function ModuleCardComponent({
                         dict={dict}
                         locale={locale}
                         onTogglePublish={onToggleLessonPublish}
+                        onEdit={onEditLesson}
                         onDelete={onDeleteLesson}
                       />
                     </SortableItem>
@@ -418,6 +440,9 @@ function PathCard({
   onTogglePathActive,
   onToggleModulePublish,
   onToggleLessonPublish,
+  onEditPath,
+  onEditModule,
+  onEditLesson,
   onDeletePath,
   onDeleteModule,
   onDeleteLesson,
@@ -432,6 +457,9 @@ function PathCard({
   onTogglePathActive: (id: string, active: boolean) => void
   onToggleModulePublish: (id: string, published: boolean) => void
   onToggleLessonPublish: (id: string, published: boolean) => void
+  onEditPath: (id: string) => void
+  onEditModule: (id: string) => void
+  onEditLesson: (id: string) => void
   onDeletePath: (id: string) => void
   onDeleteModule: (id: string) => void
   onDeleteLesson: (id: string) => void
@@ -501,6 +529,13 @@ function PathCard({
             {path.is_active ? <ToggleRight className="h-5 w-5 text-green-400" /> : <ToggleLeft className="h-5 w-5" />}
           </button>
           <button
+            onClick={() => onEditPath(path.id)}
+            className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+            title={dict.edit || 'Edit'}
+          >
+            <Pencil className="h-5 w-5" />
+          </button>
+          <button
             onClick={() => onDeletePath(path.id)}
             className="p-2 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
             title={dict.delete}
@@ -524,6 +559,8 @@ function PathCard({
                       locale={locale}
                       onToggleModulePublish={onToggleModulePublish}
                       onToggleLessonPublish={onToggleLessonPublish}
+                      onEditModule={onEditModule}
+                      onEditLesson={onEditLesson}
                       onDeleteModule={onDeleteModule}
                       onDeleteLesson={onDeleteLesson}
                       onAddLesson={onAddLesson}
@@ -791,13 +828,21 @@ export function CurriculumManager({
     }
   }, [dict.confirmDelete, dict.deleteFailed, dict.deleteSuccess, showToast])
 
-  // ── Modals Handlers ──────────────────────────────────────────────────────
   const handleAddPath = useCallback(() => {
     setModalType('path')
     setModalMode('create')
     setModalData(null)
     setModalOpen(true)
   }, [])
+
+  const handleEditPath = useCallback((id: string) => {
+    const p = paths.find((x) => x.id === id)
+    if (!p) return
+    setModalType('path')
+    setModalMode('edit')
+    setModalData(p)
+    setModalOpen(true)
+  }, [paths])
 
   const handleAddModule = useCallback((pathId: string) => {
     setModalType('module')
@@ -806,12 +851,40 @@ export function CurriculumManager({
     setModalOpen(true)
   }, [])
 
+  const handleEditModule = useCallback((id: string) => {
+    for (const p of paths) {
+      const m = p.modules.find((x) => x.id === id)
+      if (m) {
+        setModalType('module')
+        setModalMode('edit')
+        setModalData({ ...m, learning_path_id: p.id })
+        setModalOpen(true)
+        return
+      }
+    }
+  }, [paths])
+
   const handleAddLesson = useCallback((moduleId: string, pathId: string) => {
     setModalType('lesson')
     setModalMode('create')
     setModalData({ moduleId, pathId })
     setModalOpen(true)
   }, [])
+
+  const handleEditLesson = useCallback((id: string) => {
+    for (const p of paths) {
+      for (const m of p.modules) {
+        const l = m.lessons.find((x) => x.id === id)
+        if (l) {
+          setModalType('lesson')
+          setModalMode('edit')
+          setModalData({ ...l, module_id: m.id })
+          setModalOpen(true)
+          return
+        }
+      }
+    }
+  }, [paths])
 
   const handleModalSuccess = useCallback(() => {
     // When a modal succeeds, we just reload the page to get the freshest tree 
@@ -887,6 +960,9 @@ export function CurriculumManager({
                     onTogglePathActive={handleTogglePathActive}
                     onToggleModulePublish={handleToggleModulePublish}
                     onToggleLessonPublish={handleToggleLessonPublish}
+                    onEditPath={handleEditPath}
+                    onEditModule={handleEditModule}
+                    onEditLesson={handleEditLesson}
                     onDeletePath={handleDeletePath}
                     onDeleteModule={handleDeleteModule}
                     onDeleteLesson={handleDeleteLesson}

@@ -20,30 +20,24 @@ export default async function AcademyPage({
 
   if (!activePath) {
     return (
-      <AcademyLayout dictionary={dictionary} locale={locale} username={profile.username}>
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <p className="text-muted-foreground">{dictionary.academy.failedToLoad}</p>
-        </div>
-      </AcademyLayout>
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+        <p className="text-muted-foreground">{dictionary.academy.failedToLoad}</p>
+      </div>
     )
   }
 
   const { data: pathData, error } = await getLearningPathWithProgress(activePath.id, user.id, locale)
 
-  return (
-    <AcademyLayout dictionary={dictionary} locale={locale} username={profile.username}>
-      {error || !pathData ? (
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <p className="text-muted-foreground">{dictionary.academy.failedToLoad}</p>
-        </div>
-      ) : (
-        <ModuleView
-          pathData={pathData}
-          dictionary={dictionary}
-          locale={locale}
-          username={profile.username}
-        />
-      )}
-    </AcademyLayout>
+  return error || !pathData ? (
+    <div className="flex flex-col items-center justify-center py-24 text-center">
+      <p className="text-muted-foreground">{dictionary.academy.failedToLoad}</p>
+    </div>
+  ) : (
+    <ModuleView
+      pathData={pathData}
+      dictionary={dictionary}
+      locale={locale}
+      username={profile.username}
+    />
   )
 }

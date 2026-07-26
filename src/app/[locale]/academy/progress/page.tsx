@@ -14,15 +14,11 @@ export default async function AcademyProgressPage({
   const { user, profile } = await requireTester(locale)
   const { data: progress, error } = await getTesterProgress(user.id, profile)
 
-  return (
-    <AcademyLayout dictionary={dictionary} locale={locale} username={profile.username}>
-      {error || !progress ? (
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <p className="text-muted-foreground">{dictionary.academy.failedToLoad}</p>
-        </div>
-      ) : (
-        <ProgressDashboard progress={progress} dictionary={dictionary} />
-      )}
-    </AcademyLayout>
+  return error || !progress ? (
+    <div className="flex flex-col items-center justify-center py-24 text-center">
+      <p className="text-muted-foreground">{dictionary.academy.failedToLoad}</p>
+    </div>
+  ) : (
+    <ProgressDashboard progress={progress} dictionary={dictionary} />
   )
 }

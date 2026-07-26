@@ -59,6 +59,8 @@ export const viewport: Viewport = {
 
 // ─── Root Layout ───────────────────────────────────────────────────────────
 
+import { DomRemoveDebugger } from '@/components/debug/dom-remove-debugger'
+
 export default function RootLayout({
   children,
   params: { locale },
@@ -77,7 +79,8 @@ export default function RootLayout({
       className={`${spaceGrotesk.variable} ${plusJakarta.variable}`}
       suppressHydrationWarning
     >
-      <body className="min-h-screen bg-background font-sans antialiased">
+      <body suppressHydrationWarning className="min-h-screen bg-background font-sans antialiased">
+        <DomRemoveDebugger />
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

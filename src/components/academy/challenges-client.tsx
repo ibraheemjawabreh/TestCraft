@@ -109,7 +109,7 @@ export function ChallengesClient({ challenges, dictionary, locale }: ChallengesC
       {filtered.length === 0 ? (
         <AcademyEmptyState icon={Sword} message={dictionary.academy.noChallenges} />
       ) : (
-        <>
+        <div className="space-y-4">
           <p className="text-xs text-muted-foreground">
             {filtered.length} / {challenges.length} {dictionary.academy.activeChallenges}
           </p>
@@ -123,7 +123,7 @@ export function ChallengesClient({ challenges, dictionary, locale }: ChallengesC
               />
             ))}
           </div>
-        </>
+        </div>
       )}
     </div>
   )

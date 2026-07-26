@@ -15,8 +15,8 @@ export interface ChallengeLabData {
   difficulty: ChallengeRow['difficulty']
   base_xp_reward: number
   challenge_type: string
-  lab_template_id: string | null
-  lab_template_slug: string | null
+  practical_app_key: string | null
+  practical_app_config: any
   scenario: string | null
   instructions: string | null
   is_active: boolean | null
@@ -25,6 +25,7 @@ export interface ChallengeLabData {
 export interface ChallengeLabResult {
   challenge: ChallengeLabData
   previousReports: BugReport[]
+  activeBugs: string[]
 }
 
 type Result<T> =
@@ -52,7 +53,9 @@ export async function getTesterChallengeLab(
     const supabase = await createClient()
 
     // Fetch challenge (public fields only — no hidden_bugs join)
-    const { data: challenge, error: challengeError } = await supabase
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(challengeId)
+
+    let query = supabase
       .from('challenges')
       .select(`
         id,
@@ -65,10 +68,8 @@ export async function getTesterChallengeLab(
         difficulty,
         base_xp_reward,
         challenge_type,
-        lab_template_id,
-        lab_templates (
-          slug
-        ),
+        practical_app_key,
+        practical_app_config,
         scenario,
         scenario_en,
         scenario_ar,
@@ -77,9 +78,14 @@ export async function getTesterChallengeLab(
         instructions_ar,
         is_active
       `)
-      .eq('id', challengeId)
-      .eq('is_active', true)
-      .single()
+
+    if (isUuid) {
+      query = query.eq('id', challengeId)
+    } else {
+      query = query.or(`id.eq.${challengeId},slug.eq.${challengeId}`)
+    }
+
+    const { data: challenge, error: challengeError } = await query.maybeSingle()
 
     if (challengeError || !challenge) {
       return { data: null, error: 'challenge_not_found' }
@@ -94,8 +100,8 @@ export async function getTesterChallengeLab(
       difficulty: challenge.difficulty,
       base_xp_reward: challenge.base_xp_reward,
       challenge_type: challenge.challenge_type,
-      lab_template_id: challenge.lab_template_id,
-      lab_template_slug: (challenge.lab_templates as any)?.slug ?? null,
+      practical_app_key: challenge.practical_app_key,
+      practical_app_config: challenge.practical_app_config,
       scenario: localizedString(challengeRow, locale, 'scenario', 'scenario') || null,
       instructions: localizedString(challengeRow, locale, 'instructions', 'instructions') || null,
       is_active: challenge.is_active,
@@ -106,16 +112,26 @@ export async function getTesterChallengeLab(
       .from('bug_reports')
       .select('*')
       .eq('user_id', userId)
-      .eq('challenge_id', challengeId)
+      .eq('challenge_id', challenge.id)
       .order('created_at', { ascending: false })
 
+    // Fetch active bugs (opaque flags for UI rendering only)
+    const { data: bugs } = await supabase
+      .from('hidden_bugs')
+      .select('bug_key')
+      .eq('challenge_id', challenge.id)
+      .eq('is_active', true)
+
+    const activeBugs = bugs?.map(b => b.bug_key).filter(Boolean) as string[] || []
+
     // Ensure an active attempt exists and upsert challenge_progress (non-blocking)
-    await ensureActiveAttemptAndProgress(supabase, challengeId, userId)
+    await ensureActiveAttemptAndProgress(supabase, challenge.id, userId)
 
     return {
       data: {
         challenge: localizedChallenge,
         previousReports: reports ?? [],
+        activeBugs,
       },
       error: null,
     }

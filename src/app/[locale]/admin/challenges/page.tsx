@@ -1,6 +1,5 @@
-import { Link } from 'lucide-react' // not the right Link, let's use next/link instead
 import NextLink from 'next/link'
-import { Plus, Trophy, Target, LayoutDashboard, Bug } from 'lucide-react'
+import { Plus, Trophy, Target, LayoutDashboard, Bug, Zap, Layers } from 'lucide-react'
 
 import { getDictionary } from '@/i18n/get-dictionary'
 import { getAdminChallenges } from '@/lib/admin/challenges'
@@ -18,11 +17,15 @@ export default async function ChallengesPage({ params: { locale } }: ChallengesP
   const { data: challenges, error } = await getAdminChallenges()
 
   const safeChallenges = challenges ?? []
-  
+
   // Calculate stats
   const total = safeChallenges.length
-  const active = safeChallenges.filter((c) => c.is_active).length
-  const inactive = total - active
+  const practical = safeChallenges.filter(
+    (c) => (c as unknown as { workflow_type?: string }).workflow_type === 'practical',
+  ).length
+  const legacy = safeChallenges.filter(
+    (c) => (c as unknown as { workflow_type?: string }).workflow_type !== 'practical',
+  ).length
   const totalBugs = safeChallenges.reduce((sum, c) => sum + c.hidden_bugs_count, 0)
 
   return (
@@ -37,10 +40,11 @@ export default async function ChallengesPage({ params: { locale } }: ChallengesP
             {dictionary.admin.challenges.subtitle}
           </p>
         </div>
-        <Button asChild className="gap-2">
+        {/* Only one official creation path: Practical Challenge Builder */}
+        <Button asChild className="gap-2 bg-violet-600 hover:bg-violet-700 text-white">
           <NextLink href={`/${locale}/admin/challenges/new`}>
             <Plus className="h-4 w-4" />
-            {dictionary.admin.challenges.newChallenge}
+            Create Practical Challenge
           </NextLink>
         </Button>
       </div>
@@ -53,14 +57,14 @@ export default async function ChallengesPage({ params: { locale } }: ChallengesP
           icon={<LayoutDashboard className="h-5 w-5" />}
         />
         <ChallengeStat
-          title={dictionary.admin.challenges.activeChallenges}
-          value={active}
-          icon={<Target className="h-5 w-5" />}
+          title="Practical"
+          value={practical}
+          icon={<Zap className="h-5 w-5 text-violet-500" />}
         />
         <ChallengeStat
-          title={dictionary.admin.challenges.inactiveChallenges}
-          value={inactive}
-          icon={<Trophy className="h-5 w-5" />}
+          title="Legacy"
+          value={legacy}
+          icon={<Layers className="h-5 w-5 text-zinc-500" />}
         />
         <ChallengeStat
           title={dictionary.admin.challenges.totalHiddenBugs}

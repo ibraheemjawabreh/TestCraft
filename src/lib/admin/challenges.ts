@@ -4,8 +4,13 @@ import type { ChallengeFormValues } from '@/lib/validations/challenge'
 
 type Challenge = Database['public']['Tables']['challenges']['Row']
 
+export type WorkflowType = 'legacy' | 'practical'
+export type ChallengeStatus = 'draft' | 'published' | 'archived'
+
 export interface ChallengeWithBugCount extends Challenge {
   hidden_bugs_count: number
+  /** True if the challenge is missing critical data (module, config, etc.) */
+  is_broken: boolean
 }
 
 interface DataResult<T> {
@@ -32,24 +37,41 @@ export async function getAdminChallenges(): Promise<DataResult<ChallengeWithBugC
   // Fetch hidden bug counts grouped by challenge_id
   const { data: bugs, error: bugsError } = await supabase
     .from('hidden_bugs')
-    .select('challenge_id')
+    .select('challenge_id, is_active')
 
   if (bugsError) {
     return { data: null, error: 'Failed to load hidden bugs.' }
   }
 
-  // Count bugs per challenge
+  // Count total bugs and active bugs per challenge
   const bugCountMap = new Map<string, number>()
+  const activeBugCountMap = new Map<string, number>()
   for (const bug of bugs) {
     if (bug.challenge_id) {
       bugCountMap.set(bug.challenge_id, (bugCountMap.get(bug.challenge_id) ?? 0) + 1)
+      if (bug.is_active) {
+        activeBugCountMap.set(bug.challenge_id, (activeBugCountMap.get(bug.challenge_id) ?? 0) + 1)
+      }
     }
   }
 
-  const challengesWithCounts: ChallengeWithBugCount[] = challenges.map((c) => ({
-    ...c,
-    hidden_bugs_count: bugCountMap.get(c.id) ?? 0,
-  }))
+  const challengesWithCounts: ChallengeWithBugCount[] = challenges.map((c) => {
+    const wf = (c as unknown as { workflow_type?: string }).workflow_type ?? 'legacy'
+    const activeBugs = activeBugCountMap.get(c.id) ?? 0
+
+    // A challenge is "broken" when:
+    // - it has no module_id
+    // - if practical: no practical_app_key, or no active bugs
+    const isBroken =
+      !c.module_id ||
+      (wf === 'practical' && (!c.practical_app_key || activeBugs === 0))
+
+    return {
+      ...c,
+      hidden_bugs_count: bugCountMap.get(c.id) ?? 0,
+      is_broken: isBroken,
+    }
+  })
 
   return { data: challengesWithCounts, error: null }
 }
