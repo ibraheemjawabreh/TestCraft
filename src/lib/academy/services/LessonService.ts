@@ -107,7 +107,7 @@ export async function getLessonWithModuleGate(
         learning_path_id: lesson.learning_path_id,
         title: getLocalizedContent(lesson, 'title', locale),
         slug: lesson.slug,
-        summary: lesson.summary ? getLocalizedContent(lesson, 'summary', locale) : '',
+        summary: getLocalizedContent(lesson, 'summary', locale),
         content: getLocalizedContent(lesson, 'content', locale),
         objectives: getLocalizedArray(lesson, 'objectives', locale),
         estimated_minutes: lesson.estimated_minutes,
@@ -127,98 +127,77 @@ export async function getLessonWithModuleGate(
 }
 
 /**
- * Get the next uncompleted lesson for a user across all paths.
+ * Get the next lesson after the given lesson, ordered by sort_order.
+ * Stays within the same module first, then moves to the next module.
  */
 export async function getNextLessonForUser(
   userId: string,
-  locale: Locale
+  locale: Locale,
+  currentLessonId?: string,
 ): Promise<Result<{ id: string; title: string; moduleTitle: string | null } | null>> {
   try {
     const supabase = await createClient()
 
-    // Get in-progress lesson_progress entries
-    const { data: inProgress } = await supabase
+    if (currentLessonId) {
+      // Get current lesson details
+      const { data: current } = await supabase
+        .from('lessons')
+        .select('module_id, sort_order, learning_path_id')
+        .eq('id', currentLessonId)
+        .single()
+
+      if (current?.module_id) {
+        // Look for the next lesson in the same module by sort_order
+        const { data: nextInModule } = await supabase
+          .from('lessons')
+          .select('id, title_en, title_ar, learning_modules(title_en, title_ar)')
+          .eq('module_id', current.module_id)
+          .eq('is_published', true)
+          .gt('sort_order', current.sort_order)
+          .order('sort_order', { ascending: true })
+          .limit(1)
+          .maybeSingle()
+
+        if (nextInModule) {
+          const mod = nextInModule.learning_modules as any
+          return {
+            data: {
+              id: nextInModule.id,
+              title: getLocalizedContent(nextInModule, 'title', locale),
+              moduleTitle: mod ? getLocalizedContent(mod, 'title', locale) : null,
+            },
+            error: null,
+          }
+        }
+
+        // No more lessons in this module — no "next lesson" button
+        // (user should go to challenge or next module via academy page)
+        return { data: null, error: null }
+      }
+    }
+
+    // Fallback (no currentLessonId): find first uncompleted lesson in current module
+    const { data: completedLessons } = await supabase
       .from('lesson_progress')
       .select('lesson_id')
       .eq('user_id', userId)
-      .eq('status', 'in_progress')
-      .limit(1)
-      .maybeSingle()
+      .eq('status', 'completed')
 
-    if (inProgress) {
-      const { data: lesson } = await supabase
-        .from('lessons')
-        .select('id, title_en, title_ar, learning_modules(title_en, title_ar)')
-        .eq('id', inProgress.lesson_id)
-        .single()
+    const completedIds = new Set((completedLessons ?? []).map(l => l.lesson_id))
 
-      if (lesson) {
-        const mod = lesson.learning_modules as any
-        return {
-          data: {
-            id: lesson.id,
-            title: getLocalizedContent(lesson, 'title', locale),
-            moduleTitle: mod ? getLocalizedContent(mod, 'title', locale) : null,
-          },
-          error: null,
-        }
-      }
-    }
-
-    // Fall back: find first not-started lesson in an available module
-    const { data: availableModProgress } = await supabase
-      .from('module_progress')
-      .select('module_id')
-      .eq('user_id', userId)
-      .in('status', ['available', 'in_progress'])
-      .limit(5)
-
-    if (availableModProgress && availableModProgress.length > 0) {
-      const modIds = availableModProgress.map(m => m.module_id)
-      const { data: completedLessons } = await supabase
-        .from('lesson_progress')
-        .select('lesson_id')
-        .eq('user_id', userId)
-        .eq('status', 'completed')
-
-      const completedIds = new Set((completedLessons ?? []).map(l => l.lesson_id))
-
-      const { data: lessons } = await supabase
-        .from('lessons')
-        .select('id, title_en, title_ar, module_id, sort_order, learning_modules(title_en, title_ar)')
-        .in('module_id', modIds)
-        .eq('is_published', true)
-        .order('sort_order', { ascending: true })
-
-      const nextLesson = (lessons ?? []).find(l => !completedIds.has(l.id))
-      if (nextLesson) {
-        const mod = nextLesson.learning_modules as any
-        return {
-          data: {
-            id: nextLesson.id,
-            title: getLocalizedContent(nextLesson, 'title', locale),
-            moduleTitle: mod ? getLocalizedContent(mod, 'title', locale) : null,
-          },
-          error: null,
-        }
-      }
-    }
-
-    // Last resort: very first lesson of very first module
-    const { data: firstLesson } = await supabase
+    const { data: allLessons } = await supabase
       .from('lessons')
-      .select('id, title_en, title_ar, learning_modules(title_en, title_ar)')
+      .select('id, title_en, title_ar, module_id, sort_order, learning_modules(title_en, title_ar)')
       .eq('is_published', true)
       .order('sort_order', { ascending: true })
-      .limit(1)
-      .maybeSingle()
 
-    if (firstLesson) {
-      const mod = firstLesson.learning_modules as any
+    const next = (allLessons ?? []).find(l => !completedIds.has(l.id))
+    if (next) {
+      const mod = next.learning_modules as any
       return {
         data: {
-          id: firstLesson.id,
-          title: getLocalizedContent(firstLesson, 'title', locale),
+          id: next.id,
+          title: getLocalizedContent(next, 'title', locale),
           moduleTitle: mod ? getLocalizedContent(mod, 'title', locale) : null,
         },
         error: null,
@@ -231,3 +210,4 @@ export async function getNextLessonForUser(
     return { data: null, error: 'Failed to get next lesson.' }
   }
 }
+

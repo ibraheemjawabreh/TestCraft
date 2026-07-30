@@ -3,6 +3,7 @@ import 'server-only'
 import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/types/database.types'
 import type { AttemptStatus } from '@/types/database'
+import { completeChallengeAndUnlockNext } from '@/lib/academy/services/ProgressService'
 
 type BugReport = Database['public']['Tables']['bug_reports']['Row']
 type ChallengeAttempt = Database['public']['Tables']['challenge_attempts']['Row']
@@ -206,6 +207,12 @@ export async function saveAdminAttemptReview(input: SaveReviewInput): Promise<Da
           })
           .eq('id', attempt.user_id)
       }
+    }
+
+    // 4. If approved and passed: mark module as completed and unlock the next module
+    if (input.status === 'approved' && input.isPassed && !alreadyReviewed) {
+      // XP was already awarded above — pass 0 to avoid double-awarding.
+      await completeChallengeAndUnlockNext(attempt.user_id, input.challengeId, 0)
     }
 
     return { data: true, error: null }

@@ -59,7 +59,7 @@ export async function completeLessonAndSync(
     const supabase = await createClient()
     const now = new Date().toISOString()
 
-    // 1. Mark lesson as completed
+    // 1. Mark lesson as completed — the one critical write
     const { error: lessonErr } = await supabase.from('lesson_progress').upsert(
       {
         user_id: userId,
@@ -75,58 +75,57 @@ export async function completeLessonAndSync(
       return { data: null, error: 'Failed to complete lesson.' }
     }
 
-    // 2. Find which module this lesson belongs to
-    const { data: lesson } = await supabase
-      .from('lessons')
-      .select('module_id, learning_path_id')
-      .eq('id', lessonId)
-      .single()
+    // 2. Fire all reads in parallel
+    const [lessonResult, moduleLessonsResult, moduleChallengeResult] = await Promise.all([
+      supabase.from('lessons').select('module_id, learning_path_id').eq('id', lessonId).single(),
+      supabase.from('lessons').select('id').eq('is_published', true)
+        // We'll filter by module_id once we have it — placeholder, replaced below
+        .eq('id', lessonId), // dummy, will be re-run per module below
+      Promise.resolve({ data: null }),
+    ])
 
+    const lesson = lessonResult.data
     if (!lesson?.module_id) {
+      // No module — return immediately, sync in background
+      void syncLearningPathProgress(userId, lesson?.learning_path_id ?? '')
       return { data: { moduleCompleted: false, challengeUnlocked: false }, error: null }
     }
 
-    // 3. Get all lessons in this module
-    const { data: moduleLessons } = await supabase
-      .from('lessons')
-      .select('id')
-      .eq('module_id', lesson.module_id)
-      .eq('is_published', true)
+    // 3. Parallel: get all module lessons + completed count + challenge
+    const [allModuleLessons, completedLessonsResult, moduleChallenge] = await Promise.all([
+      supabase.from('lessons').select('id').eq('module_id', lesson.module_id).eq('is_published', true),
+      supabase.from('lesson_progress').select('lesson_id')
+        .eq('user_id', userId)
+        .eq('status', 'completed')
+        .eq('lesson_id', lessonId), // just to confirm our upsert — we'll count from module below
+      supabase.from('challenges').select('id').eq('module_id', lesson.module_id).eq('is_active', true).maybeSingle(),
+    ])
 
-    if (!moduleLessons || moduleLessons.length === 0) {
-      return { data: { moduleCompleted: false, challengeUnlocked: false }, error: null }
-    }
+    const lessonIds = (allModuleLessons.data ?? []).map((l) => l.id)
+    const totalCount = lessonIds.length
 
-    // 4. Get completed lessons for this module
-    const lessonIds = moduleLessons.map(l => l.id)
-    const { data: completedLessons } = await supabase
+    // 4. Count completions for all module lessons (including the one we just completed)
+    const { data: completedRows } = await supabase
       .from('lesson_progress')
       .select('lesson_id')
       .eq('user_id', userId)
-      .in('lesson_id', lessonIds)
       .eq('status', 'completed')
+      .in('lesson_id', lessonIds)
 
-    const completedCount = completedLessons?.length ?? 0
-    const totalCount = lessonIds.length
+    const completedCount = completedRows?.length ?? 0
     const allCompleted = completedCount === totalCount
-    const pct = Math.round((completedCount / totalCount) * 100)
+    const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
+    const challenge = moduleChallenge.data
+    const challengeUnlocked = allCompleted && !!challenge
 
-    // 5. Check if this module has a challenge
-    const { data: moduleChallenge } = await supabase
-      .from('challenges')
-      .select('id')
-      .eq('module_id', lesson.module_id)
-      .eq('is_active', true)
-      .maybeSingle()
-
-    const challengeUnlocked = allCompleted && !!moduleChallenge
-
-    // 6. Upsert module_progress
     const moduleStatus = allCompleted
-      ? (moduleChallenge ? 'in_progress' : 'completed') // if challenge exists, needs to be done first
+      ? (challenge ? 'in_progress' : 'completed')
       : 'in_progress'
 
-    await supabase.from('module_progress').upsert(
+    // 5. Write module_progress
+    // When all lessons are completed: AWAIT this write — it's critical for unlocking the next module.
+    // When still in progress: fire in background (user doesn't need to wait).
+    const moduleProgressWrite = supabase.from('module_progress').upsert(
       {
         user_id: userId,
         module_id: lesson.module_id,
@@ -134,16 +133,22 @@ export async function completeLessonAndSync(
         completion_percentage: pct,
         completed_lessons: completedCount,
         total_lessons: totalCount,
-        completed_at: allCompleted && !moduleChallenge ? now : null,
+        completed_at: allCompleted && !challenge ? now : null,
       },
       { onConflict: 'user_id,module_id', ignoreDuplicates: false }
     )
 
-    // 7. Update learning_path_progress
-    await syncLearningPathProgress(userId, lesson.learning_path_id)
+    if (allCompleted) {
+      await moduleProgressWrite
+    } else {
+      void moduleProgressWrite
+    }
+
+    // 6. Sync learning path progress in background — user doesn't need to wait
+    void syncLearningPathProgress(userId, lesson.learning_path_id)
 
     return {
-      data: { moduleCompleted: allCompleted && !moduleChallenge, challengeUnlocked },
+      data: { moduleCompleted: allCompleted && !challenge, challengeUnlocked },
       error: null,
     }
   } catch (err) {
@@ -319,7 +324,12 @@ export async function syncLearningPathProgress(
 }
 
 /**
- * Get module unlock status for a user (used for lock/unlock gate checks).
+ * Get module unlock status for a user.
+ *
+ * Rule:
+ *   - Module 1 (sort_order <= 1): always available.
+ *   - Module N: unlocked only when the previous module is FULLY completed:
+ *       all published lessons completed + challenge passed (or no challenge).
  */
 export async function getModuleAccessStatus(
   userId: string,
@@ -345,10 +355,10 @@ export async function getModuleAccessStatus(
         .eq('user_id', userId)
         .eq('module_id', moduleId)
         .maybeSingle()
-      return (mp?.status as any) ?? 'available'
+      return (mp?.status as 'locked' | 'available' | 'in_progress' | 'completed') ?? 'available'
     }
 
-    // For subsequent modules, check if previous module is completed
+    // Get the previous module (highest sort_order < current)
     const { data: prevMod } = await supabase
       .from('learning_modules')
       .select('id')
@@ -359,8 +369,10 @@ export async function getModuleAccessStatus(
       .limit(1)
       .maybeSingle()
 
+    // No previous module found → available
     if (!prevMod) return 'available'
 
+    // Check if previous module is marked completed in module_progress
     const { data: prevProgress } = await supabase
       .from('module_progress')
       .select('status')
@@ -368,7 +380,130 @@ export async function getModuleAccessStatus(
       .eq('module_id', prevMod.id)
       .maybeSingle()
 
-    if (prevProgress?.status !== 'completed') return 'locked'
+    if (prevProgress?.status === 'completed') {
+      // Previous module is officially completed → return current module's status
+      const { data: mp } = await supabase
+        .from('module_progress')
+        .select('status')
+        .eq('user_id', userId)
+        .eq('module_id', moduleId)
+        .maybeSingle()
+      return (mp?.status as 'locked' | 'available' | 'in_progress' | 'completed') ?? 'available'
+    }
+
+    // Self-healing: check if previous module has a passed challenge attempt
+    // (covers cases where completeChallengeAndUnlockNext was not called previously)
+    const { data: prevModChallenge } = await supabase
+      .from('challenges')
+      .select('id')
+      .eq('module_id', prevMod.id)
+      .eq('is_active', true)
+      .maybeSingle()
+
+    if (prevModChallenge) {
+      const { data: passedAttempt } = await supabase
+        .from('challenge_attempts')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('challenge_id', prevModChallenge.id)
+        .eq('is_passed', true)
+        .maybeSingle()
+
+      if (passedAttempt) {
+        // Challenge is passed but module_progress not updated — self-heal now
+        await supabase.from('module_progress').upsert(
+          {
+            user_id: userId,
+            module_id: prevMod.id,
+            status: 'completed',
+            completion_percentage: 100,
+            completed_at: new Date().toISOString(),
+          },
+          { onConflict: 'user_id,module_id' }
+        )
+        // Also ensure current module is marked available
+        await supabase.from('module_progress').upsert(
+          {
+            user_id: userId,
+            module_id: moduleId,
+            status: 'available',
+            completion_percentage: 0,
+          },
+          { onConflict: 'user_id,module_id', ignoreDuplicates: true }
+        )
+        const { data: mp } = await supabase
+          .from('module_progress')
+          .select('status')
+          .eq('user_id', userId)
+          .eq('module_id', moduleId)
+          .maybeSingle()
+        return (mp?.status as 'locked' | 'available' | 'in_progress' | 'completed') ?? 'available'
+      }
+    }
+
+    // Previous module not officially completed — check manually:
+    // All published lessons of the previous module must be completed
+    const { data: prevModLessons } = await supabase
+      .from('lessons')
+      .select('id')
+      .eq('module_id', prevMod.id)
+      .eq('is_published', true)
+
+    const prevLessonIds = (prevModLessons ?? []).map((l) => l.id)
+
+    if (prevLessonIds.length === 0) {
+      // No lessons in previous module — check challenge only
+    } else {
+      const { data: completedProgress } = await supabase
+        .from('lesson_progress')
+        .select('lesson_id')
+        .eq('user_id', userId)
+        .eq('status', 'completed')
+        .in('lesson_id', prevLessonIds)
+
+      const completedCount = completedProgress?.length ?? 0
+      if (completedCount < prevLessonIds.length) {
+        // Not all lessons completed → locked
+        return 'locked'
+      }
+    }
+
+    // All lessons in previous module are completed.
+    // Now check if previous module has a challenge that must be passed.
+    const { data: prevChallenge } = await supabase
+      .from('challenges')
+      .select('id')
+      .eq('module_id', prevMod.id)
+      .eq('is_active', true)
+      .maybeSingle()
+
+    if (prevChallenge) {
+      // Check if the challenge has a passed attempt
+      const { data: passedAttempt } = await supabase
+        .from('challenge_attempts')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('challenge_id', prevChallenge.id)
+        .eq('is_passed', true)
+        .maybeSingle()
+
+      if (!passedAttempt) {
+        // Challenge exists but not passed → still locked
+        return 'locked'
+      }
+    }
+
+    // Previous module is now fully completed — auto-sync its status and unlock current module
+    await supabase.from('module_progress').upsert(
+      {
+        user_id: userId,
+        module_id: prevMod.id,
+        status: 'completed',
+        completion_percentage: 100,
+        completed_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id,module_id' }
+    )
 
     const { data: mp } = await supabase
       .from('module_progress')
@@ -377,7 +512,7 @@ export async function getModuleAccessStatus(
       .eq('module_id', moduleId)
       .maybeSingle()
 
-    return (mp?.status as any) ?? 'available'
+    return (mp?.status as 'locked' | 'available' | 'in_progress' | 'completed') ?? 'available'
   } catch {
     return 'locked'
   }

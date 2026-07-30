@@ -84,9 +84,20 @@ export async function getAdminLearningPathById(id: string): Promise<DataResult<L
 
 /**
  * Create a new learning path.
+ * sort_order is auto-assigned as global max(sort_order) + 1.
  */
 export async function createLearningPath(input: LearningPathFormValues): Promise<DataResult<LearningPath>> {
   const supabase = await createClient()
+
+  // Auto-assign sort_order as global max + 1
+  const { data: maxRow } = await supabase
+    .from('learning_paths')
+    .select('sort_order')
+    .order('sort_order', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  const sortOrder = ((maxRow?.sort_order ?? 0) as number) + 1
 
   const { data, error } = await supabase
     .from('learning_paths')
@@ -97,16 +108,17 @@ export async function createLearningPath(input: LearningPathFormValues): Promise
       description_ar: input.description_ar,
       slug: input.slug,
       is_active: input.is_active,
-      sort_order: input.sort_order,
+      sort_order: sortOrder,
     })
     .select()
     .single()
 
   if (error) {
+    console.error('createLearningPath DB error:', JSON.stringify(error, null, 2))
     if (error.code === '23505') {
       return { data: null, error: 'slug_taken' }
     }
-    return { data: null, error: 'Failed to create learning path.' }
+    return { data: null, error: `Failed to create learning path. DB: ${error.message} (${error.code})` }
   }
 
   return { data: data as any as LearningPath, error: null }

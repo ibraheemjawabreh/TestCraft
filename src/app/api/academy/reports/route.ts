@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { submitBugReport } from '@/lib/academy/reports'
+import { submitBugReport, submitAttempt } from '@/lib/academy/reports'
 import type { Database } from '@/types/database.types'
 
 type SeverityLevel = Database['public']['Enums']['severity_level']
@@ -17,7 +17,8 @@ interface RequestBody {
 
 /**
  * POST /api/academy/reports
- * Submits a bug report. user_id is always from the server session — never from body.
+ * Submits a bug report AND immediately transitions the attempt to "submitted"
+ * so the admin can see it for review. user_id is always from the server session.
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
@@ -54,6 +55,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 })
     }
 
+    // 1. Save the bug report (creates/reuses an attempt internally)
     const result = await submitBugReport({
       userId: user.id,
       challengeId: body.challengeId,
@@ -67,6 +69,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     if (result.error || !result.data) {
       return NextResponse.json({ error: result.error || 'Unknown error' }, { status: 400 })
+    }
+
+    // 2. Find the active attempt and submit it (started → submitted)
+    // This ensures the admin sees the report immediately in the submissions page.
+    const { data: activeAttempt } = await supabase
+      .from('challenge_attempts')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('challenge_id', body.challengeId)
+      .eq('status', 'started')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (activeAttempt) {
+      // Transition attempt from started → submitted (non-blocking, best effort)
+      void submitAttempt(user.id, body.challengeId, activeAttempt.id)
     }
 
     return NextResponse.json({ id: result.data.id }, { status: 201 })

@@ -65,8 +65,90 @@ export async function getActiveChallengesForTester(
   locale: Locale,
 ): Promise<Result<ChallengeWithStatus[]>> {
   try {
-    const overview = await getAcademyLearningOverview(userId, locale)
-    return { data: overview.data?.practiceChallenges ?? [], error: null }
+    const supabase = await createClient()
+
+    const { data: challenges, error: challengesError } = await supabase
+      .from('challenges')
+      .select(`
+        id,
+        title,
+        title_en,
+        title_ar,
+        description,
+        description_en,
+        description_ar,
+        difficulty,
+        base_xp_reward,
+        is_active,
+        lesson_id,
+        module_id,
+        challenge_type,
+        lab_template,
+        lab_template_id,
+        scenario,
+        scenario_en,
+        scenario_ar,
+        instructions,
+        instructions_en,
+        instructions_ar,
+        sort_order,
+        is_required,
+        practical_app_key,
+        workflow_type,
+        status
+      `)
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true })
+
+    if (challengesError || !challenges) {
+      return { data: [], error: null }
+    }
+
+    const challengeIds = challenges.map((c) => c.id)
+
+    const { data: attempts } = challengeIds.length > 0
+      ? await supabase
+          .from('challenge_attempts')
+          .select('id, challenge_id, status, updated_at')
+          .eq('user_id', userId)
+          .in('challenge_id', challengeIds)
+          .order('updated_at', { ascending: true })
+      : { data: [] }
+
+    const attemptStatusMap = new Map<string, string>()
+    const activeAttemptMap = new Map<string, string>()
+
+    for (const a of (attempts ?? [])) {
+      if (a.challenge_id && a.status) {
+        attemptStatusMap.set(a.challenge_id, a.status)
+        if (a.id) activeAttemptMap.set(a.challenge_id, a.id)
+      }
+    }
+
+    const list: ChallengeWithStatus[] = challenges.map((ch) => {
+      const row = ch as Record<string, unknown>
+      return {
+        id: ch.id,
+        title: localizedString(row, locale, 'title', 'title'),
+        description: localizedString(row, locale, 'description', 'description'),
+        difficulty: ch.difficulty as ChallengeWithStatus['difficulty'],
+        base_xp_reward: ch.base_xp_reward ?? 100,
+        is_active: ch.is_active,
+        lesson_id: ch.lesson_id,
+        challenge_type: ch.challenge_type ?? 'bug_hunt',
+        workflow_type: (ch as any).workflow_type ?? 'legacy',
+        practical_app_key: (ch as any).practical_app_key ?? null,
+        lab_template: ch.lab_template,
+        lab_template_id: ch.lab_template_id,
+        scenario: localizedString(row, locale, 'scenario', 'scenario') || null,
+        instructions: localizedString(row, locale, 'instructions', 'instructions') || null,
+        sort_order: ch.sort_order ?? 0,
+        userStatus: deriveStatus(attemptStatusMap.get(ch.id) ?? null),
+        activeAttemptId: activeAttemptMap.get(ch.id) ?? null,
+      }
+    })
+
+    return { data: list, error: null }
   } catch {
     return { data: null, error: 'An unexpected error occurred.' }
   }
@@ -86,6 +168,7 @@ export async function getChallengeForTester(
     const supabase = await createClient()
 
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(challengeId)
+    const isNumeric = /^\d+$/.test(challengeId)
 
     let query = supabase
       .from('challenges')
@@ -119,8 +202,10 @@ export async function getChallengeForTester(
 
     if (isUuid) {
       query = query.eq('id', challengeId)
+    } else if (isNumeric) {
+      query = query.or(`sort_order.eq.${challengeId},slug.eq.${challengeId}`)
     } else {
-      query = query.or(`id.eq.${challengeId},slug.eq.${challengeId}`)
+      query = query.eq('slug', challengeId)
     }
 
     const { data: challenge, error: challengeError } = await query.maybeSingle()
@@ -132,28 +217,13 @@ export async function getChallengeForTester(
     // ── Tester visibility rules ─────────────────────────────────────────────
     const challengeRow = challenge as Record<string, unknown>
     const workflowType = (challengeRow.workflow_type as string | null) ?? 'legacy'
-    const statusValue = (challengeRow.status as string | null) ?? (challengeRow.is_active ? 'published' : 'draft')
+    const statusValue = (challengeRow.status as string | null) ?? (challenge.is_active ? 'published' : 'draft')
 
     // Must be published or active
     if (statusValue !== 'published' && !challenge.is_active) {
       return { data: null, error: 'challenge_not_found' }
     }
-
-    // Practical challenges must have a valid practical_app_key
-    if (workflowType === 'practical' && !challengeRow.practical_app_key) {
-      return { data: null, error: 'challenge_not_found' }
-    }
     // ── End visibility rules ────────────────────────────────────────────────
-
-    // Check lesson-unlock state (only block if lesson is found and explicitly locked)
-    const lessonId = typeof challengeRow.lesson_id === 'string' ? challengeRow.lesson_id : null
-    if (lessonId) {
-      const overview = await getAcademyLearningOverview(userId, locale)
-      const linkedLesson = overview.data?.lessons.find((lesson) => lesson.id === lessonId)
-      if (linkedLesson && linkedLesson.is_unlocked === false) {
-        return { data: null, error: 'challenge_not_found' }
-      }
-    }
 
     // Find the most recent active (non-terminal) attempt, or the most recent overall
     const { data: activeAttempt } = await supabase
@@ -224,7 +294,8 @@ export async function getChallengeForTester(
     }
 
     return { data: { challenge: localizedChallenge, userStatus, activeAttemptId: attemptId }, error: null }
-  } catch {
+  } catch (err) {
+    console.error('getChallengeForTester error:', err)
     return { data: null, error: 'An unexpected error occurred.' }
   }
 }

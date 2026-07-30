@@ -186,11 +186,7 @@ export function LessonForm({ paths, modules, dictionary, locale, initialData, on
           {errors.estimated_minutes && <p className="text-xs text-destructive">{errors.estimated_minutes.message}</p>}
         </div>
 
-        <div className="space-y-1.5">
-          <label className="block text-sm font-medium text-foreground">{dictionary.learning.sortOrder}</label>
-          <input type="number" {...register('sort_order', { valueAsNumber: true })} className={inputClass} disabled={isPending} />
-          {errors.sort_order && <p className="text-xs text-destructive">{errors.sort_order.message}</p>}
-        </div>
+
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2">

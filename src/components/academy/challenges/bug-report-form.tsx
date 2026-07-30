@@ -75,7 +75,7 @@ export function BugReportForm({ challengeId, labTemplateId, dictionary }: BugRep
         const json = (await res.json()) as { error?: string }
 
         if (!res.ok || json.error) {
-          setServerError(dictionary.challengeLab.reportSubmitFailed)
+          setServerError(json.error || dictionary.challengeLab.reportSubmitFailed)
           return
         }
 

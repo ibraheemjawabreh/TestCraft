@@ -17,19 +17,28 @@ export function getLocalizedContent(
   const enField = `${field}_en`
   const arField = `${field}_ar`
 
+  const arValue = record[arField]
+  const enValue = record[enField]
+  const legacyValue = record[field]
+
   if (locale === 'ar') {
-    const arValue = record[arField]
     if (arValue && typeof arValue === 'string' && arValue.trim().length > 0) {
       return arValue
     }
-    // Fallback to English if Arabic is missing
-    const enValue = record[enField]
-    return typeof enValue === 'string' ? enValue : ''
+    if (enValue && typeof enValue === 'string' && enValue.trim().length > 0) {
+      return enValue
+    }
+  } else {
+    if (enValue && typeof enValue === 'string' && enValue.trim().length > 0) {
+      return enValue
+    }
+    if (arValue && typeof arValue === 'string' && arValue.trim().length > 0) {
+      return arValue
+    }
   }
 
-  // Default to English
-  const enValue = record[enField]
-  return typeof enValue === 'string' ? enValue : ''
+  // Fallback to legacy single column field if available (e.g. `title` or `content`)
+  return typeof legacyValue === 'string' ? legacyValue : ''
 }
 
 /**

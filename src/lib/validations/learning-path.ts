@@ -13,12 +13,12 @@ export const learningPathSchema = z.object({
     .trim(),
   description_en: z
     .string()
-    .min(10, 'descriptionMin')
+    .min(3, 'descriptionMin')
     .max(2000, 'descriptionMax')
     .trim(),
   description_ar: z
     .string()
-    .min(10, 'descriptionMin')
+    .min(3, 'descriptionMin')
     .max(2000, 'descriptionMax')
     .trim(),
   slug: z
@@ -28,11 +28,13 @@ export const learningPathSchema = z.object({
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'slugInvalid')
     .trim(),
   is_active: z.boolean().default(true),
+  // sort_order is auto-assigned server-side — optional here
   sort_order: z
     .number({ invalid_type_error: 'required' })
     .int()
-    .min(0, 'sortOrderMin')
-    .default(0),
+    .min(0)
+    .default(0)
+    .optional(),
 })
 
 export type LearningPathFormValues = z.infer<typeof learningPathSchema>

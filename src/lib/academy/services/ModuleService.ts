@@ -149,7 +149,9 @@ export async function getLearningPathWithProgress(
     }
 
     // Determine module unlock status sequentially
-    let previousModuleCompleted = true // First module is always available if published
+    // Rule: Module N is unlocked when Module (N-1) is FULLY completed:
+    //       all lessons done + challenge passed (or no challenge in that module)
+    let previousModuleFullyCompleted = true // Module 1 is always available
 
     const enrichedModules: ModuleWithProgress[] = modules.map((mod, idx) => {
       const mp = modProgressMap.get(mod.id)
@@ -178,26 +180,39 @@ export async function getLearningPathWithProgress(
       const completedLessons = enrichedLessons.filter(l => l.is_completed).length
       const allLessonsCompleted = totalLessons > 0 && completedLessons === totalLessons
 
-      // Determine module challenge status
+      // Is this module accessible at all?
+      const isModuleUnlocked = idx === 0 || previousModuleFullyCompleted
+
+      // Determine challenge status for this module
       let challengeStatus: ModuleChallengeStatus | null = null
       if (moduleChallenge) {
         const attempt = challengeAttemptMap.get(moduleChallenge.id)
-        let cStatus: ModuleChallengeStatus['status'] = 'locked'
-        if (!previousModuleCompleted || idx !== 0 && !previousModuleCompleted) {
+        let cStatus: ModuleChallengeStatus['status']
+
+        if (!isModuleUnlocked) {
+          // Module is locked → challenge is also locked
           cStatus = 'locked'
         } else if (attempt?.is_passed) {
           cStatus = 'completed'
         } else if (attempt?.status === 'approved') {
-          cStatus = 'approved'
+          // approved but not yet flagged is_passed — treat as completed
+          cStatus = 'completed'
+        } else if (attempt?.status === 'reviewing') {
+          cStatus = 'submitted'
+        } else if (attempt?.status === 'submitted') {
+          cStatus = 'submitted'
         } else if (attempt?.status === 'rejected') {
           cStatus = 'rejected'
-        } else if (attempt?.status === 'submitted' || attempt?.status === 'reviewing') {
-          cStatus = 'submitted'
         } else if (attempt?.status === 'started') {
           cStatus = 'in_progress'
         } else if (allLessonsCompleted) {
+          // All lessons done → challenge is now available to attempt
           cStatus = 'available'
+        } else {
+          // Lessons not yet done → challenge is locked
+          cStatus = 'locked'
         }
+
         challengeStatus = {
           id: moduleChallenge.id,
           title: getLocalizedContent(moduleChallenge, 'title', locale),
@@ -206,11 +221,21 @@ export async function getLearningPathWithProgress(
         }
       }
 
-      // Determine module status
+      // A module is "fully completed" when:
+      //   - all lessons are done AND challenge passed/completed (or no challenge)
+      //   - OR the module_progress in DB already says 'completed' (self-healing for old data)
+      const challengePassed =
+        !moduleChallenge ||
+        challengeStatus?.status === 'completed'
+
+      const isModuleFullyCompleted =
+        (allLessonsCompleted && challengePassed) ||
+        mp?.status === 'completed'
+
+      // Determine module display status
       let moduleStatus: ModuleStatus = 'locked'
-      if (idx === 0 || previousModuleCompleted) {
-        const challengeCompleted = !moduleChallenge || challengeStatus?.status === 'completed'
-        if (completedLessons === totalLessons && totalLessons > 0 && challengeCompleted) {
+      if (isModuleUnlocked) {
+        if (isModuleFullyCompleted || mp?.status === 'completed') {
           moduleStatus = 'completed'
         } else if (completedLessons > 0 || (mp && mp.status !== 'locked')) {
           moduleStatus = 'in_progress'
@@ -219,13 +244,8 @@ export async function getLearningPathWithProgress(
         }
       }
 
-      // A module is truly "completed" when: all lessons done AND challenge passed (or no challenge)
-      const isModuleFullyCompleted =
-        moduleStatus === 'completed' ||
-        (mp?.status === 'completed') ||
-        (allLessonsCompleted && (!moduleChallenge || challengeStatus?.status === 'completed'))
-
-      previousModuleCompleted = isModuleFullyCompleted
+      // Pass to the next iteration: this module is fully completed?
+      previousModuleFullyCompleted = isModuleFullyCompleted || mp?.status === 'completed'
 
       const completionPct = totalLessons > 0
         ? Math.round((completedLessons / totalLessons) * 100)
