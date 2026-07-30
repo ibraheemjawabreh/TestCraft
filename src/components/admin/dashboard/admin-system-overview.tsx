@@ -1,8 +1,9 @@
+'use client'
+
 import {
-  Users,
-  Trophy,
-  BookOpen,
-  ClipboardList,
+  Users, Trophy, BookOpen, ClipboardList,
+  Map, Layers, FileText, CheckCircle2,
+  Clock, XCircle, Route,
 } from 'lucide-react'
 
 import { AdminStatCard } from '@/components/admin/dashboard/admin-stat-card'
@@ -17,23 +18,71 @@ interface AdminSystemOverviewProps {
 export function AdminSystemOverview({ dictionary, stats }: AdminSystemOverviewProps) {
   const t = dictionary.admin.dashboard
 
-  const cards = [
-    { title: t.activeUsers, value: stats.activeUsers, icon: Users },
-    { title: t.activeChallenges, value: stats.activeChallenges, icon: Trophy },
-    { title: t.publishedLessons, value: stats.publishedLessons, icon: BookOpen },
-    { title: t.pendingReports, value: stats.pendingReports, icon: ClipboardList },
+  const curriculumCards = [
+    { title: 'Learning Paths',   value: stats.totalPaths,      icon: Route },
+    { title: 'Modules',          value: stats.totalModules,    icon: Layers },
+    { title: 'Lessons',          value: stats.totalLessons,    icon: BookOpen },
+    { title: 'Challenges',       value: stats.totalChallenges, icon: Trophy },
+  ]
+
+  const userCards = [
+    { title: t.activeUsers,      value: stats.totalStudents,   icon: Users },
+    { title: 'Bug Reports',      value: stats.totalBugReports, icon: FileText },
+  ]
+
+  const attemptCards = [
+    { title: t.pendingReviews,   value: stats.pendingReviews,  icon: Clock,         accent: 'amber' as const },
+    { title: 'Approved',         value: stats.approvedAttempts, icon: CheckCircle2, accent: 'green' as const },
+    { title: 'Rejected',         value: stats.rejectedAttempts, icon: XCircle,      accent: 'red'   as const },
   ]
 
   return (
-    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {cards.map((card) => (
-        <AdminStatCard
-          key={card.title}
-          title={card.title}
-          value={card.value}
-          icon={<card.icon className="h-5 w-5" aria-hidden="true" />}
-        />
-      ))}
-    </section>
+    <div className="space-y-6">
+      {/* Curriculum Stats */}
+      <div>
+        <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Curriculum</p>
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {curriculumCards.map((card) => (
+            <AdminStatCard
+              key={card.title}
+              title={card.title}
+              value={card.value}
+              icon={<card.icon className="h-5 w-5" aria-hidden="true" />}
+            />
+          ))}
+        </section>
+      </div>
+
+      {/* Users & Reports */}
+      <div>
+        <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Users & Reports</p>
+        <section className="grid gap-4 sm:grid-cols-2">
+          {userCards.map((card) => (
+            <AdminStatCard
+              key={card.title}
+              title={card.title}
+              value={card.value}
+              icon={<card.icon className="h-5 w-5" aria-hidden="true" />}
+            />
+          ))}
+        </section>
+      </div>
+
+      {/* Attempt Reviews */}
+      <div>
+        <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Attempt Reviews</p>
+        <section className="grid gap-4 sm:grid-cols-3">
+          {attemptCards.map((card) => (
+            <AdminStatCard
+              key={card.title}
+              title={card.title}
+              value={card.value}
+              accent={card.accent}
+              icon={<card.icon className="h-5 w-5" aria-hidden="true" />}
+            />
+          ))}
+        </section>
+      </div>
+    </div>
   )
 }

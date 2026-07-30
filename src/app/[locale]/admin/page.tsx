@@ -5,6 +5,7 @@ import { AdminSystemOverview } from '@/components/admin/dashboard/admin-system-o
 import { AdminQuickActions } from '@/components/admin/dashboard/admin-quick-actions'
 import { RecentBugReports } from '@/components/admin/dashboard/recent-bug-reports'
 import { RecentUsers } from '@/components/admin/dashboard/recent-users'
+import { MVPChecklist } from '@/components/admin/dashboard/mvp-checklist'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { type Locale } from '@/i18n/config'
@@ -43,6 +44,9 @@ export default async function AdminOverviewPage({ params: { locale } }: AdminPag
         </div>
       ) : (
         <>
+          {/* MVP Readiness & Seeder Checklist */}
+          <MVPChecklist stats={result.data.stats} />
+
           {/* Priority Review CTA */}
           {(result.data.stats.pendingReviews > 0 || result.data.stats.pendingReports > 0) && (
             <Card className="border-[#f97316]/25 bg-[#f97316]/5 shadow-[0_18px_45px_-35px_rgba(234,88,12,0.45)]">

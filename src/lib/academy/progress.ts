@@ -10,18 +10,40 @@ type Result<T> =
   | { data: T; error: null }
   | { data: null; error: string }
 
+export interface AttemptSummary {
+  id: string
+  challengeId: string
+  challengeTitle: string
+  status: string
+  submittedAt: string | null
+  score: number | null
+  earnedXp: number | null
+  isPassed: boolean | null
+}
+
 export interface TesterProgressStats {
   profile: Profile
   totalXp: number
   currentLevel: number
-  activeChallengesCount: number
-  attemptedChallengesCount: number
+  // Lesson & challenge counts
+  completedLessonsCount: number
+  completedChallengesCount: number
+  // Attempts breakdown
+  approvedAttempts: number
+  pendingAttempts: number
+  rejectedAttempts: number
+  // Bug reports breakdown
   totalReports: number
   pendingReports: number
   reviewedReports: number
   rejectedReports: number
+  // Legacy fields
+  activeChallengesCount: number
+  attemptedChallengesCount: number
   aiEvaluationsCount: number
   badgesCount: number
+  // Detailed attempts
+  recentAttempts: AttemptSummary[]
 }
 
 interface ReportCountRow {
@@ -45,6 +67,11 @@ export async function getTesterProgress(
       reportsResult,
       aiEvaluationsResult,
       badgesResult,
+      completedLessonsResult,
+      approvedAttemptsResult,
+      pendingAttemptsResult,
+      rejectedAttemptsResult,
+      recentAttemptsResult,
     ] = await Promise.all([
       supabase
         .from('challenges')
@@ -62,9 +89,38 @@ export async function getTesterProgress(
         .from('user_badges')
         .select('badge_id', { count: 'exact', head: true })
         .eq('user_id', userId),
+      supabase
+        .from('lesson_progress')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .not('completed_at', 'is', null),
+      supabase
+        .from('challenge_attempts')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('status', 'approved'),
+      supabase
+        .from('challenge_attempts')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .in('status', ['submitted', 'reviewing']),
+      supabase
+        .from('challenge_attempts')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('status', 'rejected'),
+      supabase
+        .from('challenge_attempts')
+        .select('id, challenge_id, status, submitted_at, score, earned_xp, is_passed')
+        .eq('user_id', userId)
+        .order('submitted_at', { ascending: false, nullsFirst: false })
+        .limit(10),
     ])
 
-    if (activeChallengesResult.error || reportsResult.error || aiEvaluationsResult.error || badgesResult.error) {
+    if (
+      activeChallengesResult.error || reportsResult.error ||
+      aiEvaluationsResult.error || badgesResult.error
+    ) {
       return { data: null, error: 'Failed to load progress data.' }
     }
 
@@ -75,11 +131,28 @@ export async function getTesterProgress(
         .filter((challengeId): challengeId is string => Boolean(challengeId)),
     )
 
+    // Fetch challenge titles for recent attempts
+    const recentAttemptRows = (recentAttemptsResult.data ?? []) as Array<{
+      id: string; challenge_id: string; status: string
+      submitted_at: string | null; score: number | null
+      earned_xp: number | null; is_passed: boolean | null
+    }>
+    const challengeIds = [...new Set(recentAttemptRows.map((a) => a.challenge_id).filter(Boolean))]
+    const { data: challengeRows } = challengeIds.length > 0
+      ? await supabase.from('challenges').select('id, title').in('id', challengeIds)
+      : { data: [] }
+    const titleById = new Map((challengeRows ?? []).map((c) => [c.id, c.title]))
+
     return {
       data: {
         profile,
         totalXp: profile.total_xp ?? 0,
         currentLevel: profile.current_level ?? 1,
+        completedLessonsCount: completedLessonsResult.count ?? 0,
+        completedChallengesCount: approvedAttemptsResult.count ?? 0,
+        approvedAttempts: approvedAttemptsResult.count ?? 0,
+        pendingAttempts: pendingAttemptsResult.count ?? 0,
+        rejectedAttempts: rejectedAttemptsResult.count ?? 0,
         activeChallengesCount: activeChallengesResult.count ?? 0,
         attemptedChallengesCount: attemptedChallengeIds.size,
         totalReports: reports.length,
@@ -88,6 +161,16 @@ export async function getTesterProgress(
         rejectedReports: countStatus(reports, 'Rejected'),
         aiEvaluationsCount: aiEvaluationsResult.count ?? 0,
         badgesCount: badgesResult.count ?? 0,
+        recentAttempts: recentAttemptRows.map((a) => ({
+          id: a.id,
+          challengeId: a.challenge_id,
+          challengeTitle: titleById.get(a.challenge_id) ?? 'Unknown Challenge',
+          status: a.status,
+          submittedAt: a.submitted_at,
+          score: a.score,
+          earnedXp: a.earned_xp,
+          isPassed: a.is_passed,
+        })),
       },
       error: null,
     }
