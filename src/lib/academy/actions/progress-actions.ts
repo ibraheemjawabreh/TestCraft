@@ -1,7 +1,6 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
 import { completeLessonAndSync, markLessonInProgress } from '@/lib/academy/services/ProgressService'
 import type { Locale } from '@/i18n/config'
 
@@ -15,7 +14,8 @@ export async function actionCompleteLesson(
   locale: Locale
 ) {
   const result = await completeLessonAndSync(userId, lessonId)
-  revalidatePath(`/${locale}/academy`)
+  // Only revalidate this lesson page — not the entire academy tree
   revalidatePath(`/${locale}/academy/lessons/${lessonId}`)
   return result
 }
+

@@ -79,10 +79,14 @@ export async function getTesterChallengeLab(
         is_active
       `)
 
+    const isNumeric = /^\d+$/.test(challengeId)
+
     if (isUuid) {
       query = query.eq('id', challengeId)
+    } else if (isNumeric) {
+      query = query.or(`sort_order.eq.${challengeId},slug.eq.${challengeId}`)
     } else {
-      query = query.or(`id.eq.${challengeId},slug.eq.${challengeId}`)
+      query = query.eq('slug', challengeId)
     }
 
     const { data: challenge, error: challengeError } = await query.maybeSingle()
@@ -135,7 +139,8 @@ export async function getTesterChallengeLab(
       },
       error: null,
     }
-  } catch {
+  } catch (err) {
+    console.error('getTesterChallengeLab error:', err)
     return { data: null, error: 'An unexpected error occurred.' }
   }
 }

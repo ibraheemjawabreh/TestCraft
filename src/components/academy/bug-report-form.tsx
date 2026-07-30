@@ -73,7 +73,7 @@ export function BugReportForm({ challengeId, dictionary, onSuccess }: BugReportF
         const json = (await res.json()) as { error?: string }
 
         if (!res.ok || json.error) {
-          setServerError(dictionary.academy.reportSubmitFailed)
+          setServerError(json.error || dictionary.academy.reportSubmitFailed)
           return
         }
 

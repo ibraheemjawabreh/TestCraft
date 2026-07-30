@@ -133,17 +133,35 @@ export async function getAdminLessonById(id: string, locale: Locale = 'en'): Pro
 
 /**
  * Create a new lesson.
+ * sort_order is auto-assigned as max(sort_order) + 1 within the same module
+ * (or learning_path if no module). Manual input is ignored.
  */
 export async function createLesson(input: LessonFormValues): Promise<DataResult<Lesson>> {
   const supabase = await createClient()
+
+  // Auto-calculate sort_order scoped to the module (or learning_path)
+  let sortOrderQuery = supabase
+    .from('lessons')
+    .select('sort_order')
+    .order('sort_order', { ascending: false })
+    .limit(1)
+
+  if (input.module_id) {
+    sortOrderQuery = sortOrderQuery.eq('module_id', input.module_id)
+  } else {
+    sortOrderQuery = sortOrderQuery.eq('learning_path_id', input.learning_path_id)
+  }
+
+  const { data: maxRow } = await sortOrderQuery.maybeSingle()
+  const sortOrder = ((maxRow?.sort_order ?? 0) as number) + 1
 
   const { data, error } = await supabase
     .from('lessons')
     .insert({
       learning_path_id: input.learning_path_id,
       module_id: input.module_id || null,
-      title: input.title_en, // required field in DB
-      content: input.content_en, // required field in DB
+      title: input.title_en,
+      content: input.content_en,
       title_en: input.title_en,
       title_ar: input.title_ar,
       slug: input.slug,
@@ -155,7 +173,7 @@ export async function createLesson(input: LessonFormValues): Promise<DataResult<
       objectives_ar: input.objectives_ar,
       estimated_minutes: input.estimated_minutes,
       difficulty: input.difficulty,
-      sort_order: input.sort_order,
+      sort_order: sortOrder,
       is_published: input.is_published,
     })
     .select()

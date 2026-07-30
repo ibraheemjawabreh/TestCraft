@@ -84,11 +84,7 @@ export function ModuleForm({ paths, locale, initialData, onSuccess, defaultPathI
           {errors.learning_path_id && <p className="text-xs text-destructive">{errors.learning_path_id.message}</p>}
         </div>
 
-        <div className="space-y-1.5">
-          <label className="block text-sm font-medium text-foreground">Sort Order</label>
-          <input type="number" {...register('sort_order', { valueAsNumber: true })} className={inputClass} disabled={isPending} />
-          {errors.sort_order && <p className="text-xs text-destructive">{errors.sort_order.message}</p>}
-        </div>
+
 
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-foreground">Title (English)</label>

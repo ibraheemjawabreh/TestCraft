@@ -101,6 +101,15 @@ export async function getAdminChallengeById(id: string): Promise<DataResult<Chal
 export async function createChallenge(input: ChallengeFormValues): Promise<DataResult<Challenge>> {
   const supabase = await createClient()
 
+  const { data: maxRow } = await supabase
+    .from('challenges')
+    .select('sort_order')
+    .order('sort_order', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  const sortOrder = ((maxRow?.sort_order ?? 0) as number) + 1
+
   const { data, error } = await supabase
     .from('challenges')
     .insert({
@@ -125,6 +134,9 @@ export async function createChallenge(input: ChallengeFormValues): Promise<DataR
       base_xp_reward: input.base_xp_reward,
       is_required: input.is_required,
       is_active: input.is_active,
+      status: input.is_active ? 'published' : 'draft',
+      workflow_type: 'legacy',
+      sort_order: sortOrder,
     })
     .select()
     .single()

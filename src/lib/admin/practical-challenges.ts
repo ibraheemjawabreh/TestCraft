@@ -24,6 +24,18 @@ export async function createPracticalChallenge(input: PracticalChallengeFormValu
     }
   }
 
+  let sortOrder = input.sort_order
+  if (!sortOrder || sortOrder <= 0) {
+    const { data: maxRow } = await supabase
+      .from('challenges')
+      .select('sort_order')
+      .order('sort_order', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    sortOrder = ((maxRow?.sort_order ?? 0) as number) + 1
+  }
+
   // 1. Insert the Challenge
   const { data: challenge, error: challengeError } = await supabase
     .from('challenges')
@@ -51,7 +63,7 @@ export async function createPracticalChallenge(input: PracticalChallengeFormValu
       practical_app_config: input.practical_app_config || {},
       slug: input.slug || null,
       learning_path_id: input.learning_path_id === 'none' ? null : (input.learning_path_id || null),
-      sort_order: input.sort_order || 0,
+      sort_order: sortOrder,
       workflow_type: 'practical',
       status: input.is_active ? 'published' : 'draft',
     })

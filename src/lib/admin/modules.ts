@@ -49,9 +49,24 @@ export async function getAdminModule(id: string): Promise<Result<LearningModule>
 export async function createAdminModule(moduleData: InsertModule): Promise<Result<LearningModule>> {
   try {
     const supabase = await createClient()
+
+    // Auto-assign sort_order as max within the same learning_path + 1
+    let sortOrder = moduleData.sort_order
+    if (!sortOrder || sortOrder <= 0) {
+      const { data: maxRow } = await supabase
+        .from('learning_modules')
+        .select('sort_order')
+        .eq('learning_path_id', moduleData.learning_path_id)
+        .order('sort_order', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      sortOrder = ((maxRow?.sort_order ?? 0) as number) + 1
+    }
+
     const { data, error } = await supabase
       .from('learning_modules')
-      .insert(moduleData)
+      .insert({ ...moduleData, sort_order: sortOrder })
       .select()
       .single()
 

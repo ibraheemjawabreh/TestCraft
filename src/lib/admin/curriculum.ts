@@ -27,6 +27,12 @@ export interface CurriculumLesson {
   title_en: string | null
   title_ar: string | null
   slug: string
+  summary_en?: string | null
+  summary_ar?: string | null
+  content_en?: string | null
+  content_ar?: string | null
+  objectives_en?: string[]
+  objectives_ar?: string[]
   estimated_minutes: number
   difficulty: string
   sort_order: number
@@ -86,7 +92,7 @@ export async function getCurriculumTree(): Promise<Result<{ paths: CurriculumPat
     const [pathsRes, modulesRes, lessonsRes, challengesRes] = await Promise.all([
       supabase.from('learning_paths').select('*').order('sort_order', { ascending: true }),
       supabase.from('learning_modules').select('*').order('sort_order', { ascending: true }),
-      supabase.from('lessons').select('id, title_en, title_ar, slug, estimated_minutes, difficulty, sort_order, is_published, module_id, learning_path_id').order('sort_order', { ascending: true }),
+      supabase.from('lessons').select('id, title_en, title_ar, slug, summary_en, summary_ar, content_en, content_ar, objectives_en, objectives_ar, estimated_minutes, difficulty, sort_order, is_published, module_id, learning_path_id').order('sort_order', { ascending: true }),
       supabase.from('challenges').select('id, title, title_en, title_ar, difficulty, base_xp_reward, is_active, module_id, sort_order').order('sort_order', { ascending: true }),
     ])
 
@@ -118,6 +124,12 @@ export async function getCurriculumTree(): Promise<Result<{ paths: CurriculumPat
           title_en: lesson.title_en,
           title_ar: lesson.title_ar,
           slug: lesson.slug,
+          summary_en: lesson.summary_en,
+          summary_ar: lesson.summary_ar,
+          content_en: lesson.content_en,
+          content_ar: lesson.content_ar,
+          objectives_en: lesson.objectives_en,
+          objectives_ar: lesson.objectives_ar,
           estimated_minutes: lesson.estimated_minutes,
           difficulty: lesson.difficulty,
           sort_order: lesson.sort_order,

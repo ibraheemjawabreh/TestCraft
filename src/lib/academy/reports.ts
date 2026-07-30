@@ -174,24 +174,36 @@ export async function submitBugReport(
 
     const supabase = await createClient()
 
-    // Verify challenge is active before inserting
-    const { data: challenge, error: challengeError } = await supabase
+    // Safely resolve challengeId to actual UUID
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(input.challengeId)
+    const isNumeric = /^\d+$/.test(input.challengeId)
+
+    let query = supabase
       .from('challenges')
       .select('id, is_active')
-      .eq('id', input.challengeId)
-      .eq('is_active', true)
-      .single()
+
+    if (isUuid) {
+      query = query.eq('id', input.challengeId)
+    } else if (isNumeric) {
+      query = query.or(`sort_order.eq.${input.challengeId},slug.eq.${input.challengeId}`)
+    } else {
+      query = query.eq('slug', input.challengeId)
+    }
+
+    const { data: challenge, error: challengeError } = await query.maybeSingle()
 
     if (challengeError || !challenge) {
-      return { data: null, error: 'challenge_not_found' }
+      return { data: null, error: 'Challenge not found.' }
     }
+
+    const challengeId = challenge.id
 
     // Find the current active (mutable) attempt
     const { data: activeAttempt } = await supabase
       .from('challenge_attempts')
       .select('id, status')
       .eq('user_id', input.userId)
-      .eq('challenge_id', input.challengeId)
+      .eq('challenge_id', challengeId)
       .in('status', ['started', 'submitted'])
       .order('created_at', { ascending: false })
       .limit(1)
@@ -205,7 +217,7 @@ export async function submitBugReport(
         .from('challenge_attempts')
         .select('id, status')
         .eq('user_id', input.userId)
-        .eq('challenge_id', input.challengeId)
+        .eq('challenge_id', challengeId)
         .in('status', ['reviewing', 'approved', 'rejected'])
         .order('created_at', { ascending: false })
         .limit(1)
@@ -215,17 +227,14 @@ export async function submitBugReport(
         if (existingAttempt.status === 'reviewing') {
           return { data: null, error: 'Your submission is currently under review and cannot be modified.' }
         }
-        if (existingAttempt.status === 'approved') {
-          return { data: null, error: 'This challenge has already been approved.' }
-        }
-        // rejected — create a fresh attempt (retry)
+        // approved or rejected — create a fresh attempt for new reports
       }
 
       const { data: newAttempt, error: insertErr } = await supabase
         .from('challenge_attempts')
         .insert({
           user_id: input.userId,
-          challenge_id: input.challengeId,
+          challenge_id: challengeId,
           status: 'started',
         })
         .select('id')
@@ -250,7 +259,7 @@ export async function submitBugReport(
       .from('bug_reports')
       .insert({
         user_id: input.userId,
-        challenge_id: input.challengeId,
+        challenge_id: challengeId,
         lab_template_id: input.labTemplateId,
         attempt_id: attemptId,
         title: parsed.data.title,
@@ -264,11 +273,12 @@ export async function submitBugReport(
       .single()
 
     if (insertError || !report) {
+      console.error('Bug report insert error:', insertError)
       return { data: null, error: 'Failed to submit report. Please try again.' }
     }
 
     // Sync challenge_progress (non-blocking)
-    void syncChallengeProgress(supabase, input.userId, input.challengeId)
+    void syncChallengeProgress(supabase, input.userId, challengeId)
 
     return { data: { id: report.id }, error: null }
   } catch {
@@ -282,12 +292,27 @@ export async function submitBugReport(
  */
 export async function submitAttempt(
   userId: string,
-  challengeId: string,
+  rawChallengeId: string,
   attemptId: string,
   timeSpentSeconds?: number,
 ): Promise<Result<{ success: boolean }>> {
   try {
     const supabase = await createClient()
+
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawChallengeId)
+    let challengeId = rawChallengeId
+
+    if (!isUuid) {
+      const isNumeric = /^\d+$/.test(rawChallengeId)
+      let query = supabase.from('challenges').select('id')
+      if (isNumeric) {
+        query = query.or(`sort_order.eq.${rawChallengeId},slug.eq.${rawChallengeId}`)
+      } else {
+        query = query.eq('slug', rawChallengeId)
+      }
+      const { data: c } = await query.maybeSingle()
+      if (c?.id) challengeId = c.id
+    }
 
     const now = new Date().toISOString()
 

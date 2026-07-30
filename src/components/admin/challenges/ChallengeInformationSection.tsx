@@ -171,7 +171,7 @@ export function ChallengeInformationSection({ dictionary }: { dictionary: Dictio
           />
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2">
           <FormField
             control={form.control}
             name="difficulty"
@@ -200,27 +200,6 @@ export function ChallengeInformationSection({ dictionary }: { dictionary: Dictio
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Base XP Reward</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    {...field} 
-                    value={field.value ?? ''}
-                    onChange={e => {
-                      const val = e.target.value;
-                      field.onChange(val === '' ? '' : parseInt(val, 10));
-                    }} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="sort_order"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Sort Order</FormLabel>
                 <FormControl>
                   <Input 
                     type="number" 

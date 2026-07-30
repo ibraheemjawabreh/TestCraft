@@ -23,7 +23,29 @@ export default async function TesterLessonPage({
   const lessonResult = await getLessonWithModuleGate(user.id, id, locale)
 
   if (!lessonResult.data) {
-    // Redirect back to academy — lesson is locked or not found
+    if (lessonResult.error === 'module_locked') {
+      return (
+        <div className="mx-auto max-w-xl py-16 text-center space-y-4">
+          <div className="text-5xl">🔒</div>
+          <h1 className="font-heading text-2xl font-bold text-foreground">
+            {locale === 'ar' ? 'الموديول مغلق' : 'Module Locked'}
+          </h1>
+          <p className="text-muted-foreground">
+            {locale === 'ar'
+              ? 'يجب إكمال الدروس والتحديات في الموديول السابق أولاً لفتح هذا الموديول والوصول إلى هذا الدرس.'
+              : 'You must complete the lessons and challenges in the previous module first to unlock this module.'}
+          </p>
+          <Link
+            href={`/${locale}/academy`}
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            {locale === 'ar' ? 'العودة للأكاديمية' : 'Back to Academy'}
+          </Link>
+        </div>
+      )
+    }
+
+    // Redirect back to academy if lesson not found or unavailable
     redirect(`/${locale}/academy`)
   }
 
@@ -32,9 +54,9 @@ export default async function TesterLessonPage({
   // Track that the user opened this lesson (mark in_progress)
   await markLessonInProgress(user.id, id)
 
-  // Get next lesson for navigation
-  const nextResult = await getNextLessonForUser(user.id, locale)
-  const nextLessonId = nextResult.data?.id !== id ? (nextResult.data?.id ?? null) : null
+  // Get next lesson by sort_order within the same module
+  const nextResult = await getNextLessonForUser(user.id, locale, id)
+  const nextLessonId = nextResult.data?.id ?? null
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">

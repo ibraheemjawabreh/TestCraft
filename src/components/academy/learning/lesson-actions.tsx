@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle2, ArrowRight, Sword, Loader2 } from 'lucide-react'
@@ -30,27 +30,30 @@ export function LessonActions({
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [completed, setCompleted] = useState(isCompleted)
-  const [successMsg, setSuccessMsg] = useState<string | null>(null)
+
+  // Prefetch next destinations so navigation is instant
+  useEffect(() => {
+    if (relatedChallengeId) {
+      router.prefetch(`/${locale}/academy/challenges/${relatedChallengeId}`)
+    }
+    if (nextLessonId) {
+      router.prefetch(`/${locale}/academy/lessons/${nextLessonId}`)
+    }
+  }, [relatedChallengeId, nextLessonId, locale, router])
 
   const handleMarkComplete = () => {
+    // Optimistic UI: show completed state immediately
+    setCompleted(true)
+
     startTransition(async () => {
-      const result = await actionCompleteLesson(userId, lessonId, locale)
-      if (result.data) {
-        setCompleted(true)
-        setSuccessMsg(dictionary.learning.lessonCompleted)
-        router.refresh()
-      }
+      await actionCompleteLesson(userId, lessonId, locale)
+      // Refresh in background so academy page is up-to-date when user navigates back
+      router.refresh()
     })
   }
 
   return (
     <div className="space-y-4">
-      {successMsg && (
-        <div className="rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-400" role="status">
-          {successMsg}
-        </div>
-      )}
-
       <div className="flex flex-col gap-3 sm:flex-row">
         {!completed ? (
           <button
@@ -102,3 +105,4 @@ export function LessonActions({
     </div>
   )
 }
+

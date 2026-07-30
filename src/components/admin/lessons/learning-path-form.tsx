@@ -106,17 +106,10 @@ export function LearningPathForm({ dictionary, locale, initialData, onSuccess }:
         </div>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <label className="block text-sm font-medium text-foreground">{dictionary.learning.sortOrder}</label>
-          <input type="number" {...register('sort_order', { valueAsNumber: true })} className={inputClass} disabled={isLoading} />
-        </div>
-
-        <div className="flex items-center gap-3 pt-6">
+      <div className="flex items-center gap-3 pt-2">
           <input type="checkbox" id="path_is_active" {...register('is_active')} className="h-4 w-4 accent-primary" />
           <label htmlFor="path_is_active" className="text-sm font-medium text-foreground">{dictionary.learning.active}</label>
         </div>
-      </div>
 
       {serverError && (
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive" role="alert">
