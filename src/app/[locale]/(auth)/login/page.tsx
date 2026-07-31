@@ -74,7 +74,7 @@ export default async function LoginPage({ params: { locale } }: { params: { loca
           ].join(' ')}
         >
           {/* ── Logo ─────────────────────────────────────────────────── */}
-          <Logo locale={locale} />
+          <Logo locale={locale} textClassName="text-white" />
 
           {/* ── Heading ──────────────────────────────────────────────────── */}
           <div className="mt-7 mb-6">

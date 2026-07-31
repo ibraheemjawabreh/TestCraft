@@ -37,7 +37,7 @@ export function MarketingHeader({ dictionary, locale }: MarketingHeaderProps) {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
 
         {/* ── Left: Logo ─────────────────────────────────────────────────── */}
-        <Logo locale={locale} />
+        <Logo locale={locale} textClassName="text-white font-bold" />
 
         {/* ── Center: Nav (desktop only) ─────────────────────────────────── */}
         <nav

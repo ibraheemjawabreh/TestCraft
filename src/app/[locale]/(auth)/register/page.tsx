@@ -74,7 +74,7 @@ export default async function RegisterPage({ params: { locale } }: { params: { l
           ].join(' ')}
         >
           {/* ── Logo ─────────────────────────────────────────────────── */}
-          <Logo locale={locale} />
+          <Logo locale={locale} textClassName="text-white" />
 
           {/* ── Heading ──────────────────────────────────────────────── */}
           <div className="mt-7 mb-6">

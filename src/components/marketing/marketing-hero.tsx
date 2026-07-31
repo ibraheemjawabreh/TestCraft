@@ -128,7 +128,7 @@ export function MarketingHero({ dictionary, locale }: MarketingHeroProps) {
           }}
           aria-hidden="true"
         >
-          <Logo locale={locale} />
+          <Logo locale={locale} textClassName="text-white" />
         </div>
 
         {/* Floating stats strip */}
