@@ -20,7 +20,7 @@ export function AcademyLayout({
     <div className="academy-shell min-h-screen text-foreground transition-colors">
       <TesterHeader dictionary={dictionary} locale={locale} username={username} />
 
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 animate-fade-in-up">
         {children}
       </main>
 

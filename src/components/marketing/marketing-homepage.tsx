@@ -17,13 +17,15 @@ interface MarketingHomepageProps {
 export function MarketingHomepage({ dictionary, locale }: MarketingHomepageProps) {
   return (
     <div
-      className="min-h-screen antialiased"
+      className="min-h-screen antialiased relative overflow-hidden"
       style={{
         background: '#0f172a',
         color: '#f8fafc',
         fontFamily: 'var(--font-plus-jakarta), system-ui, sans-serif',
       }}
     >
+      {/* Subtle animated background grid */}
+      <div className="fixed inset-0 marketing-grid-bg opacity-40 pointer-events-none" aria-hidden="true" />
       {/* Skip-to-content accessibility link */}
       <a
         href="#main-content"

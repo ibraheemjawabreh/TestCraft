@@ -261,6 +261,19 @@
 .academy-hero {
   border: 1px solid rgba(249, 115, 22, 0.18);
   background: linear-gradient(135deg, rgba(255, 247, 237, 0.94), rgba(255, 251, 235, 0.78));
+  position: relative;
+  overflow: hidden;
+}
+.academy-hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(249,115,22,0.08), transparent 70%);
+  pointer-events: none;
 }
 
 .academy-surface {
@@ -381,6 +394,18 @@
 .admin-page-heading {
   border: 1px solid rgba(249, 115, 22, 0.18);
   background: linear-gradient(135deg, rgba(255, 247, 237, 0.92), rgba(255, 251, 235, 0.7));
+  position: relative;
+  overflow: hidden;
+}
+.admin-page-heading::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(249,115,22,0.4), rgba(251,191,36,0.4), transparent);
+  opacity: 0.6;
 }
 
 .dark .admin-shell {
@@ -407,4 +432,77 @@
 .dark .admin-page-heading {
   border-color: rgba(249, 115, 22, 0.22);
   background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.78));
+}
+
+/* ─── Shared Motion & Polish Utilities ───────────────────────────────────── */
+@layer utilities {
+  .stagger-1 { animation-delay: 80ms; }
+  .stagger-2 { animation-delay: 160ms; }
+  .stagger-3 { animation-delay: 240ms; }
+  .stagger-4 { animation-delay: 320ms; }
+  .stagger-5 { animation-delay: 400ms; }
+  .stagger-6 { animation-delay: 480ms; }
+  .stagger-7 { animation-delay: 560ms; }
+  .stagger-8 { animation-delay: 640ms; }
+
+  .hover-lift {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .hover-lift:hover {
+    transform: translateY(-3px);
+  }
+
+  .glass-surface {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .gradient-text-warm {
+    background: linear-gradient(135deg, #f97316 0%, #fbbf24 50%, #f97316 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .gradient-text-warm-animated {
+    background: linear-gradient(135deg, #f97316 0%, #fbbf24 40%, #fb923c 60%, #f97316 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradient-shift 4s ease infinite;
+  }
+
+  .progress-bar-track {
+    @apply relative overflow-hidden rounded-full;
+  }
+  .progress-bar-fill {
+    position: relative;
+    height: 100%;
+    border-radius: 9999px;
+    transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .progress-bar-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+    animation: progress-shine 2.5s ease-in-out infinite;
+  }
+
+  .card-glow-hover {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .card-glow-hover:hover {
+    box-shadow: 0 20px 50px -20px rgba(249, 115, 22, 0.25), 0 0 0 1px rgba(249, 115, 22, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .marketing-grid-bg {
+    background-image:
+      linear-gradient(rgba(249,115,22,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(249,115,22,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
 }

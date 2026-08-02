@@ -56,7 +56,7 @@ export function MarketingFeatures({ dictionary }: MarketingFeaturesProps) {
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         {/* ── Section header ─────────────────────────────────────────────── */}
-        <div className="mb-16 text-center">
+        <div className="mb-16 text-center animate-fade-in-up">
           <h2
             id="features-heading"
             className="font-heading text-3xl md:text-4xl font-bold tracking-tight text-[#f8fafc] mb-4"
@@ -71,23 +71,20 @@ export function MarketingFeatures({ dictionary }: MarketingFeaturesProps) {
 
         {/* ── Feature cards grid ─────────────────────────────────────────── */}
         <div className="grid gap-6 md:grid-cols-3">
-          {features.map((feature) => {
+          {features.map((feature, index) => {
             const { Icon } = feature
+            const staggerClass = ['stagger-1', 'stagger-2', 'stagger-3'][index] ?? 'stagger-1'
             return (
               <article
                 key={feature.key}
-                className="
+                className={`
                   group relative rounded-2xl border p-8
-                  transition-all duration-300 ease-out
-                  hover:-translate-y-1
-                  hover:border-[#f97316]/50
-                  hover:shadow-[0_20px_60px_-20px_rgba(249,115,22,0.25),0_0_0_1px_rgba(249,115,22,0.12)]
-                "
+                  glass-surface card-glow-hover
+                  animate-fade-in-up opacity-0 ${staggerClass}
+                `}
                 style={{
                   background: 'rgba(30,41,59,0.55)',
                   borderColor: '#334155',
-                  backdropFilter: 'blur(12px)',
-                  WebkitBackdropFilter: 'blur(12px)',
                 }}
               >
                 {/* Top corner subtle glow (pure CSS, no JS) */}
@@ -99,7 +96,7 @@ export function MarketingFeatures({ dictionary }: MarketingFeaturesProps) {
 
                 {/* Icon badge */}
                 <div
-                  className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-xl border"
+                  className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-xl border transition-transform duration-300 group-hover:scale-110"
                   style={{
                     background: feature.iconBg,
                     borderColor: feature.iconBorder,

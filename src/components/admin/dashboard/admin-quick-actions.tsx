@@ -43,13 +43,13 @@ export function AdminQuickActions({ dictionary, locale }: AdminQuickActionsProps
   ]
 
   return (
-    <Card className="border-border/50 bg-card/70 backdrop-blur-sm">
+    <Card className="border-border/50 bg-card/70 backdrop-blur-sm card-glow-hover animate-fade-in-up stagger-4">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg font-semibold">{t.quickActions}</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-wrap gap-3">
         {actions.map((action) => (
-          <Button key={action.href} asChild variant="secondary" className="gap-2">
+          <Button key={action.href} asChild variant="secondary" className="gap-2 transition-all duration-300 ease-smooth hover:scale-[1.03] hover:shadow-md active:scale-[0.98]">
             <Link href={action.href}>
               <action.icon className="h-4 w-4" aria-hidden="true" />
               {action.label}

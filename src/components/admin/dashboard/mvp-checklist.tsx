@@ -46,7 +46,7 @@ export function MVPChecklist({ stats }: MVPChecklistProps) {
   }
 
   return (
-    <Card className="border-border/50 bg-card/70 backdrop-blur-xl shadow-sm">
+    <Card className="border-border/50 bg-card/70 backdrop-blur-xl shadow-sm card-glow-hover animate-fade-in-up stagger-1">
       <CardHeader className="flex flex-row items-center justify-between pb-3">
         <div className="space-y-1">
           <CardTitle className="flex items-center gap-2 text-lg font-bold">

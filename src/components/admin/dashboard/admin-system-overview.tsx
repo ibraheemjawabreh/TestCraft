@@ -36,17 +36,20 @@ export function AdminSystemOverview({ dictionary, stats }: AdminSystemOverviewPr
     { title: 'Rejected',         value: stats.rejectedAttempts, icon: XCircle,      accent: 'red'   as const },
   ]
 
+  const staggerClasses = ['stagger-1', 'stagger-2', 'stagger-3', 'stagger-4', 'stagger-5', 'stagger-6', 'stagger-7', 'stagger-8'] as const
+
   return (
     <div className="space-y-6">
       {/* Curriculum Stats */}
-      <div>
+      <div className="animate-fade-in-up">
         <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Curriculum</p>
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {curriculumCards.map((card) => (
+          {curriculumCards.map((card, i) => (
             <AdminStatCard
               key={card.title}
               title={card.title}
               value={card.value}
+              className={staggerClasses[i]}
               icon={<card.icon className="h-5 w-5" aria-hidden="true" />}
             />
           ))}
@@ -54,14 +57,15 @@ export function AdminSystemOverview({ dictionary, stats }: AdminSystemOverviewPr
       </div>
 
       {/* Users & Reports */}
-      <div>
+      <div className="animate-fade-in-up stagger-2">
         <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Users & Reports</p>
         <section className="grid gap-4 sm:grid-cols-2">
-          {userCards.map((card) => (
+          {userCards.map((card, i) => (
             <AdminStatCard
               key={card.title}
               title={card.title}
               value={card.value}
+              className={staggerClasses[i + 4]}
               icon={<card.icon className="h-5 w-5" aria-hidden="true" />}
             />
           ))}
@@ -69,15 +73,16 @@ export function AdminSystemOverview({ dictionary, stats }: AdminSystemOverviewPr
       </div>
 
       {/* Attempt Reviews */}
-      <div>
+      <div className="animate-fade-in-up stagger-3">
         <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Attempt Reviews</p>
         <section className="grid gap-4 sm:grid-cols-3">
-          {attemptCards.map((card) => (
+          {attemptCards.map((card, i) => (
             <AdminStatCard
               key={card.title}
               title={card.title}
               value={card.value}
               accent={card.accent}
+              className={['stagger-6', 'stagger-7', 'stagger-8'][i]}
               icon={<card.icon className="h-5 w-5" aria-hidden="true" />}
             />
           ))}

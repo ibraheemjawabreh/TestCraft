@@ -27,11 +27,9 @@ export function MarketingHeader({ dictionary, locale }: MarketingHeaderProps) {
 
   return (
     <header
-      className="sticky top-0 z-50 w-full border-b border-[#334155]/60"
+      className="sticky top-0 z-50 w-full border-b border-[#334155]/60 animate-fade-in glass-surface"
       style={{
         background: 'rgba(15, 23, 42, 0.75)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
       }}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">

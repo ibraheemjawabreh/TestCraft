@@ -117,15 +117,45 @@ const config = {
           '0%': { backgroundPosition: '-200% center' },
           '100%': { backgroundPosition: '200% center' },
         },
+        'scale-in': {
+          '0%': { opacity: '0', transform: 'scale(0.92)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        'slide-in-right': {
+          '0%': { opacity: '0', transform: 'translateX(-16px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+        'gradient-shift': {
+          '0%, 100%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+        },
+        'progress-shine': {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(200%)' },
+        },
+        'subtle-bounce': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-4px)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'fade-in-up': 'fade-in-up 0.55s cubic-bezier(0.16,1,0.3,1) both',
+        'fade-in-up-fast': 'fade-in-up 0.4s cubic-bezier(0.16,1,0.3,1) both',
         'fade-in': 'fade-in 0.4s ease-out both',
         'glow-pulse': 'glow-pulse 5s ease-in-out infinite',
         float: 'float 8s ease-in-out infinite',
         'float-delayed': 'float 8s ease-in-out infinite 4s',
+        'float-slow': 'float 12s ease-in-out infinite',
+        'scale-in': 'scale-in 0.45s cubic-bezier(0.16,1,0.3,1) both',
+        'slide-in-right': 'slide-in-right 0.5s cubic-bezier(0.16,1,0.3,1) both',
+        'gradient-shift': 'gradient-shift 4s ease infinite',
+        'progress-shine': 'progress-shine 2s ease-in-out infinite',
+        'subtle-bounce': 'subtle-bounce 2s ease-in-out infinite',
+      },
+      transitionTimingFunction: {
+        'smooth': 'cubic-bezier(0.16, 1, 0.3, 1)',
       },
 
       // ─── Border Radius (shadcn/ui tokens) ────────────────────────────────

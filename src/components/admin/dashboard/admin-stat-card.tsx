@@ -8,6 +8,7 @@ interface AdminStatCardProps {
   value: string | number
   icon: ReactNode
   accent?: Accent
+  className?: string
 }
 
 const accentMap: Record<Accent, { icon: string; text: string }> = {
@@ -19,19 +20,19 @@ const accentMap: Record<Accent, { icon: string; text: string }> = {
   violet:  { icon: 'border-violet-500/20 bg-violet-500/10 text-violet-500', text: 'text-violet-600 dark:text-violet-400' },
 }
 
-export function AdminStatCard({ title, value, icon, accent = 'primary' }: AdminStatCardProps) {
+export function AdminStatCard({ title, value, icon, accent = 'primary', className }: AdminStatCardProps) {
   const colors = accentMap[accent]
   return (
-    <Card className="border-border/50 bg-card/70 shadow-sm backdrop-blur-xl transition-colors">
+    <Card className={`border-border/50 bg-card/70 shadow-sm backdrop-blur-xl card-glow-hover animate-scale-in opacity-0 ${className ?? ''}`}>
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 space-y-2">
             <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className={`break-words font-heading text-2xl font-bold ${colors.text}`}>
+            <p className={`break-words font-heading text-2xl font-bold transition-transform duration-300 ${colors.text}`}>
               {value}
             </p>
           </div>
-          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${colors.icon}`}>
+          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border transition-transform duration-300 hover:scale-110 ${colors.icon}`}>
             {icon}
           </div>
         </div>

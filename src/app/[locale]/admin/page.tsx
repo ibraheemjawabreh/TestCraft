@@ -29,7 +29,7 @@ export default async function AdminOverviewPage({ params: { locale } }: AdminPag
   return (
     <div className="space-y-8 animate-fade-in-up">
       {/* Header section */}
-      <div className="admin-page-heading rounded-2xl p-6 sm:p-8">
+      <div className="admin-page-heading rounded-2xl p-6 sm:p-8 animate-fade-in-up">
         <h1 className="font-heading text-3xl md:text-4xl font-bold tracking-tight text-foreground">
           {t.title}
         </h1>
@@ -49,7 +49,7 @@ export default async function AdminOverviewPage({ params: { locale } }: AdminPag
 
           {/* Priority Review CTA */}
           {(result.data.stats.pendingReviews > 0 || result.data.stats.pendingReports > 0) && (
-            <Card className="border-[#f97316]/25 bg-[#f97316]/5 shadow-[0_18px_45px_-35px_rgba(234,88,12,0.45)]">
+            <Card className="border-[#f97316]/25 bg-[#f97316]/5 shadow-[0_18px_45px_-35px_rgba(234,88,12,0.45)] card-glow-hover animate-fade-in-up stagger-2">
               <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6">
                 <div className="flex items-center gap-4">
                   <div className="rounded-full bg-[#f97316]/15 p-3">
@@ -79,7 +79,7 @@ export default async function AdminOverviewPage({ params: { locale } }: AdminPag
           <AdminQuickActions dictionary={dictionary} locale={locale} />
           
           {/* Recent Activity */}
-          <div className="space-y-4">
+          <div className="space-y-4 animate-fade-in-up stagger-5">
             <h2 className="text-xl font-semibold tracking-tight">{t.recentActivity}</h2>
             <div className="grid gap-6 xl:grid-cols-2">
               <RecentBugReports

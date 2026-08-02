@@ -68,10 +68,10 @@ export function AdminSidebar({ dictionary, locale }: AdminSidebarProps) {
               key={item.href}
               href={item.href}
               className={[
-                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-300 ease-smooth',
                 isActive
-                  ? 'bg-[#f97316]/15 text-[#fbbf24]'
-                  : 'text-slate-600 hover:bg-[#f97316]/10 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white',
+                  ? 'bg-[#f97316]/15 text-[#fbbf24] shadow-sm'
+                  : 'text-slate-600 hover:bg-[#f97316]/10 hover:text-slate-950 hover:translate-x-0.5 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white',
               ].join(' ')}
             >
               <item.icon

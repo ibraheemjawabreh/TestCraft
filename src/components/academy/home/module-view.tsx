@@ -26,12 +26,12 @@ function LessonRow({ lesson, locale, isModuleLocked }: {
   const completed = lesson.is_completed
 
   return (
-    <div className={`flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 ${
+    <div className={`flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-300 ease-smooth ${
       locked
         ? 'opacity-50 cursor-not-allowed'
         : completed
-        ? 'bg-emerald-500/5 hover:bg-emerald-500/10'
-        : 'bg-background/40 hover:bg-background/60 cursor-pointer'
+        ? 'bg-emerald-500/5 hover:bg-emerald-500/10 hover:translate-x-0.5'
+        : 'bg-background/40 hover:bg-background/60 hover:translate-x-0.5 cursor-pointer'
     }`}>
       <div className="shrink-0">
         {locked ? (
@@ -81,13 +81,13 @@ function ChallengeRow({ challenge, locale, isModuleLocked }: {
   }
 
   return (
-    <div className={`flex items-center gap-3 rounded-xl border px-4 py-3 transition-all duration-200 mt-1 ${
+    <div className={`flex items-center gap-3 rounded-xl border px-4 py-3 transition-all duration-300 ease-smooth mt-1 ${
       locked
         ? 'opacity-50 border-border/30 cursor-not-allowed'
         : completed
         ? 'border-emerald-500/30 bg-emerald-500/5'
         : challenge.status === 'available' || challenge.status === 'in_progress' || challenge.status === 'rejected'
-        ? 'border-primary/30 bg-primary/5 hover:bg-primary/10 cursor-pointer'
+        ? 'border-primary/30 bg-primary/5 hover:bg-primary/10 hover:translate-x-0.5 cursor-pointer'
         : 'border-border/50 bg-background/30'
     }`}>
       <Zap className={`h-4 w-4 shrink-0 ${locked ? 'text-muted-foreground/40' : completed ? 'text-emerald-500' : 'text-primary'}`} />
@@ -111,21 +111,25 @@ function ChallengeRow({ challenge, locale, isModuleLocked }: {
   )
 }
 
-function ModuleCard({ mod, locale, isFirst }: {
+function ModuleCard({ mod, locale, isFirst, index }: {
   mod: ModuleWithProgress
   locale: Locale
   isFirst: boolean
+  index: number
 }) {
   const locked = mod.status === 'locked'
   const completed = mod.status === 'completed'
   const active = mod.status === 'in_progress' || mod.status === 'available'
+  const staggerClasses = ['stagger-1', 'stagger-2', 'stagger-3', 'stagger-4', 'stagger-5', 'stagger-6', 'stagger-7', 'stagger-8'] as const
 
   return (
-    <div className={`rounded-2xl border transition-all duration-300 overflow-hidden ${
+    <div className={`rounded-2xl border transition-all duration-300 ease-smooth overflow-hidden card-glow-hover animate-fade-in-up opacity-0 ${staggerClasses[index] ?? 'stagger-1'} ${
       locked
         ? 'border-border/30 bg-card/30 opacity-70'
         : completed
         ? 'border-emerald-500/20 bg-emerald-500/3 shadow-sm'
+        : active
+        ? 'border-primary/25 bg-card/70 shadow-md ring-1 ring-primary/10'
         : 'border-border/60 bg-card/70 shadow-md'
     }`}>
       {/* Module Header */}
@@ -177,9 +181,9 @@ function ModuleCard({ mod, locale, isFirst }: {
             </div>
           )}
           {!locked && mod.total_lessons > 0 && (
-            <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden hidden sm:block">
+            <div className="w-16 h-1.5 progress-bar-track bg-muted overflow-hidden hidden sm:block">
               <div
-                className={`h-full rounded-full transition-all duration-500 ${completed ? 'bg-emerald-500' : 'bg-primary'}`}
+                className={`progress-bar-fill ${completed ? 'bg-emerald-500' : 'bg-primary'}`}
                 style={{ width: `${mod.completion_percentage}%` }}
               />
             </div>
@@ -216,9 +220,9 @@ export function ModuleView({ pathData, dictionary, locale, username }: ModuleVie
   const currentLesson = activeModule?.lessons.find(l => l.status === 'in_progress' || l.status === 'not_started')
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in-up">
       {/* Hero */}
-      <div className="academy-hero space-y-2 rounded-2xl p-6 sm:p-8">
+      <div className="academy-hero space-y-2 rounded-2xl p-6 sm:p-8 animate-fade-in-up">
         <h1 className="font-heading text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
           {dictionary.academy.home.title.replace('{username}', username)}
         </h1>
@@ -227,33 +231,36 @@ export function ModuleView({ pathData, dictionary, locale, username }: ModuleVie
 
       {/* Continue Learning Card */}
       {activeModule && currentLesson && (
-        <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5 flex items-center justify-between gap-4 flex-wrap shadow-sm">
+        <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5 flex items-center justify-between gap-4 flex-wrap shadow-sm card-glow-hover animate-fade-in-up stagger-2 academy-practice-card">
           <div className="space-y-1">
-            <p className="text-xs font-medium text-primary/70 uppercase tracking-wide">Continue Learning</p>
+            <p className="text-xs font-medium text-primary/70 uppercase tracking-wide flex items-center gap-1.5">
+              <PlayCircle className="h-3.5 w-3.5 animate-subtle-bounce" />
+              Continue Learning
+            </p>
             <p className="font-heading font-bold text-lg text-foreground">{currentLesson.title}</p>
             <p className="text-sm text-muted-foreground">{activeModule.title}</p>
           </div>
           <Link
             href={`/${locale}/academy/lessons/${currentLesson.id}`}
-            className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors shrink-0"
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-all duration-300 ease-smooth hover:scale-[1.03] hover:shadow-lg active:scale-[0.98] shrink-0"
           >
             Open Lesson
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
           </Link>
         </div>
       )}
 
       {/* Path Progress Bar */}
-      <div className="rounded-2xl border border-border/50 bg-card/50 p-5 space-y-3">
+      <div className="rounded-2xl border border-border/50 bg-card/50 p-5 space-y-3 card-glow-hover animate-fade-in-up stagger-3">
         <div className="flex items-center justify-between text-sm">
           <span className="font-semibold text-foreground">{pathData.title}</span>
           <span className="text-muted-foreground">
             {pathData.completed_modules}/{pathData.total_modules} modules · {pathData.completion_percentage}%
           </span>
         </div>
-        <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
+        <div className="w-full h-2.5 progress-bar-track bg-muted">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-primary/80 to-primary transition-all duration-700"
+            className="progress-bar-fill bg-gradient-to-r from-primary/80 to-primary"
             style={{ width: `${pathData.completion_percentage}%` }}
           />
         </div>
@@ -262,7 +269,7 @@ export function ModuleView({ pathData, dictionary, locale, username }: ModuleVie
       {/* Modules List */}
       <div className="space-y-4">
         {pathData.modules.map((mod, idx) => (
-          <ModuleCard key={mod.id} mod={mod} locale={locale} isFirst={idx === 0} />
+          <ModuleCard key={mod.id} mod={mod} locale={locale} isFirst={idx === 0} index={idx} />
         ))}
         {pathData.modules.length === 0 && (
           <div className="rounded-2xl border border-border/40 bg-card/40 p-12 text-center">
