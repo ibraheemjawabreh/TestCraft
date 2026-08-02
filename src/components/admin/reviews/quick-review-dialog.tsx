@@ -46,8 +46,7 @@ export function QuickReviewDialog({
 
   // Form state
   const [status, setStatus] = useState<'approved' | 'rejected'>('approved')
-  const [score, setScore] = useState<number>(0)
-  const [xp, setXp] = useState<number>(0)
+  const [score, setScore] = useState<number>(100)
   const [feedback, setFeedback] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
@@ -65,7 +64,6 @@ export function QuickReviewDialog({
             setData(res.data)
             setStatus(res.data.attempt.status === 'rejected' ? 'rejected' : 'approved')
             setScore(res.data.attempt.score ?? 100)
-            setXp(res.data.attempt.earned_xp ?? res.data.challenge.base_xp_reward ?? 0)
             setFeedback(res.data.attempt.admin_feedback ?? '')
           }
         })
@@ -95,7 +93,6 @@ export function QuickReviewDialog({
       challengeId,
       status,
       score,
-      earnedXp: xp,
       adminFeedback: feedback,
       isPassed: status === 'approved',
       reportUpdates,
@@ -200,15 +197,6 @@ export function QuickReviewDialog({
                     value={score} 
                     onChange={(e) => setScore(Number(e.target.value))} 
                     min={0} max={100} 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>{t.earnedXp}</Label>
-                  <Input 
-                    type="number" 
-                    value={xp} 
-                    onChange={(e) => setXp(Number(e.target.value))} 
-                    disabled={isTerminal}
                   />
                 </div>
               </div>

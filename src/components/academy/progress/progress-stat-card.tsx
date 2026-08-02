@@ -34,7 +34,7 @@ export function ProgressStatCard({
           <div className={cn('flex h-10 w-10 items-center justify-center rounded-lg', toneClasses[tone])}>
             <Icon className="h-5 w-5" aria-hidden="true" />
           </div>
-          <p className="text-3xl font-bold tracking-tight text-foreground">{value.toLocaleString()}</p>
+          <p className="text-3xl font-bold tracking-tight text-foreground">{value.toLocaleString('en-US')}</p>
         </div>
         <p className="mt-4 text-sm font-medium text-muted-foreground">{label}</p>
       </CardContent>

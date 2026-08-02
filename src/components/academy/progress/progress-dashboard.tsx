@@ -42,8 +42,7 @@ function formatDate(dateStr: string | null) {
 
 export function ProgressDashboard({ progress, dictionary }: ProgressDashboardProps) {
   const labels = dictionary.academy.progress
-  const xpForNextLevel = Math.max(progress.currentLevel, 1) * 500
-  const xpProgress = xpForNextLevel > 0 ? Math.min((progress.totalXp % xpForNextLevel) / xpForNextLevel, 1) : 0
+  const { rank, levelProgress, earnedBadges } = progress
 
   return (
     <div className="space-y-8">
@@ -73,11 +72,16 @@ export function ProgressDashboard({ progress, dictionary }: ProgressDashboardPro
                   {progress.profile.username.charAt(0).toUpperCase()}
                 </div>
               )}
-              <div className="min-w-0">
-                <h2 className="truncate font-heading text-2xl font-bold text-foreground">
-                  {progress.profile.username}
-                </h2>
-                <p className="mt-1 text-sm text-muted-foreground">
+              <div className="min-w-0 space-y-1">
+                <div className="flex items-center gap-3">
+                  <h2 className="truncate font-heading text-2xl font-bold text-foreground">
+                    {progress.profile.username}
+                  </h2>
+                  <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20">
+                    {labels.title === 'تقدمي' ? rank.labelAr : rank.labelEn}
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">
                   {labels.currentLevel} {progress.currentLevel}
                 </p>
               </div>
@@ -86,20 +90,54 @@ export function ProgressDashboard({ progress, dictionary }: ProgressDashboardPro
             <div className="w-full max-w-xl space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span className="font-semibold text-[#ea580c]">
-                  {progress.totalXp.toLocaleString()} {dictionary.academy.xp}
+                  {progress.totalXp.toLocaleString('en-US')} {dictionary.academy.xp}
                 </span>
                 <span className="text-muted-foreground">
-                  {labels.currentLevel} {progress.currentLevel + 1} → {xpForNextLevel.toLocaleString()} {dictionary.academy.xp}
+                  Lv {levelProgress.nextLevel} → {levelProgress.nextLevelRequiredXp.toLocaleString('en-US')} {dictionary.academy.xp}
                 </span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
                 <div
                   className="h-full rounded-full bg-cyber-gradient transition-all duration-700"
-                  style={{ width: `${Math.max(xpProgress * 100, 3)}%` }}
+                  style={{ width: `${Math.max(levelProgress.levelProgressPercentage, 3)}%` }}
                 />
               </div>
+              <p className="text-xs text-muted-foreground text-right">
+                {levelProgress.xpNeededForNextLevel.toLocaleString('en-US')} {labels.title === 'تقدمي' ? 'نقاط متبقية للمستوى التالي' : 'XP needed for next level'}
+              </p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Earned Badges */}
+      <Card className="academy-surface">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base font-semibold">
+            <Award className="h-4 w-4 text-primary" />
+            Earned Badges
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {earnedBadges.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">No badges earned yet. Keep testing!</p>
+          ) : (
+            <div className="flex flex-wrap gap-4">
+              {earnedBadges.map((badge) => (
+                <div key={badge.id} className="flex flex-col items-center gap-2 p-3 rounded-xl border border-border/50 bg-card/40 backdrop-blur-xl w-[120px] text-center">
+                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xl font-bold">
+                    {badge.icon_url ? (
+                      <Image src={badge.icon_url} alt={badge.name} width={32} height={32} className="rounded-full" />
+                    ) : (
+                      <Award className="h-6 w-6" />
+                    )}
+                  </div>
+                  <span className="text-xs font-semibold leading-tight">{badge.name}</span>
+                  <span className="text-[10px] text-muted-foreground">{formatDate(badge.earned_at)}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 

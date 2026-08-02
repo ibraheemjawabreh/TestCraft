@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/types/database.types'
 import type { AttemptStatus } from '@/types/database'
 import { completeChallengeAndUnlockNext } from '@/lib/academy/services/ProgressService'
+import { awardChallengeXp, type BugReviewInput } from '@/lib/gamification/engine'
 
 type BugReport = Database['public']['Tables']['bug_reports']['Row']
 type ChallengeAttempt = Database['public']['Tables']['challenge_attempts']['Row']
@@ -11,12 +12,21 @@ type Profile = Database['public']['Tables']['profiles']['Row']
 type Challenge = Database['public']['Tables']['challenges']['Row']
 type HiddenBug = Database['public']['Tables']['hidden_bugs']['Row']
 
+export interface HiddenBugItem {
+  id: string
+  bug_key: string | null
+  bug_title: string
+  actual_severity: Database['public']['Enums']['severity_level']
+  bonus_xp: number | null
+  is_active: boolean
+}
+
 export interface AttemptReviewData {
-  attempt: ChallengeAttempt
+  attempt: ChallengeAttempt & { xp_awarded?: boolean; awarded_xp?: number }
   tester: Pick<Profile, 'username' | 'avatar_url' | 'current_level' | 'total_xp'>
-  challenge: Pick<Challenge, 'title' | 'scenario' | 'instructions' | 'base_xp_reward'>
+  challenge: Pick<Challenge, 'id' | 'title' | 'scenario' | 'instructions' | 'base_xp_reward'>
   reports: BugReport[]
-  hiddenBugs: Pick<HiddenBug, 'bug_title' | 'actual_severity' | 'bonus_xp'>[]
+  hiddenBugs: HiddenBugItem[]
 }
 
 interface DataResult<T> {
@@ -42,6 +52,7 @@ export async function getAdminAttemptReview(
           total_xp
         ),
         challenges!challenge_attempts_challenge_id_fkey (
+          id,
           title,
           scenario,
           instructions,
@@ -69,8 +80,9 @@ export async function getAdminAttemptReview(
 
     const { data: hiddenBugs, error: bugsError } = await supabase
       .from('hidden_bugs')
-      .select('bug_title, actual_severity, bonus_xp')
+      .select('id, bug_key, bug_title, actual_severity, bonus_xp, is_active')
       .eq('challenge_id', challengeId)
+      .eq('is_active', true)
 
     if (bugsError) {
       return { data: null, error: 'Failed to fetch hidden bugs.' }
@@ -93,13 +105,15 @@ export async function getAdminAttemptReview(
           admin_feedback: attempt.admin_feedback,
           time_spent_seconds: attempt.time_spent_seconds,
           is_passed: attempt.is_passed,
+          xp_awarded: (attempt as any).xp_awarded ?? false,
+          awarded_xp: (attempt as any).awarded_xp ?? 0,
           created_at: attempt.created_at,
           updated_at: attempt.updated_at,
         },
         tester: attempt.profiles as any,
         challenge: attempt.challenges as any,
         reports: reports || [],
-        hiddenBugs: hiddenBugs || [],
+        hiddenBugs: (hiddenBugs || []) as HiddenBugItem[],
       },
       error: null,
     }
@@ -109,15 +123,21 @@ export async function getAdminAttemptReview(
   }
 }
 
+export interface ReportClassificationUpdate {
+  id: string
+  status: 'Pending' | 'Reviewed' | 'Rejected'
+  adminClassification?: 'valid_bug' | 'duplicate' | 'not_a_bug' | 'needs_improvement'
+  matchedHiddenBugId?: string | null
+}
+
 export interface SaveReviewInput {
   attemptId: string
   challengeId: string
   status: Extract<AttemptStatus, 'approved' | 'rejected'>
   score: number
-  earnedXp: number
   adminFeedback: string
   isPassed: boolean
-  reportUpdates: { id: string; status: 'Pending' | 'Reviewed' | 'Rejected' }[]
+  reportUpdates: ReportClassificationUpdate[]
 }
 
 export async function saveAdminAttemptReview(input: SaveReviewInput): Promise<DataResult<boolean>> {
@@ -129,10 +149,10 @@ export async function saveAdminAttemptReview(input: SaveReviewInput): Promise<Da
       return { data: null, error: 'Unauthorized.' }
     }
 
-    // Fetch the attempt to verify it exists and get the user_id for XP award
+    // Fetch attempt details
     const { data: attempt, error: attemptError } = await supabase
       .from('challenge_attempts')
-      .select('user_id, status, is_passed')
+      .select('user_id, status, is_passed, xp_awarded')
       .eq('id', input.attemptId)
       .eq('challenge_id', input.challengeId)
       .single()
@@ -141,24 +161,40 @@ export async function saveAdminAttemptReview(input: SaveReviewInput): Promise<Da
       return { data: null, error: 'Attempt not found.' }
     }
 
-    // Prevent re-reviewing already-terminal attempts (idempotent protection)
-    const alreadyReviewed = attempt.status === 'approved' || attempt.status === 'rejected'
-    const shouldAwardXp = input.status === 'approved' && !alreadyReviewed && !attempt.is_passed
+    // Fetch challenge base_xp_reward
+    const { data: challenge } = await supabase
+      .from('challenges')
+      .select('base_xp_reward')
+      .eq('id', input.challengeId)
+      .single()
+
+    const baseXp = challenge?.base_xp_reward ?? 100
 
     const now = new Date().toISOString()
 
-    // 1. Update bug report statuses
+    // 1. Update individual bug report statuses and classifications
     if (input.reportUpdates.length > 0) {
       const reportUpdateResults = await Promise.all(
         input.reportUpdates.map((ru) => {
           let finalStatus = ru.status
           if (finalStatus === 'Pending') {
-            finalStatus = input.status === 'approved' ? 'Reviewed' : 'Rejected'
+            finalStatus = ru.adminClassification === 'valid_bug'
+              ? 'Reviewed'
+              : input.status === 'approved' ? 'Reviewed' : 'Rejected'
+          }
+
+          const updatePayload: Record<string, any> = { status: finalStatus }
+
+          if (ru.adminClassification) {
+            updatePayload.admin_classification = ru.adminClassification
+          }
+          if (ru.matchedHiddenBugId !== undefined) {
+            updatePayload.matched_hidden_bug_id = ru.matchedHiddenBugId
           }
 
           return supabase
             .from('bug_reports')
-            .update({ status: finalStatus })
+            .update(updatePayload)
             .eq('id', ru.id)
             .eq('attempt_id', input.attemptId)
         })
@@ -177,7 +213,6 @@ export async function saveAdminAttemptReview(input: SaveReviewInput): Promise<Da
       .update({
         status: input.status,
         score: input.score,
-        earned_xp: input.earnedXp,
         admin_feedback: input.adminFeedback,
         is_passed: input.isPassed,
         reviewed_by: user.id,
@@ -191,27 +226,26 @@ export async function saveAdminAttemptReview(input: SaveReviewInput): Promise<Da
       return { data: null, error: 'Failed to update attempt.' }
     }
 
-    // 3. Award XP if this is the first approval
-    if (shouldAwardXp && input.earnedXp > 0) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('total_xp')
-        .eq('id', attempt.user_id)
-        .single()
+    // 3. Award XP if approved and not previously awarded
+    const alreadyAwarded = (attempt as any).xp_awarded === true
+    if (input.status === 'approved' && !alreadyAwarded) {
+      const bugReviews: BugReviewInput[] = input.reportUpdates.map((ru) => ({
+        reportId: ru.id,
+        classification: ru.adminClassification ?? 'not_a_bug',
+        matchedHiddenBugId: ru.matchedHiddenBugId,
+      }))
 
-      if (profile) {
-        await supabase
-          .from('profiles')
-          .update({
-            total_xp: (profile.total_xp || 0) + input.earnedXp,
-          })
-          .eq('id', attempt.user_id)
-      }
+      await awardChallengeXp(
+        attempt.user_id,
+        input.attemptId,
+        input.challengeId,
+        baseXp,
+        bugReviews
+      )
     }
 
-    // 4. If approved and passed: mark module as completed and unlock the next module
-    if (input.status === 'approved' && input.isPassed && !alreadyReviewed) {
-      // XP was already awarded above — pass 0 to avoid double-awarding.
+    // 4. If approved and passed: unlock next module (pass 0 since XP was handled above)
+    if (input.status === 'approved' && input.isPassed && attempt.status !== 'approved') {
       await completeChallengeAndUnlockNext(attempt.user_id, input.challengeId, 0)
     }
 

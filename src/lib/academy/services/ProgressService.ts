@@ -1,5 +1,6 @@
 import 'server-only'
 import { createClient } from '@/lib/supabase/server'
+import { awardLessonXp } from '@/lib/gamification/engine'
 
 interface Result<T> {
   data: T | null
@@ -74,6 +75,11 @@ export async function completeLessonAndSync(
     if (lessonErr) {
       return { data: null, error: 'Failed to complete lesson.' }
     }
+
+    // 1b. Award Lesson XP (10 XP, idempotent) & check badges in background
+    void awardLessonXp(userId, lessonId).catch((err) =>
+      console.error('Failed to award lesson XP:', err)
+    )
 
     // 2. Fire all reads in parallel
     const [lessonResult, moduleLessonsResult, moduleChallengeResult] = await Promise.all([

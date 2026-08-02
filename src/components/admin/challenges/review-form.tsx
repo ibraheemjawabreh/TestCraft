@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { CheckCircle2, XCircle, Save, Loader2, Clock, AlertTriangle } from 'lucide-react'
+import { CheckCircle2, XCircle, Save, Loader2, Clock, AlertTriangle, Calculator } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -10,11 +10,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import type { Dictionary } from '@/i18n/types'
-import type { AttemptReviewData } from '@/lib/admin/attempt-review'
+import type { AttemptReviewData, ReportClassificationUpdate } from '@/lib/admin/attempt-review'
 import type { Locale } from '@/i18n/config'
 
-// Only approved | rejected are valid final decisions
 type ReviewDecision = 'approved' | 'rejected'
+type AdminClassification = 'valid_bug' | 'duplicate' | 'not_a_bug' | 'needs_improvement'
 
 interface ReviewFormProps {
   attemptData: AttemptReviewData
@@ -45,12 +45,6 @@ const attemptStatusLabels: Record<string, string> = {
   rejected: 'Rejected',
 }
 
-const reportStatusOptions: Array<{ value: 'Pending' | 'Reviewed' | 'Rejected'; label: string }> = [
-  { value: 'Pending', label: 'Pending' },
-  { value: 'Reviewed', label: 'Reviewed' },
-  { value: 'Rejected', label: 'Rejected' },
-]
-
 export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps) {
   const router = useRouter()
   const dict = dictionary.admin.challenges
@@ -62,12 +56,24 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
     attempt.status === 'approved' ? 'approved' : 'rejected'
   )
   const [score, setScore] = useState<string>(attempt.score?.toString() ?? '')
-  const [earnedXp, setEarnedXp] = useState<string>(attempt.earned_xp?.toString() ?? challenge.base_xp_reward.toString())
   const [isPassed, setIsPassed] = useState<boolean>(attempt.is_passed ?? false)
   const [adminFeedback, setAdminFeedback] = useState<string>(attempt.admin_feedback ?? '')
-  const [reportStatuses, setReportStatuses] = useState<Record<string, 'Pending' | 'Reviewed' | 'Rejected'>>(
-    Object.fromEntries(reports.map((r) => [r.id, r.status ?? 'Pending']))
+
+  // State for each report's review
+  const [reportUpdates, setReportUpdates] = useState<Record<string, ReportClassificationUpdate>>(
+    Object.fromEntries(
+      reports.map((r) => [
+        r.id,
+        {
+          id: r.id,
+          status: (r.status as 'Pending' | 'Reviewed' | 'Rejected') ?? 'Pending',
+          adminClassification: (r as any).admin_classification ?? 'not_a_bug',
+          matchedHiddenBugId: (r as any).matched_hidden_bug_id ?? null,
+        },
+      ])
+    )
   )
+
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [saveSuccess, setSaveSuccess] = useState(false)
@@ -76,16 +82,40 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
   function handleDecisionChange(d: ReviewDecision) {
     setDecision(d)
     setIsPassed(d === 'approved')
-    setReportStatuses((prev) => {
-      const next = { ...prev }
-      Object.keys(next).forEach((k) => {
-        if (next[k] === 'Pending') {
-          next[k] = d === 'approved' ? 'Reviewed' : 'Rejected'
-        }
-      })
-      return next
-    })
   }
+
+  function handleReportUpdate(id: string, update: Partial<ReportClassificationUpdate>) {
+    setReportUpdates((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], ...update },
+    }))
+  }
+
+  // Calculate Auto XP Preview
+  const xpPreview = useMemo(() => {
+    if (decision !== 'approved') return { baseXp: 0, bugBonusXp: 0, perfectBonus: 0, totalXp: 0 }
+
+    const baseXp = challenge.base_xp_reward ?? 100
+    const matchedBugIds = new Set<string>()
+    let bugBonusXp = 0
+
+    Object.values(reportUpdates).forEach((update) => {
+      if (update.adminClassification === 'valid_bug' && update.matchedHiddenBugId) {
+        if (!matchedBugIds.has(update.matchedHiddenBugId)) {
+          matchedBugIds.add(update.matchedHiddenBugId)
+          const matchedBug = hiddenBugs.find((b) => b.id === update.matchedHiddenBugId)
+          bugBonusXp += matchedBug?.bonus_xp ?? 0
+        }
+      }
+    })
+
+    const totalHiddenBugCount = hiddenBugs.length
+    const isPerfect = totalHiddenBugCount > 0 && matchedBugIds.size >= totalHiddenBugCount
+    const perfectBonus = isPerfect ? 25 : 0
+    const totalXp = baseXp + bugBonusXp + perfectBonus
+
+    return { baseXp, bugBonusXp, perfectBonus, totalXp, matchedCount: matchedBugIds.size }
+  }, [decision, reportUpdates, challenge.base_xp_reward, hiddenBugs])
 
   async function handleSave() {
     setSaving(true)
@@ -101,13 +131,9 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
           challengeId: attempt.challenge_id,
           status: decision,
           score: score === '' ? 0 : Number(score),
-          earnedXp: earnedXp === '' ? 0 : Number(earnedXp),
           adminFeedback,
           isPassed,
-          reportUpdates: reports.map((r) => ({
-            id: r.id,
-            status: reportStatuses[r.id] ?? 'Pending',
-          })),
+          reportUpdates: Object.values(reportUpdates),
         }),
       })
 
@@ -201,52 +227,75 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
         {reports.length === 0 ? (
           <p className="text-sm text-muted-foreground">{dict.noSubmissions}</p>
         ) : (
-          reports.map((report) => (
-            <Card key={report.id} className="bg-card/40 backdrop-blur-xl border-border/50">
-              <CardContent className="p-5 space-y-3">
-                <div className="flex items-start justify-between gap-3 flex-wrap">
-                  <div>
-                    <p className="font-semibold">{report.title}</p>
-                    <Badge variant="outline" className={`mt-1 ${severityColors[report.reported_severity] ?? ''}`}>
-                      {report.reported_severity}
-                    </Badge>
+          reports.map((report) => {
+            const rUpdate = reportUpdates[report.id]
+            return (
+              <Card key={report.id} className="bg-card/40 backdrop-blur-xl border-border/50 overflow-visible">
+                <CardContent className="p-5 space-y-4">
+                  {/* Report Header */}
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div>
+                      <p className="font-semibold">{report.title}</p>
+                      <Badge variant="outline" className={`mt-1 ${severityColors[report.reported_severity] ?? ''}`}>
+                        {report.reported_severity}
+                      </Badge>
+                    </div>
                   </div>
-                  {/* Per-report status override */}
-                  <select
-                    className="rounded-lg border border-border/70 bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-                    value={reportStatuses[report.id] ?? 'Pending'}
-                    onChange={(e) =>
-                      setReportStatuses((prev) => ({
-                        ...prev,
-                        [report.id]: e.target.value as 'Pending' | 'Reviewed' | 'Rejected',
-                      }))
-                    }
-                  >
-                    {reportStatusOptions.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
 
-                <div className="grid gap-3 sm:grid-cols-3 text-sm">
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-1">Steps to Reproduce</p>
-                    <p className="whitespace-pre-wrap leading-relaxed">{report.steps_to_reproduce}</p>
+                  {/* Report Content */}
+                  <div className="grid gap-3 sm:grid-cols-3 text-sm border-y border-border/50 py-4 my-2">
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-1">Steps to Reproduce</p>
+                      <p className="whitespace-pre-wrap leading-relaxed">{report.steps_to_reproduce}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-1">Expected Result</p>
+                      <p className="whitespace-pre-wrap leading-relaxed">{report.expected_result}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-1">Actual Result</p>
+                      <p className="whitespace-pre-wrap leading-relaxed">{report.actual_result}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-1">Expected Result</p>
-                    <p className="whitespace-pre-wrap leading-relaxed">{report.expected_result}</p>
+
+                  {/* Classification Controls */}
+                  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center bg-muted/30 p-3 rounded-lg border border-border/50">
+                    <div className="space-y-1 w-full sm:w-auto">
+                      <Label className="text-xs text-muted-foreground">Classification</Label>
+                      <select
+                        className="w-full rounded-md border border-border/70 bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                        value={rUpdate.adminClassification ?? 'not_a_bug'}
+                        onChange={(e) => handleReportUpdate(report.id, { adminClassification: e.target.value as AdminClassification })}
+                      >
+                        <option value="valid_bug">Valid Bug (Bonus XP)</option>
+                        <option value="duplicate">Duplicate</option>
+                        <option value="not_a_bug">Not a Bug</option>
+                        <option value="needs_improvement">Needs Improvement</option>
+                      </select>
+                    </div>
+
+                    {rUpdate.adminClassification === 'valid_bug' && (
+                      <div className="space-y-1 w-full flex-1">
+                        <Label className="text-xs text-muted-foreground">Match with Intentional Bug</Label>
+                        <select
+                          className="w-full rounded-md border border-border/70 bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                          value={rUpdate.matchedHiddenBugId ?? ''}
+                          onChange={(e) => handleReportUpdate(report.id, { matchedHiddenBugId: e.target.value || null })}
+                        >
+                          <option value="">-- Select matched bug --</option>
+                          {hiddenBugs.map((bug) => (
+                            <option key={bug.id} value={bug.id}>
+                              {bug.bug_title} (+{bug.bonus_xp} XP)
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-1">Actual Result</p>
-                    <p className="whitespace-pre-wrap leading-relaxed">{report.actual_result}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
+                </CardContent>
+              </Card>
+            )
+          })
         )}
       </div>
 
@@ -256,81 +305,111 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
           <CardTitle className="text-base">{dict.reviewSubmission}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Decision buttons — only Approve or Reject */}
-          <div className="space-y-2">
-            <Label>Decision</Label>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant={decision === 'approved' ? 'default' : 'outline'}
-                size="sm"
-                className="gap-2"
-                onClick={() => handleDecisionChange('approved')}
-              >
-                <CheckCircle2 className="h-4 w-4" />
-                {dict.approve}
-              </Button>
-              <Button
-                variant={decision === 'rejected' ? 'destructive' : 'outline'}
-                size="sm"
-                className="gap-2"
-                onClick={() => handleDecisionChange('rejected')}
-              >
-                <XCircle className="h-4 w-4" />
-                {dict.reject}
-              </Button>
-            </div>
-          </div>
+          
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-6">
+              {/* Decision buttons */}
+              <div className="space-y-3">
+                <Label>Decision</Label>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant={decision === 'approved' ? 'default' : 'outline'}
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => handleDecisionChange('approved')}
+                  >
+                    <CheckCircle2 className="h-4 w-4" />
+                    {dict.approve}
+                  </Button>
+                  <Button
+                    variant={decision === 'rejected' ? 'destructive' : 'outline'}
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => handleDecisionChange('rejected')}
+                  >
+                    <XCircle className="h-4 w-4" />
+                    {dict.reject}
+                  </Button>
+                </div>
+              </div>
 
-          {/* Score & XP */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="score">Score (0–100)</Label>
-              <input
-                id="score"
-                type="number"
-                min={0}
-                max={100}
-                value={score}
-                onChange={(e) => setScore(e.target.value)}
-                className="w-full rounded-lg border border-border/70 bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="earned-xp">{dict.earnedXp}</Label>
-              <input
-                id="earned-xp"
-                type="number"
-                min={0}
-                max={10000}
-                value={earnedXp}
-                onChange={(e) => setEarnedXp(e.target.value)}
-                className="w-full rounded-lg border border-border/70 bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            </div>
-          </div>
+              {/* Score */}
+              <div className="space-y-2">
+                <Label htmlFor="score">Score (0–100)</Label>
+                <input
+                  id="score"
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={score}
+                  onChange={(e) => setScore(e.target.value)}
+                  className="w-full rounded-lg border border-border/70 bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
 
-          {/* is_passed toggle */}
-          <div className="flex items-center gap-3">
-            <input
-              id="is-passed"
-              type="checkbox"
-              checked={isPassed}
-              onChange={(e) => setIsPassed(e.target.checked)}
-              className="h-4 w-4 rounded border-border accent-primary"
-            />
-            <Label htmlFor="is-passed" className="cursor-pointer">
-              Mark as Passed (unlocks next lesson)
-            </Label>
-            {decision === 'approved' && !isPassed && (
-              <span className="flex items-center gap-1 text-xs text-amber-500">
-                <AlertTriangle className="h-3.5 w-3.5" />
-                Approved but not passed — no unlock
-              </span>
-            )}
+              {/* is_passed toggle */}
+              <div className="flex items-center gap-3 pt-2">
+                <input
+                  id="is-passed"
+                  type="checkbox"
+                  checked={isPassed}
+                  onChange={(e) => setIsPassed(e.target.checked)}
+                  className="h-4 w-4 rounded border-border accent-primary"
+                />
+                <Label htmlFor="is-passed" className="cursor-pointer">
+                  Mark as Passed (unlocks next lesson)
+                </Label>
+              </div>
+              {decision === 'approved' && !isPassed && (
+                <p className="flex items-center gap-1.5 text-xs text-amber-500 font-medium">
+                  <AlertTriangle className="h-4 w-4" />
+                  Approved but not passed — no unlock
+                </p>
+              )}
+            </div>
+
+            {/* Auto XP Calculation Preview */}
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-4">
+              <div className="flex items-center gap-2 border-b border-primary/10 pb-3">
+                <Calculator className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold text-primary">XP Calculation Preview</h3>
+              </div>
+              
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Base Challenge XP:</span>
+                  <span className="font-medium">+{xpPreview.baseXp}</span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">
+                    Bug Bonus ({xpPreview.matchedCount}/{hiddenBugs.length} unique matched):
+                  </span>
+                  <span className="font-medium text-emerald-500">+{xpPreview.bugBonusXp}</span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Perfect Bonus (All bugs matched):</span>
+                  <span className="font-medium text-emerald-500">+{xpPreview.perfectBonus}</span>
+                </div>
+              </div>
+
+              <div className="border-t border-primary/10 pt-3 flex justify-between items-center">
+                <span className="font-semibold text-foreground">Total XP to Award:</span>
+                <span className="text-xl font-bold text-primary">
+                  {decision === 'approved' ? xpPreview.totalXp : 0} XP
+                </span>
+              </div>
+
+              <p className="text-xs text-muted-foreground italic">
+                XP is calculated and awarded automatically when the attempt is approved.
+                Re-reviewing will not grant XP twice.
+              </p>
+            </div>
           </div>
 
           {/* Admin Feedback */}
-          <div className="space-y-2">
+          <div className="space-y-2 pt-4">
             <Label htmlFor="admin-feedback">{dict.adminFeedback}</Label>
             <Textarea
               id="admin-feedback"
@@ -344,24 +423,26 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
 
           {/* Save */}
           {saveError && (
-            <p className="text-sm text-rose-500">{saveError}</p>
+            <p className="text-sm text-rose-500 font-medium">{saveError}</p>
           )}
           {saveSuccess && (
-            <p className="text-sm text-emerald-500">{dict.reviewSaved}</p>
+            <p className="text-sm text-emerald-500 font-medium">{dict.reviewSaved}</p>
           )}
 
-          <Button
-            onClick={handleSave}
-            disabled={saving || !adminFeedback.trim()}
-            className="gap-2"
-          >
-            {saving ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4" />
-            )}
-            {dict.saveReview}
-          </Button>
+          <div className="pt-2">
+            <Button
+              onClick={handleSave}
+              disabled={saving || !adminFeedback.trim()}
+              className="gap-2"
+            >
+              {saving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4" />
+              )}
+              {dict.saveReview}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

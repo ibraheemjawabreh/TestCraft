@@ -2,6 +2,7 @@ import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/types/database.types'
+import { getLevelFromXp } from '@/lib/gamification/engine'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
@@ -39,7 +40,7 @@ export async function getAdminUsers(): Promise<Result<AdminUserItem[]>> {
       avatarUrl: u.avatar_url,
       role: u.role,
       totalXp: u.total_xp,
-      currentLevel: u.current_level,
+      currentLevel: getLevelFromXp(u.total_xp ?? 0),
       createdAt: u.created_at,
     }))
 

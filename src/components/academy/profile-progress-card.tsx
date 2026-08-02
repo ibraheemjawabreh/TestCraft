@@ -72,8 +72,8 @@ export function ProfileProgressCard({
           {/* XP Progress bar */}
           <div className="mt-3">
             <div className="mb-1.5 flex items-center justify-between text-xs text-muted-foreground">
-              <span className="font-medium text-primary">{xp.toLocaleString()} XP</span>
-              <span>{xpForNextLevel.toLocaleString()} XP</span>
+              <span className="font-medium text-primary">{xp.toLocaleString('en-US')} XP</span>
+              <span>{xpForNextLevel.toLocaleString('en-US')} XP</span>
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-secondary/60">
               <div
@@ -92,7 +92,7 @@ export function ProfileProgressCard({
             </div>
             <div>
               <p className="text-xs text-muted-foreground">{dictionary.academy.totalXp}</p>
-              <p className="text-sm font-semibold text-foreground">{xp.toLocaleString()}</p>
+              <p className="text-sm font-semibold text-foreground">{xp.toLocaleString('en-US')}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">

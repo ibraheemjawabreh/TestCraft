@@ -2,6 +2,7 @@ import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/types/database.types'
+import { getLevelFromXp } from '@/lib/gamification/engine'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 type BugReport = Database['public']['Tables']['bug_reports']['Row']
@@ -188,7 +189,7 @@ export async function getAdminDashboardOverview(): Promise<AdminDashboardResult>
         username: profile.username,
         role: profile.role,
         totalXp: profile.total_xp,
-        currentLevel: profile.current_level,
+        currentLevel: getLevelFromXp(profile.total_xp ?? 0),
         createdAt: profile.created_at,
       })),
       recentSubmissions: submissionRows.map((s) => ({

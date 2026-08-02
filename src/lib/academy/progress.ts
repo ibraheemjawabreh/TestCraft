@@ -2,6 +2,7 @@ import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/types/database.types'
+import { getRankFromLevel, getLevelProgress, type RankInfo, type LevelProgress } from '@/lib/gamification/engine'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 type ReportStatus = Database['public']['Enums']['report_status']
@@ -21,10 +22,22 @@ export interface AttemptSummary {
   isPassed: boolean | null
 }
 
+export interface EarnedBadge {
+  id: string
+  badge_key: string
+  name: string
+  name_ar: string | null
+  icon_url: string | null
+  earned_at: string
+}
+
 export interface TesterProgressStats {
   profile: Profile
   totalXp: number
   currentLevel: number
+  rank: RankInfo
+  levelProgress: LevelProgress
+  earnedBadges: EarnedBadge[]
   // Lesson & challenge counts
   completedLessonsCount: number
   completedChallengesCount: number
@@ -143,11 +156,39 @@ export async function getTesterProgress(
       : { data: [] }
     const titleById = new Map((challengeRows ?? []).map((c) => [c.id, c.title]))
 
+    // Fetch full badge details
+    const { data: earnedBadgesData } = await supabase
+      .from('user_badges')
+      .select(`
+        earned_at,
+        badges!inner (
+          id, badge_key, name, name_ar, icon_url
+        )
+      `)
+      .eq('user_id', userId)
+
+    const earnedBadges: EarnedBadge[] = (earnedBadgesData ?? []).map((ub) => ({
+      id: (ub.badges as any).id,
+      badge_key: (ub.badges as any).badge_key,
+      name: (ub.badges as any).name,
+      name_ar: (ub.badges as any).name_ar,
+      icon_url: (ub.badges as any).icon_url,
+      earned_at: ub.earned_at ?? new Date().toISOString(),
+    }))
+
+    const totalXp = profile.total_xp ?? 0
+    const levelProgress = getLevelProgress(totalXp)
+    const currentLevel = levelProgress.currentLevel
+    const rank = getRankFromLevel(currentLevel)
+
     return {
       data: {
         profile,
-        totalXp: profile.total_xp ?? 0,
-        currentLevel: profile.current_level ?? 1,
+        totalXp,
+        currentLevel,
+        rank,
+        levelProgress,
+        earnedBadges,
         completedLessonsCount: completedLessonsResult.count ?? 0,
         completedChallengesCount: approvedAttemptsResult.count ?? 0,
         approvedAttempts: approvedAttemptsResult.count ?? 0,
