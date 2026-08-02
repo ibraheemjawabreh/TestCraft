@@ -1,3 +1,4 @@
+﻿export const runtime = 'nodejs'
 import { NextResponse } from 'next/server'
 
 import { createClient } from '@/lib/supabase/server'
@@ -16,3 +17,4 @@ export async function POST(request: Request) {
   // Redirect to login page after signing out
   return NextResponse.redirect(new URL('/login', request.url))
 }
+

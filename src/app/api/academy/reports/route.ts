@@ -1,3 +1,4 @@
+﻿export const runtime = 'nodejs'
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { submitBugReport, submitAttempt } from '@/lib/academy/reports'
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: result.error || 'Unknown error' }, { status: 400 })
     }
 
-    // 2. Find the active attempt and submit it (started → submitted)
+    // 2. Find the active attempt and submit it (started â†’ submitted)
     // This ensures the admin sees the report immediately in the submissions page.
     const { data: activeAttempt } = await supabase
       .from('challenge_attempts')
@@ -84,7 +85,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       .maybeSingle()
 
     if (activeAttempt) {
-      // Transition attempt from started → submitted (non-blocking, best effort)
+      // Transition attempt from started â†’ submitted (non-blocking, best effort)
       void submitAttempt(user.id, body.challengeId, activeAttempt.id)
     }
 
@@ -93,3 +94,4 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Internal server error.' }, { status: 500 })
   }
 }
+

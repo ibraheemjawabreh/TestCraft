@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { requireAdmin } from '@/lib/auth/require-admin'

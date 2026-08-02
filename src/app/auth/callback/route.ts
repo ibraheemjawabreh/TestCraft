@@ -1,3 +1,4 @@
+﻿export const runtime = 'nodejs'
 import { cookies } from 'next/headers'
 import { NextResponse, type NextRequest } from 'next/server'
 
@@ -43,3 +44,4 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   return NextResponse.redirect(`${origin}/${locale}/register?error=auth_failed`)
 }
+

@@ -1,3 +1,4 @@
+﻿export const runtime = 'nodejs'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
@@ -60,3 +61,4 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: error?.message || 'Internal Server Error' }, { status: 500 })
   }
 }
+

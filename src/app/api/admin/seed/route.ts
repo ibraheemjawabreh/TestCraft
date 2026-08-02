@@ -1,3 +1,4 @@
+﻿export const runtime = 'nodejs'
 import { NextResponse } from 'next/server'
 import { seedDemoData } from '@/lib/admin/seeder'
 
@@ -13,3 +14,4 @@ export async function POST() {
     )
   }
 }
+
