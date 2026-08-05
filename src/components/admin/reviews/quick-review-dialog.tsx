@@ -13,7 +13,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 
@@ -46,7 +45,6 @@ export function QuickReviewDialog({
 
   // Form state
   const [status, setStatus] = useState<'approved' | 'rejected'>('approved')
-  const [score, setScore] = useState<number>(100)
   const [feedback, setFeedback] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
@@ -63,7 +61,6 @@ export function QuickReviewDialog({
           } else {
             setData(res.data)
             setStatus(res.data.attempt.status === 'rejected' ? 'rejected' : 'approved')
-            setScore(res.data.attempt.score ?? 100)
             setFeedback(res.data.attempt.admin_feedback ?? '')
           }
         })
@@ -92,7 +89,6 @@ export function QuickReviewDialog({
       attemptId,
       challengeId,
       status,
-      score,
       adminFeedback: feedback,
       isPassed: status === 'approved',
       reportUpdates,
@@ -177,7 +173,7 @@ export function QuickReviewDialog({
                 </div>
               )}
 
-              <div className="grid gap-4 sm:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-1">
                 <div className="space-y-2">
                   <Label>{tDash.status}</Label>
                   <Select value={status} onValueChange={(val: any) => setStatus(val)}>
@@ -189,15 +185,6 @@ export function QuickReviewDialog({
                       <SelectItem value="rejected">{t.reject}</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>{tDash.score}</Label>
-                  <Input 
-                    type="number" 
-                    value={score} 
-                    onChange={(e) => setScore(Number(e.target.value))} 
-                    min={0} max={100} 
-                  />
                 </div>
               </div>
 

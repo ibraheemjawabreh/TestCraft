@@ -10,7 +10,6 @@ const reviewSchema = z.object({
   attemptId: z.string().uuid(),
   challengeId: z.string().uuid(),
   status: z.enum(['approved', 'rejected']),
-  score: z.number().int().min(0).max(100),
   adminFeedback: z.string().min(1).max(3000),
   isPassed: z.boolean(),
   reportUpdates: z.array(

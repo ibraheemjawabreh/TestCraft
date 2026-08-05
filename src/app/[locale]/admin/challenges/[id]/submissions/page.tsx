@@ -135,7 +135,6 @@ export default async function ChallengeSubmissionsPage({
                 <TableHead>{dict.tester}</TableHead>
                 <TableHead>{dict.reportsCount}</TableHead>
                 <TableHead>{dictionary.admin.dashboard.status}</TableHead>
-                <TableHead>Score</TableHead>
                 <TableHead>{dict.earnedXp}</TableHead>
                 <TableHead>{dict.submittedAt}</TableHead>
                 <TableHead>{dict.reviewedAt}</TableHead>
@@ -154,11 +153,6 @@ export default async function ChallengeSubmissionsPage({
                     >
                       {statusLabels[submission.status] ?? submission.status}
                     </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {submission.score !== null
-                      ? submission.score
-                      : dictionary.admin.dashboard.noData}
                   </TableCell>
                   <TableCell>
                     {submission.earned_xp !== null

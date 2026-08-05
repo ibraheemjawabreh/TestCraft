@@ -2,7 +2,19 @@
 
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { CheckCircle2, XCircle, Save, Loader2, Clock, AlertTriangle, Calculator } from 'lucide-react'
+import {
+  CheckCircle2,
+  XCircle,
+  Save,
+  Loader2,
+  Clock,
+  AlertTriangle,
+  Calculator,
+  Bug,
+  FileText,
+  CheckSquare,
+  Square,
+} from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -14,7 +26,6 @@ import type { AttemptReviewData, ReportClassificationUpdate } from '@/lib/admin/
 import type { Locale } from '@/i18n/config'
 
 type ReviewDecision = 'approved' | 'rejected'
-type AdminClassification = 'valid_bug' | 'duplicate' | 'not_a_bug' | 'needs_improvement'
 
 interface ReviewFormProps {
   attemptData: AttemptReviewData
@@ -55,11 +66,23 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
   const [decision, setDecision] = useState<ReviewDecision>(
     attempt.status === 'approved' ? 'approved' : 'rejected'
   )
-  const [score, setScore] = useState<string>(attempt.score?.toString() ?? '')
   const [isPassed, setIsPassed] = useState<boolean>(attempt.is_passed ?? false)
   const [adminFeedback, setAdminFeedback] = useState<string>(attempt.admin_feedback ?? '')
 
-  // State for each report's review
+  // ── Hidden Bugs checklist ──────────────────────────────────────
+  // Tracks which hidden bugs have been confirmed as found by the tester.
+  // Each checked bugId maps to true.
+  const [checkedBugIds, setCheckedBugIds] = useState<Set<string>>(() => {
+    // Pre-populate from existing report updates (matched_hidden_bug_id on reports)
+    const preChecked = new Set<string>()
+    reports.forEach((r) => {
+      const matchedId = (r as any).matched_hidden_bug_id
+      if (matchedId) preChecked.add(matchedId)
+    })
+    return preChecked
+  })
+
+  // ── Report classification state (still tracked for DB update) ──
   const [reportUpdates, setReportUpdates] = useState<Record<string, ReportClassificationUpdate>>(
     Object.fromEntries(
       reports.map((r) => [
@@ -84,43 +107,110 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
     setIsPassed(d === 'approved')
   }
 
-  function handleReportUpdate(id: string, update: Partial<ReportClassificationUpdate>) {
-    setReportUpdates((prev) => ({
-      ...prev,
-      [id]: { ...prev[id], ...update },
-    }))
+  // Toggle a hidden bug's found status and sync all report updates
+  function toggleBugFound(bugId: string) {
+    setCheckedBugIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(bugId)) {
+        next.delete(bugId)
+        // Unlink any reports matched to this bug
+        setReportUpdates((prevUpdates) => {
+          const updated = { ...prevUpdates }
+          Object.keys(updated).forEach((reportId) => {
+            if (updated[reportId].matchedHiddenBugId === bugId) {
+              updated[reportId] = {
+                ...updated[reportId],
+                adminClassification: 'not_a_bug',
+                matchedHiddenBugId: null,
+              }
+            }
+          })
+          return updated
+        })
+      } else {
+        next.add(bugId)
+        // Auto-assign to first unmatched report if possible
+        setReportUpdates((prevUpdates) => {
+          const updated = { ...prevUpdates }
+          const unmatched = Object.values(updated).find(
+            (u) => !u.matchedHiddenBugId && u.adminClassification !== 'valid_bug'
+          )
+          if (unmatched) {
+            updated[unmatched.id] = {
+              ...updated[unmatched.id],
+              adminClassification: 'valid_bug',
+              matchedHiddenBugId: bugId,
+            }
+          }
+          return updated
+        })
+      }
+      return next
+    })
   }
 
-  // Calculate Auto XP Preview
+  // XP Preview calculation
   const xpPreview = useMemo(() => {
-    if (decision !== 'approved') return { baseXp: 0, bugBonusXp: 0, perfectBonus: 0, totalXp: 0 }
+    if (decision !== 'approved') return { baseXp: 0, bugBonusXp: 0, perfectBonus: 0, totalXp: 0, matchedCount: 0 }
 
     const baseXp = challenge.base_xp_reward ?? 100
-    const matchedBugIds = new Set<string>()
     let bugBonusXp = 0
 
-    Object.values(reportUpdates).forEach((update) => {
-      if (update.adminClassification === 'valid_bug' && update.matchedHiddenBugId) {
-        if (!matchedBugIds.has(update.matchedHiddenBugId)) {
-          matchedBugIds.add(update.matchedHiddenBugId)
-          const matchedBug = hiddenBugs.find((b) => b.id === update.matchedHiddenBugId)
-          bugBonusXp += matchedBug?.bonus_xp ?? 0
+    checkedBugIds.forEach((bugId) => {
+      const bug = hiddenBugs.find((b) => b.id === bugId)
+      bugBonusXp += bug?.bonus_xp ?? 0
+    })
+
+    const isPerfect = hiddenBugs.length > 0 && checkedBugIds.size >= hiddenBugs.length
+    const perfectBonus = isPerfect ? 25 : 0
+    const totalXp = baseXp + bugBonusXp + perfectBonus
+
+    return { baseXp, bugBonusXp, perfectBonus, totalXp, matchedCount: checkedBugIds.size }
+  }, [decision, checkedBugIds, challenge.base_xp_reward, hiddenBugs])
+
+  // Build the final reportUpdates from checked bugs before saving
+  function buildFinalReportUpdates(): ReportClassificationUpdate[] {
+    // Re-derive from checkedBugIds:
+    // For each checked bug, find the first report that isn't yet assigned and assign it
+    const finalUpdates = { ...reportUpdates }
+    const assignedBugIds = new Set<string>()
+
+    // First pass: keep existing valid assignments for checked bugs
+    Object.values(finalUpdates).forEach((u) => {
+      if (u.matchedHiddenBugId && checkedBugIds.has(u.matchedHiddenBugId)) {
+        assignedBugIds.add(u.matchedHiddenBugId)
+        finalUpdates[u.id] = { ...u, adminClassification: 'valid_bug' }
+      } else if (u.matchedHiddenBugId && !checkedBugIds.has(u.matchedHiddenBugId)) {
+        // Bug unchecked — reset report
+        finalUpdates[u.id] = { ...u, adminClassification: 'not_a_bug', matchedHiddenBugId: null }
+      }
+    })
+
+    // Second pass: assign unassigned checked bugs to unmatched reports
+    const unassignedChecked = Array.from(checkedBugIds).filter((id) => !assignedBugIds.has(id))
+    const unmatchedReports = Object.values(finalUpdates).filter(
+      (u) => !u.matchedHiddenBugId && u.adminClassification !== 'valid_bug'
+    )
+
+    unassignedChecked.forEach((bugId, i) => {
+      if (unmatchedReports[i]) {
+        finalUpdates[unmatchedReports[i].id] = {
+          ...finalUpdates[unmatchedReports[i].id],
+          adminClassification: 'valid_bug',
+          matchedHiddenBugId: bugId,
         }
       }
     })
 
-    const totalHiddenBugCount = hiddenBugs.length
-    const isPerfect = totalHiddenBugCount > 0 && matchedBugIds.size >= totalHiddenBugCount
-    const perfectBonus = isPerfect ? 25 : 0
-    const totalXp = baseXp + bugBonusXp + perfectBonus
-
-    return { baseXp, bugBonusXp, perfectBonus, totalXp, matchedCount: matchedBugIds.size }
-  }, [decision, reportUpdates, challenge.base_xp_reward, hiddenBugs])
+    return Object.values(finalUpdates)
+  }
 
   async function handleSave() {
     setSaving(true)
     setSaveError(null)
     setSaveSuccess(false)
+
+    const finalReportUpdates = buildFinalReportUpdates()
 
     try {
       const res = await fetch(`/${locale}/admin/challenges/api/review-attempt`, {
@@ -130,10 +220,9 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
           attemptId: attempt.id,
           challengeId: attempt.challenge_id,
           status: decision,
-          score: score === '' ? 0 : Number(score),
           adminFeedback,
           isPassed,
-          reportUpdates: Object.values(reportUpdates),
+          reportUpdates: finalReportUpdates,
         }),
       })
 
@@ -197,115 +286,135 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
         </Card>
       </div>
 
-      {/* Hidden Bugs Reference (Admin Only) */}
+      {/* ── SECTION 1: Hidden Bugs Checklist ── */}
       {hiddenBugs.length > 0 && (
         <Card className="bg-card/40 backdrop-blur-xl border-border/50">
-          <CardHeader>
-            <CardTitle className="text-base">{dictionary.admin.challenges.hiddenBugs} (Admin Only)</CardTitle>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Bug className="h-5 w-5 text-primary" />
+              <CardTitle className="text-base">
+                Intentional Bugs Checklist
+                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                  — Check each bug that was found by the tester
+                </span>
+              </CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2">
-              {hiddenBugs.map((bug, i) => (
-                <li key={i} className="flex items-center justify-between gap-2 text-sm">
-                  <span>{bug.bug_title}</span>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className={severityColors[bug.actual_severity] ?? ''}>
-                      {bug.actual_severity}
-                    </Badge>
-                    <span className="text-muted-foreground text-xs">+{bug.bonus_xp ?? 0} XP</span>
-                  </div>
-                </li>
-              ))}
+            <ul className="space-y-3">
+              {hiddenBugs.map((bug) => {
+                const isChecked = checkedBugIds.has(bug.id)
+                return (
+                  <li key={bug.id}>
+                    <button
+                      type="button"
+                      onClick={() => toggleBugFound(bug.id)}
+                      className={`w-full flex items-center gap-3 rounded-lg border p-4 text-left transition-all duration-150
+                        ${isChecked
+                          ? 'border-emerald-500/50 bg-emerald-500/8 dark:bg-emerald-500/10'
+                          : 'border-border/50 bg-muted/20 hover:bg-muted/40'
+                        }`}
+                    >
+                      <span className="shrink-0 text-muted-foreground">
+                        {isChecked
+                          ? <CheckSquare className="h-5 w-5 text-emerald-500" />
+                          : <Square className="h-5 w-5" />
+                        }
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className={`font-medium text-sm ${isChecked ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'}`}>
+                          {bug.bug_title}
+                        </p>
+                        {bug.bug_key && (
+                          <p className="text-xs text-muted-foreground font-mono mt-0.5">{bug.bug_key}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Badge variant="outline" className={severityColors[bug.actual_severity] ?? ''}>
+                          {bug.actual_severity}
+                        </Badge>
+                        <span className={`text-xs font-semibold ${isChecked ? 'text-emerald-500' : 'text-muted-foreground'}`}>
+                          +{bug.bonus_xp ?? 0} XP
+                        </span>
+                      </div>
+                    </button>
+                  </li>
+                )
+              })}
             </ul>
+
+            {/* Progress summary */}
+            <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground border-t border-border/50 pt-4">
+              <span className="font-medium text-foreground">{checkedBugIds.size}</span>
+              <span>/ {hiddenBugs.length} bugs found</span>
+              {checkedBugIds.size === hiddenBugs.length && hiddenBugs.length > 0 && (
+                <Badge variant="outline" className="ml-2 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+                  🎯 Perfect!
+                </Badge>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Submitted Reports */}
+      {/* ── SECTION 2: Submitted Bug Reports (read-only reference) ── */}
       <div className="space-y-3">
-        <h2 className="font-heading text-lg font-semibold">{dictionary.admin.dashboard.recentBugReports}</h2>
+        <div className="flex items-center gap-2">
+          <FileText className="h-5 w-5 text-muted-foreground" />
+          <h2 className="font-heading text-lg font-semibold">
+            {dictionary.admin.dashboard.recentBugReports}
+          </h2>
+          <Badge variant="outline" className="text-xs">
+            {reports.length} reports
+          </Badge>
+        </div>
+
         {reports.length === 0 ? (
           <p className="text-sm text-muted-foreground">{dict.noSubmissions}</p>
         ) : (
-          reports.map((report) => {
-            const rUpdate = reportUpdates[report.id]
-            return (
-              <Card key={report.id} className="bg-card/40 backdrop-blur-xl border-border/50 overflow-visible">
-                <CardContent className="p-5 space-y-4">
-                  {/* Report Header */}
-                  <div className="flex items-start justify-between gap-3 flex-wrap">
-                    <div>
-                      <p className="font-semibold">{report.title}</p>
-                      <Badge variant="outline" className={`mt-1 ${severityColors[report.reported_severity] ?? ''}`}>
-                        {report.reported_severity}
-                      </Badge>
-                    </div>
+          reports.map((report, idx) => (
+            <Card key={report.id} className="bg-card/40 backdrop-blur-xl border-border/50">
+              <CardContent className="p-5 space-y-3">
+                {/* Report Header */}
+                <div className="flex items-start justify-between gap-3 flex-wrap">
+                  <div>
+                    <p className="font-semibold text-sm">
+                      <span className="text-muted-foreground mr-2">#{idx + 1}</span>
+                      {report.title}
+                    </p>
+                    <Badge variant="outline" className={`mt-1 ${severityColors[report.reported_severity] ?? ''}`}>
+                      {report.reported_severity}
+                    </Badge>
                   </div>
+                </div>
 
-                  {/* Report Content */}
-                  <div className="grid gap-3 sm:grid-cols-3 text-sm border-y border-border/50 py-4 my-2">
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground mb-1">Steps to Reproduce</p>
-                      <p className="whitespace-pre-wrap leading-relaxed">{report.steps_to_reproduce}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground mb-1">Expected Result</p>
-                      <p className="whitespace-pre-wrap leading-relaxed">{report.expected_result}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground mb-1">Actual Result</p>
-                      <p className="whitespace-pre-wrap leading-relaxed">{report.actual_result}</p>
-                    </div>
+                {/* Report Content */}
+                <div className="grid gap-3 sm:grid-cols-3 text-sm border-y border-border/50 py-3">
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">Steps to Reproduce</p>
+                    <p className="whitespace-pre-wrap leading-relaxed text-xs">{report.steps_to_reproduce}</p>
                   </div>
-
-                  {/* Classification Controls */}
-                  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center bg-muted/30 p-3 rounded-lg border border-border/50">
-                    <div className="space-y-1 w-full sm:w-auto">
-                      <Label className="text-xs text-muted-foreground">Classification</Label>
-                      <select
-                        className="w-full rounded-md border border-border/70 bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-                        value={rUpdate.adminClassification ?? 'not_a_bug'}
-                        onChange={(e) => handleReportUpdate(report.id, { adminClassification: e.target.value as AdminClassification })}
-                      >
-                        <option value="valid_bug">Valid Bug (Bonus XP)</option>
-                        <option value="duplicate">Duplicate</option>
-                        <option value="not_a_bug">Not a Bug</option>
-                        <option value="needs_improvement">Needs Improvement</option>
-                      </select>
-                    </div>
-
-                    {rUpdate.adminClassification === 'valid_bug' && (
-                      <div className="space-y-1 w-full flex-1">
-                        <Label className="text-xs text-muted-foreground">Match with Intentional Bug</Label>
-                        <select
-                          className="w-full rounded-md border border-border/70 bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-                          value={rUpdate.matchedHiddenBugId ?? ''}
-                          onChange={(e) => handleReportUpdate(report.id, { matchedHiddenBugId: e.target.value || null })}
-                        >
-                          <option value="">-- Select matched bug --</option>
-                          {hiddenBugs.map((bug) => (
-                            <option key={bug.id} value={bug.id}>
-                              {bug.bug_title} (+{bug.bonus_xp} XP)
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">Expected Result</p>
+                    <p className="whitespace-pre-wrap leading-relaxed text-xs">{report.expected_result}</p>
                   </div>
-                </CardContent>
-              </Card>
-            )
-          })
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">Actual Result</p>
+                    <p className="whitespace-pre-wrap leading-relaxed text-xs">{report.actual_result}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
         )}
       </div>
 
-      {/* Review Decision */}
+      {/* ── SECTION 3: Review Decision ── */}
       <Card className="bg-card/40 backdrop-blur-xl border-border/50">
         <CardHeader>
           <CardTitle className="text-base">{dict.reviewSubmission}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-6">
               {/* Decision buttons */}
@@ -331,20 +440,6 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
                     {dict.reject}
                   </Button>
                 </div>
-              </div>
-
-              {/* Score */}
-              <div className="space-y-2">
-                <Label htmlFor="score">Score (0–100)</Label>
-                <input
-                  id="score"
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={score}
-                  onChange={(e) => setScore(e.target.value)}
-                  className="w-full rounded-lg border border-border/70 bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-                />
               </div>
 
               {/* is_passed toggle */}
@@ -374,22 +469,22 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
                 <Calculator className="h-5 w-5 text-primary" />
                 <h3 className="font-semibold text-primary">XP Calculation Preview</h3>
               </div>
-              
+
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Base Challenge XP:</span>
                   <span className="font-medium">+{xpPreview.baseXp}</span>
                 </div>
-                
+
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">
-                    Bug Bonus ({xpPreview.matchedCount}/{hiddenBugs.length} unique matched):
+                    Bug Bonus ({xpPreview.matchedCount}/{hiddenBugs.length} bugs found):
                   </span>
                   <span className="font-medium text-emerald-500">+{xpPreview.bugBonusXp}</span>
                 </div>
 
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Perfect Bonus (All bugs matched):</span>
+                  <span className="text-muted-foreground">Perfect Bonus (All bugs found):</span>
                   <span className="font-medium text-emerald-500">+{xpPreview.perfectBonus}</span>
                 </div>
               </div>
@@ -402,7 +497,7 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
               </div>
 
               <p className="text-xs text-muted-foreground italic">
-                XP is calculated and awarded automatically when the attempt is approved.
+                XP is calculated automatically based on the bugs found above.
                 Re-reviewing will not grant XP twice.
               </p>
             </div>

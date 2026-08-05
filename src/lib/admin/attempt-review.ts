@@ -134,7 +134,6 @@ export interface SaveReviewInput {
   attemptId: string
   challengeId: string
   status: Extract<AttemptStatus, 'approved' | 'rejected'>
-  score: number
   adminFeedback: string
   isPassed: boolean
   reportUpdates: ReportClassificationUpdate[]
@@ -150,14 +149,17 @@ export async function saveAdminAttemptReview(input: SaveReviewInput): Promise<Da
     }
 
     // Fetch attempt details
+    // Using select('*') to include xp_awarded/awarded_xp columns added in migration 019
+    // which are not yet reflected in the generated database.types.ts
     const { data: attempt, error: attemptError } = await supabase
       .from('challenge_attempts')
-      .select('user_id, status, is_passed, xp_awarded')
+      .select('*')
       .eq('id', input.attemptId)
       .eq('challenge_id', input.challengeId)
       .single()
 
     if (attemptError || !attempt) {
+      console.error('[saveAdminAttemptReview] Attempt fetch error:', attemptError)
       return { data: null, error: 'Attempt not found.' }
     }
 
@@ -212,7 +214,6 @@ export async function saveAdminAttemptReview(input: SaveReviewInput): Promise<Da
       .from('challenge_attempts')
       .update({
         status: input.status,
-        score: input.score,
         admin_feedback: input.adminFeedback,
         is_passed: input.isPassed,
         reviewed_by: user.id,
