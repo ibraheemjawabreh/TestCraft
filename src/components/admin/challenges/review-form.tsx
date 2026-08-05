@@ -71,9 +71,12 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
 
   // ── Hidden Bugs checklist ──────────────────────────────────────
   // Tracks which hidden bugs have been confirmed as found by the tester.
-  // Each checked bugId maps to true.
   const [checkedBugIds, setCheckedBugIds] = useState<Set<string>>(() => {
-    // Pre-populate from existing report updates (matched_hidden_bug_id on reports)
+    if (attemptData.awardedBugIds && attemptData.awardedBugIds.length > 0) {
+      return new Set(attemptData.awardedBugIds)
+    }
+    
+    // Fallback to legacy matched reports if no XP tx found
     const preChecked = new Set<string>()
     reports.forEach((r) => {
       const matchedId = (r as any).matched_hidden_bug_id
@@ -107,43 +110,14 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
     setIsPassed(d === 'approved')
   }
 
-  // Toggle a hidden bug's found status and sync all report updates
+  // Toggle a hidden bug's found status
   function toggleBugFound(bugId: string) {
     setCheckedBugIds((prev) => {
       const next = new Set(prev)
       if (next.has(bugId)) {
         next.delete(bugId)
-        // Unlink any reports matched to this bug
-        setReportUpdates((prevUpdates) => {
-          const updated = { ...prevUpdates }
-          Object.keys(updated).forEach((reportId) => {
-            if (updated[reportId].matchedHiddenBugId === bugId) {
-              updated[reportId] = {
-                ...updated[reportId],
-                adminClassification: 'not_a_bug',
-                matchedHiddenBugId: null,
-              }
-            }
-          })
-          return updated
-        })
       } else {
         next.add(bugId)
-        // Auto-assign to first unmatched report if possible
-        setReportUpdates((prevUpdates) => {
-          const updated = { ...prevUpdates }
-          const unmatched = Object.values(updated).find(
-            (u) => !u.matchedHiddenBugId && u.adminClassification !== 'valid_bug'
-          )
-          if (unmatched) {
-            updated[unmatched.id] = {
-              ...updated[unmatched.id],
-              adminClassification: 'valid_bug',
-              matchedHiddenBugId: bugId,
-            }
-          }
-          return updated
-        })
       }
       return next
     })
@@ -168,49 +142,10 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
     return { baseXp, bugBonusXp, perfectBonus, totalXp, matchedCount: checkedBugIds.size }
   }, [decision, checkedBugIds, challenge.base_xp_reward, hiddenBugs])
 
-  // Build the final reportUpdates from checked bugs before saving
-  function buildFinalReportUpdates(): ReportClassificationUpdate[] {
-    // Re-derive from checkedBugIds:
-    // For each checked bug, find the first report that isn't yet assigned and assign it
-    const finalUpdates = { ...reportUpdates }
-    const assignedBugIds = new Set<string>()
-
-    // First pass: keep existing valid assignments for checked bugs
-    Object.values(finalUpdates).forEach((u) => {
-      if (u.matchedHiddenBugId && checkedBugIds.has(u.matchedHiddenBugId)) {
-        assignedBugIds.add(u.matchedHiddenBugId)
-        finalUpdates[u.id] = { ...u, adminClassification: 'valid_bug' }
-      } else if (u.matchedHiddenBugId && !checkedBugIds.has(u.matchedHiddenBugId)) {
-        // Bug unchecked — reset report
-        finalUpdates[u.id] = { ...u, adminClassification: 'not_a_bug', matchedHiddenBugId: null }
-      }
-    })
-
-    // Second pass: assign unassigned checked bugs to unmatched reports
-    const unassignedChecked = Array.from(checkedBugIds).filter((id) => !assignedBugIds.has(id))
-    const unmatchedReports = Object.values(finalUpdates).filter(
-      (u) => !u.matchedHiddenBugId && u.adminClassification !== 'valid_bug'
-    )
-
-    unassignedChecked.forEach((bugId, i) => {
-      if (unmatchedReports[i]) {
-        finalUpdates[unmatchedReports[i].id] = {
-          ...finalUpdates[unmatchedReports[i].id],
-          adminClassification: 'valid_bug',
-          matchedHiddenBugId: bugId,
-        }
-      }
-    })
-
-    return Object.values(finalUpdates)
-  }
-
   async function handleSave() {
     setSaving(true)
     setSaveError(null)
     setSaveSuccess(false)
-
-    const finalReportUpdates = buildFinalReportUpdates()
 
     try {
       const res = await fetch(`/${locale}/admin/challenges/api/review-attempt`, {
@@ -222,7 +157,8 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
           status: decision,
           adminFeedback,
           isPassed,
-          reportUpdates: finalReportUpdates,
+          reportUpdates: Object.values(reportUpdates),
+          foundHiddenBugIds: Array.from(checkedBugIds),
         }),
       })
 
@@ -299,6 +235,12 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
                 </span>
               </CardTitle>
             </div>
+            {attempt.xp_awarded && (
+              <p className="text-xs text-amber-500 font-medium flex items-center gap-1 mt-1">
+                <AlertTriangle className="h-3 w-3" />
+                XP has already been awarded for this attempt. Bug selections cannot be modified.
+              </p>
+            )}
           </CardHeader>
           <CardContent>
             <ul className="space-y-3">
@@ -308,12 +250,15 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
                   <li key={bug.id}>
                     <button
                       type="button"
+                      disabled={attempt.xp_awarded}
                       onClick={() => toggleBugFound(bug.id)}
                       className={`w-full flex items-center gap-3 rounded-lg border p-4 text-left transition-all duration-150
                         ${isChecked
                           ? 'border-emerald-500/50 bg-emerald-500/8 dark:bg-emerald-500/10'
                           : 'border-border/50 bg-muted/20 hover:bg-muted/40'
-                        }`}
+                        }
+                        ${attempt.xp_awarded ? 'opacity-70 cursor-not-allowed' : ''}
+                      `}
                     >
                       <span className="shrink-0 text-muted-foreground">
                         {isChecked

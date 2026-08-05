@@ -20,6 +20,7 @@ const reviewSchema = z.object({
       matchedHiddenBugId: z.string().uuid().nullable().optional(),
     })
   ),
+  foundHiddenBugIds: z.array(z.string().uuid()).optional(),
 })
 
 export async function POST(

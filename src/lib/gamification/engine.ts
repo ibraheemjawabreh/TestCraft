@@ -360,7 +360,7 @@ export async function awardChallengeXp(
   attemptId: string,
   challengeId: string,
   baseXp: number,
-  bugReviews: BugReviewInput[],
+  foundHiddenBugIds: string[],
 ): Promise<XpAwardResult> {
   const supabase = await createClient()
 
@@ -397,19 +397,14 @@ export async function awardChallengeXp(
 
   const totalHiddenBugCount = allHiddenBugs?.length ?? 0
 
-  // Compute bug bonuses — only valid_bug with a matched hidden bug counts
-  // and each hidden bug is counted at most once (dedup by matched hidden bug id)
+  // Compute bug bonuses
   const matchedHiddenBugIds = new Set<string>()
   let bugBonusXp = 0
 
-  for (const review of bugReviews) {
-    if (
-      review.classification === 'valid_bug' &&
-      review.matchedHiddenBugId &&
-      !matchedHiddenBugIds.has(review.matchedHiddenBugId)
-    ) {
-      matchedHiddenBugIds.add(review.matchedHiddenBugId)
-      const matchedBug = allHiddenBugs?.find((b) => b.id === review.matchedHiddenBugId)
+  for (const hiddenBugId of foundHiddenBugIds) {
+    if (!matchedHiddenBugIds.has(hiddenBugId)) {
+      matchedHiddenBugIds.add(hiddenBugId)
+      const matchedBug = allHiddenBugs?.find((b) => b.id === hiddenBugId)
       bugBonusXp += matchedBug?.bonus_xp ?? 0
     }
   }

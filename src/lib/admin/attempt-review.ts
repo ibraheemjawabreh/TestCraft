@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/types/database.types'
 import type { AttemptStatus } from '@/types/database'
 import { completeChallengeAndUnlockNext } from '@/lib/academy/services/ProgressService'
-import { awardChallengeXp, type BugReviewInput } from '@/lib/gamification/engine'
+import { awardChallengeXp } from '@/lib/gamification/engine'
 
 type BugReport = Database['public']['Tables']['bug_reports']['Row']
 type ChallengeAttempt = Database['public']['Tables']['challenge_attempts']['Row']
@@ -27,6 +27,7 @@ export interface AttemptReviewData {
   challenge: Pick<Challenge, 'id' | 'title' | 'scenario' | 'instructions' | 'base_xp_reward'>
   reports: BugReport[]
   hiddenBugs: HiddenBugItem[]
+  awardedBugIds?: string[]
 }
 
 interface DataResult<T> {
@@ -88,6 +89,20 @@ export async function getAdminAttemptReview(
       return { data: null, error: 'Failed to fetch hidden bugs.' }
     }
 
+    // Fetch awarded bugs from xp_transactions if this attempt was already reviewed
+    let awardedBugIds: string[] = []
+    if ((attempt as any).xp_awarded) {
+      const { data: xpTx } = await supabase
+        .from('xp_transactions')
+        .select('metadata')
+        .eq('source_id', attemptId)
+        .eq('reason', 'bug_bonus')
+      
+      if (xpTx) {
+        awardedBugIds = xpTx.map(tx => (tx.metadata as any)?.hiddenBugId).filter(Boolean) as string[]
+      }
+    }
+
     return {
       data: {
         attempt: {
@@ -114,6 +129,7 @@ export async function getAdminAttemptReview(
         challenge: attempt.challenges as any,
         reports: reports || [],
         hiddenBugs: (hiddenBugs || []) as HiddenBugItem[],
+        awardedBugIds,
       },
       error: null,
     }
@@ -137,6 +153,7 @@ export interface SaveReviewInput {
   adminFeedback: string
   isPassed: boolean
   reportUpdates: ReportClassificationUpdate[]
+  foundHiddenBugIds?: string[]
 }
 
 export async function saveAdminAttemptReview(input: SaveReviewInput): Promise<DataResult<boolean>> {
@@ -230,18 +247,15 @@ export async function saveAdminAttemptReview(input: SaveReviewInput): Promise<Da
     // 3. Award XP if approved and not previously awarded
     const alreadyAwarded = (attempt as any).xp_awarded === true
     if (input.status === 'approved' && !alreadyAwarded) {
-      const bugReviews: BugReviewInput[] = input.reportUpdates.map((ru) => ({
-        reportId: ru.id,
-        classification: ru.adminClassification ?? 'not_a_bug',
-        matchedHiddenBugId: ru.matchedHiddenBugId,
-      }))
+      // Pass the found bug IDs directly, decoupling XP from report-to-bug 1:1 mapping
+      const foundBugs = input.foundHiddenBugIds ?? input.reportUpdates.map((ru) => ru.matchedHiddenBugId).filter(Boolean) as string[]
 
       await awardChallengeXp(
         attempt.user_id,
         input.attemptId,
         input.challengeId,
-        baseXp,
-        bugReviews
+        challenge?.base_xp_reward ?? 100,
+        foundBugs
       )
     }
 
