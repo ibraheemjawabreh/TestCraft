@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Search,
   Filter,
@@ -21,6 +22,7 @@ import {
   ToggleRight,
   Pencil,
 } from 'lucide-react'
+
 import {
   DndContext,
   closestCenter,
@@ -594,6 +596,7 @@ export function CurriculumManager({
   dictionary,
   locale,
 }: CurriculumManagerProps) {
+  const router = useRouter()
   const dict = (dictionary as any).curriculum
   const [paths, setPaths] = useState<CurriculumPath[]>(initialPaths)
   const [stats, setStats] = useState<CurriculumStats>(initialStats)
@@ -865,26 +868,12 @@ export function CurriculumManager({
   }, [paths])
 
   const handleAddLesson = useCallback((moduleId: string, pathId: string) => {
-    setModalType('lesson')
-    setModalMode('create')
-    setModalData({ moduleId, pathId })
-    setModalOpen(true)
-  }, [])
+    router.push(`/${locale}/admin/lessons/new?pathId=${pathId}&moduleId=${moduleId}`)
+  }, [router, locale])
 
   const handleEditLesson = useCallback((id: string) => {
-    for (const p of paths) {
-      for (const m of p.modules) {
-        const l = m.lessons.find((x) => x.id === id)
-        if (l) {
-          setModalType('lesson')
-          setModalMode('edit')
-          setModalData({ ...l, module_id: m.id })
-          setModalOpen(true)
-          return
-        }
-      }
-    }
-  }, [paths])
+    router.push(`/${locale}/admin/lessons/${id}/edit`)
+  }, [router, locale])
 
   const handleModalSuccess = useCallback(() => {
     // When a modal succeeds, we just reload the page to get the freshest tree 

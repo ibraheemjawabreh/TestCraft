@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   ClipboardCheck,
   BookOpen,
+  GraduationCap,
   Users,
   BarChart3,
   Settings,
@@ -44,12 +45,14 @@ export function AdminSidebar({ dictionary, locale }: AdminSidebarProps) {
     { name: nav.dashboard, href: `/${locale}/admin`, icon: LayoutDashboard, exact: true },
     { name: nav.reviews, href: `/${locale}/admin/reviews`, icon: ClipboardCheck, exact: false },
     { name: nav.curriculum || 'Curriculum', href: `/${locale}/admin/curriculum`, icon: BookOpen, exact: false },
+    { name: locale === 'ar' ? 'الدروس' : 'Lessons', href: `/${locale}/admin/lessons`, icon: GraduationCap, exact: false },
     { name: nav.users, href: `/${locale}/admin/users`, icon: Users, exact: false },
     // Labs is intentionally hidden from sidebar — route still exists for legacy data access.
     // { name: nav.labs || 'Labs', href: `/${locale}/admin/labs`, icon: Beaker, exact: false },
     { name: nav.analytics, href: `/${locale}/admin/analytics`, icon: BarChart3, exact: false },
     { name: nav.settings, href: `/${locale}/admin/settings`, icon: Settings, exact: false },
   ]
+
 
   return (
     <aside className="admin-sidebar fixed inset-y-0 start-0 z-50 hidden w-64 flex-col backdrop-blur-xl sm:flex transition-colors">

@@ -5,20 +5,21 @@ export const lessonSchema = z.object({
   module_id: z.string().uuid('required').nullable().optional(),
   title_en: z
     .string()
-    .min(3, 'titleMin')
     .max(120, 'titleMax')
-    .trim(),
+    .trim()
+    .default(''),
   title_ar: z
     .string()
-    .min(3, 'titleMin')
     .max(120, 'titleMax')
-    .trim(),
+    .trim()
+    .default(''),
   slug: z
     .string()
-    .min(3, 'slugMin')
     .max(140, 'slugMax')
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'slugInvalid')
-    .trim(),
+    .trim()
+    .or(z.literal(''))
+    .default(''),
   summary_en: z
     .string()
     .max(300, 'summaryMax')
@@ -31,12 +32,10 @@ export const lessonSchema = z.object({
     .or(z.literal('')),
   content_en: z
     .string()
-    .min(30, 'contentMin')
-    .trim(),
+    .default(''),
   content_ar: z
     .string()
-    .min(30, 'contentMin')
-    .trim(),
+    .default(''),
   objectives_en: z
     .array(z.string().max(160, 'objectiveMax'))
     .default([]),
@@ -51,7 +50,7 @@ export const lessonSchema = z.object({
     .default(10),
   difficulty: z.enum(['Beginner', 'Intermediate', 'Advanced'], {
     required_error: 'required',
-  }),
+  }).default('Beginner'),
   sort_order: z
     .number({ invalid_type_error: 'required' })
     .int()
@@ -61,3 +60,4 @@ export const lessonSchema = z.object({
 })
 
 export type LessonFormValues = z.infer<typeof lessonSchema>
+

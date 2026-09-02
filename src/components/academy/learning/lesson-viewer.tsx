@@ -1,13 +1,15 @@
 import { BookOpen, Clock, BarChart3, CheckCircle2 } from 'lucide-react'
 import type { TesterLesson } from '@/lib/academy/lessons'
 import type { Dictionary } from '@/i18n/types'
+import { MarkdownRenderer } from '@/components/ui/markdown-renderer'
 
 interface LessonViewerProps {
   lesson: TesterLesson
   dictionary: Dictionary
+  locale?: string
 }
 
-export function LessonViewer({ lesson, dictionary }: LessonViewerProps) {
+export function LessonViewer({ lesson, dictionary, locale }: LessonViewerProps) {
   const difficultyColor = (d: string) => {
     switch (d) {
       case 'Beginner': return 'text-green-400 bg-green-500/10 border-green-500/20'
@@ -16,6 +18,9 @@ export function LessonViewer({ lesson, dictionary }: LessonViewerProps) {
       default: return 'text-muted-foreground'
     }
   }
+
+  // Detect Arabic content or locale
+  const isArabic = locale === 'ar' || /[\u0600-\u06FF]/.test(lesson.title)
 
   return (
     <div className="space-y-6">
@@ -58,8 +63,8 @@ export function LessonViewer({ lesson, dictionary }: LessonViewerProps) {
         </div>
       )}
 
-      {/* Objectives */}
-      {lesson.objectives.length > 0 && (
+      {/* Objectives (if any legacy objectives exist) */}
+      {lesson.objectives && lesson.objectives.length > 0 && (
         <div className="rounded-xl border border-border/50 bg-card/40 p-6 backdrop-blur-sm">
           <h2 className="flex items-center gap-2 text-base font-semibold text-foreground mb-4">
             <BookOpen className="h-5 w-5 text-primary" aria-hidden="true" />
@@ -78,10 +83,12 @@ export function LessonViewer({ lesson, dictionary }: LessonViewerProps) {
 
       {/* Content */}
       <div className="rounded-xl border border-border/50 bg-card/40 p-6 sm:p-8 backdrop-blur-sm">
-        <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap leading-relaxed text-foreground/80">
-          {lesson.content}
-        </div>
+        <MarkdownRenderer
+          content={lesson.content}
+          dir={isArabic ? 'rtl' : 'ltr'}
+        />
       </div>
     </div>
   )
 }
+

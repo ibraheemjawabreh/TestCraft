@@ -78,7 +78,7 @@ export default async function TesterLessonPage({
       </div>
 
       {/* Lesson Content */}
-      <LessonViewer lesson={lesson} dictionary={dictionary} />
+      <LessonViewer lesson={lesson} dictionary={dictionary} locale={locale} />
 
       {/* Actions */}
       <LessonActions

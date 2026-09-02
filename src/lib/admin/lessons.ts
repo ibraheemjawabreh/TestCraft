@@ -33,10 +33,11 @@ export interface Lesson {
 
 export interface LessonWithPath extends Lesson {
   learning_path_title: string | null
+  module_title: string | null
 }
 
 /**
- * Fetch all lessons with learning path title for admin.
+ * Fetch all lessons with learning path title and module title for admin.
  */
 export async function getAdminLessons(locale: Locale = 'en'): Promise<DataResult<LessonWithPath[]>> {
   const supabase = await createClient()
@@ -45,7 +46,8 @@ export async function getAdminLessons(locale: Locale = 'en'): Promise<DataResult
     .from('lessons')
     .select(`
       *,
-      learning_paths ( title_en, title_ar )
+      learning_paths ( title_en, title_ar ),
+      learning_modules ( title_en, title_ar )
     `)
     .order('sort_order', { ascending: true })
 
@@ -56,6 +58,9 @@ export async function getAdminLessons(locale: Locale = 'en'): Promise<DataResult
   const mapped: LessonWithPath[] = (lessons ?? []).map((row) => {
     const pathData = row.learning_paths as any
     const pathTitle = pathData ? getLocalizedContent(pathData, 'title', locale) : null
+
+    const moduleData = row.learning_modules as any
+    const moduleTitle = moduleData ? getLocalizedContent(moduleData, 'title', locale) : null
 
     return {
       id: row.id,
@@ -77,6 +82,7 @@ export async function getAdminLessons(locale: Locale = 'en'): Promise<DataResult
       created_at: row.created_at,
       updated_at: row.updated_at,
       learning_path_title: pathTitle,
+      module_title: moduleTitle,
     }
   })
 
@@ -93,7 +99,8 @@ export async function getAdminLessonById(id: string, locale: Locale = 'en'): Pro
     .from('lessons')
     .select(`
       *,
-      learning_paths ( title_en, title_ar )
+      learning_paths ( title_en, title_ar ),
+      learning_modules ( title_en, title_ar )
     `)
     .eq('id', id)
     .single()
@@ -104,6 +111,9 @@ export async function getAdminLessonById(id: string, locale: Locale = 'en'): Pro
 
   const pathData = data.learning_paths as any
   const pathTitle = pathData ? getLocalizedContent(pathData, 'title', locale) : null
+
+  const moduleData = data.learning_modules as any
+  const moduleTitle = moduleData ? getLocalizedContent(moduleData, 'title', locale) : null
 
   return {
     data: {
@@ -126,6 +136,7 @@ export async function getAdminLessonById(id: string, locale: Locale = 'en'): Pro
       created_at: data.created_at,
       updated_at: data.updated_at,
       learning_path_title: pathTitle,
+      module_title: moduleTitle,
     },
     error: null,
   }
@@ -134,41 +145,46 @@ export async function getAdminLessonById(id: string, locale: Locale = 'en'): Pro
 /**
  * Create a new lesson.
  * sort_order is auto-assigned as max(sort_order) + 1 within the same module
- * (or learning_path if no module). Manual input is ignored.
+ * (or learning_path if no module) if not explicitly given.
  */
 export async function createLesson(input: LessonFormValues): Promise<DataResult<Lesson>> {
   const supabase = await createClient()
 
-  // Auto-calculate sort_order scoped to the module (or learning_path)
-  let sortOrderQuery = supabase
-    .from('lessons')
-    .select('sort_order')
-    .order('sort_order', { ascending: false })
-    .limit(1)
+  let sortOrder = input.sort_order
+  if (sortOrder === undefined || sortOrder === null || sortOrder === 0) {
+    let sortOrderQuery = supabase
+      .from('lessons')
+      .select('sort_order')
+      .order('sort_order', { ascending: false })
+      .limit(1)
 
-  if (input.module_id) {
-    sortOrderQuery = sortOrderQuery.eq('module_id', input.module_id)
-  } else {
-    sortOrderQuery = sortOrderQuery.eq('learning_path_id', input.learning_path_id)
+    if (input.module_id) {
+      sortOrderQuery = sortOrderQuery.eq('module_id', input.module_id)
+    } else {
+      sortOrderQuery = sortOrderQuery.eq('learning_path_id', input.learning_path_id)
+    }
+
+    const { data: maxRow } = await sortOrderQuery.maybeSingle()
+    sortOrder = ((maxRow?.sort_order ?? 0) as number) + 1
   }
 
-  const { data: maxRow } = await sortOrderQuery.maybeSingle()
-  const sortOrder = ((maxRow?.sort_order ?? 0) as number) + 1
+  // Ensure unique slug fallback if empty
+  const slug = input.slug?.trim() || `lesson-${Date.now().toString(36)}`
 
   const { data, error } = await supabase
     .from('lessons')
     .insert({
       learning_path_id: input.learning_path_id,
       module_id: input.module_id || null,
-      title: input.title_en,
-      content: input.content_en,
-      title_en: input.title_en,
-      title_ar: input.title_ar,
-      slug: input.slug,
+      title: input.title_en || input.title_ar || 'Untitled Lesson',
+      content: input.content_en || input.content_ar || '',
+      title_en: input.title_en || null,
+      title_ar: input.title_ar || null,
+      slug,
       summary_en: input.summary_en || null,
       summary_ar: input.summary_ar || null,
-      content_en: input.content_en,
-      content_ar: input.content_ar,
+      content_en: input.content_en || null,
+      content_ar: input.content_ar || null,
       objectives_en: input.objectives_en,
       objectives_ar: input.objectives_ar,
       estimated_minutes: input.estimated_minutes,
@@ -183,7 +199,7 @@ export async function createLesson(input: LessonFormValues): Promise<DataResult<
     if (error.code === '23505') {
       return { data: null, error: 'slug_taken' }
     }
-    return { data: null, error: 'Failed to create lesson.' }
+    return { data: null, error: error.message || 'Failed to create lesson.' }
   }
 
   return { data: data as any as Lesson, error: null }
@@ -195,20 +211,22 @@ export async function createLesson(input: LessonFormValues): Promise<DataResult<
 export async function updateLesson(id: string, input: LessonFormValues): Promise<DataResult<Lesson>> {
   const supabase = await createClient()
 
+  const slug = input.slug?.trim() || `lesson-${Date.now().toString(36)}`
+
   const { data, error } = await supabase
     .from('lessons')
     .update({
       learning_path_id: input.learning_path_id,
       module_id: input.module_id || null,
-      title: input.title_en, // required field in DB
-      content: input.content_en, // required field in DB
-      title_en: input.title_en,
-      title_ar: input.title_ar,
-      slug: input.slug,
+      title: input.title_en || input.title_ar || 'Untitled Lesson',
+      content: input.content_en || input.content_ar || '',
+      title_en: input.title_en || null,
+      title_ar: input.title_ar || null,
+      slug,
       summary_en: input.summary_en || null,
       summary_ar: input.summary_ar || null,
-      content_en: input.content_en,
-      content_ar: input.content_ar,
+      content_en: input.content_en || null,
+      content_ar: input.content_ar || null,
       objectives_en: input.objectives_en,
       objectives_ar: input.objectives_ar,
       estimated_minutes: input.estimated_minutes,
@@ -224,7 +242,7 @@ export async function updateLesson(id: string, input: LessonFormValues): Promise
     if (error.code === '23505') {
       return { data: null, error: 'slug_taken' }
     }
-    return { data: null, error: 'Failed to update lesson.' }
+    return { data: null, error: error.message || 'Failed to update lesson.' }
   }
 
   return { data: data as any as Lesson, error: null }
@@ -249,3 +267,92 @@ export async function toggleLessonPublished(id: string, isPublished: boolean): P
 
   return { data: data as any as Lesson, error: null }
 }
+
+/**
+ * Duplicate an existing lesson into a new Draft lesson.
+ */
+export async function duplicateLesson(id: string): Promise<DataResult<Lesson>> {
+  const supabase = await createClient()
+
+  // 1. Fetch source lesson
+  const { data: source, error: fetchError } = await supabase
+    .from('lessons')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (fetchError || !source) {
+    return { data: null, error: 'Source lesson not found.' }
+  }
+
+  // 2. Determine sort_order
+  let sortOrderQuery = supabase
+    .from('lessons')
+    .select('sort_order')
+    .order('sort_order', { ascending: false })
+    .limit(1)
+
+  if (source.module_id) {
+    sortOrderQuery = sortOrderQuery.eq('module_id', source.module_id)
+  } else {
+    sortOrderQuery = sortOrderQuery.eq('learning_path_id', source.learning_path_id)
+  }
+
+  const { data: maxRow } = await sortOrderQuery.maybeSingle()
+  const newSortOrder = ((maxRow?.sort_order ?? 0) as number) + 1
+
+  // 3. Generate unique slug and title with Copy indicator
+  const titleEn = source.title_en ? `${source.title_en} (Copy)` : 'Untitled Lesson (Copy)'
+  const titleAr = source.title_ar ? `${source.title_ar} (نسخة)` : 'درس بدون عنوان (نسخة)'
+  const slug = `${source.slug || 'lesson'}-copy-${Date.now().toString(36)}`
+
+  // 4. Insert new draft lesson
+  const { data: newLesson, error: insertError } = await supabase
+    .from('lessons')
+    .insert({
+      learning_path_id: source.learning_path_id,
+      module_id: source.module_id,
+      title: titleEn,
+      content: source.content || source.content_en || '',
+      title_en: titleEn,
+      title_ar: titleAr,
+      slug,
+      summary_en: source.summary_en,
+      summary_ar: source.summary_ar,
+      content_en: source.content_en,
+      content_ar: source.content_ar,
+      objectives_en: source.objectives_en || [],
+      objectives_ar: source.objectives_ar || [],
+      estimated_minutes: source.estimated_minutes,
+      difficulty: source.difficulty,
+      sort_order: newSortOrder,
+      is_published: false, // Always Draft
+    })
+    .select()
+    .single()
+
+  if (insertError) {
+    return { data: null, error: insertError.message || 'Failed to duplicate lesson.' }
+  }
+
+  return { data: newLesson as any as Lesson, error: null }
+}
+
+/**
+ * Delete a lesson by ID.
+ */
+export async function deleteLesson(id: string): Promise<DataResult<null>> {
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('lessons')
+    .delete()
+    .eq('id', id)
+
+  if (error) {
+    return { data: null, error: error.message || 'Failed to delete lesson.' }
+  }
+
+  return { data: null, error: null }
+}
+
