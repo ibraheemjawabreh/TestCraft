@@ -1,4 +1,4 @@
-﻿export const runtime = 'nodejs'
+export const runtime = 'nodejs'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
@@ -38,17 +38,9 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Challenge not found' }, { status: 404 })
     }
 
-    // Delete associated hidden bugs first (referential safety)
-    await supabase
-      .from('hidden_bugs')
-      .delete()
-      .eq('challenge_id', id)
-
-    // Delete the challenge
-    const { error } = await supabase
-      .from('challenges')
-      .delete()
-      .eq('id', id)
+    // Archive instead of deleting historical reports, attempts or bug matches.
+    const { error } = await supabase.from('challenges')
+      .update({ is_active: false, status: 'archived' }).eq('id', id)
 
     if (error) {
       console.error('Delete challenge error:', error)

@@ -1,17 +1,12 @@
-﻿export const runtime = 'nodejs'
-import { NextResponse } from 'next/server'
+import { apiUser,apiFailure,checkOrigin,ApiError } from '@/lib/auth/api-auth'
 import { seedDemoData } from '@/lib/admin/seeder'
-
-export async function POST() {
-  try {
-    const result = await seedDemoData()
-    return NextResponse.json(result)
-  } catch (error) {
-    console.error('API /admin/seed error:', error)
-    return NextResponse.json(
-      { success: false, message: 'Unauthorized or server error.' },
-      { status: 500 }
-    )
-  }
+export const runtime='nodejs'
+export async function POST(request:Request){
+ try{
+ checkOrigin(request);const {db}=await apiUser(true)
+ if(process.env.ALLOW_DEMO_SEED!=='true')throw new ApiError(403,'Demo seeding is disabled. Import a verified manifest in Curriculum Factory.')
+ const backup=await db.rpc('curriculum_backup');if(backup.error)throw backup.error
+ return Response.json(await seedDemoData())
+ }catch(e){return apiFailure(e)}
 }
 

@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
 import type { LearningPathFormValues } from '@/lib/validations/learning-path'
 
 interface DataResult<T> {
@@ -29,6 +30,7 @@ export interface LearningPathWithLessonCount extends LearningPath {
  * Fetch all learning paths with lesson counts for admin.
  */
 export async function getAdminLearningPaths(): Promise<DataResult<LearningPathWithLessonCount[]>> {
+  await requireAdmin('en')
   const supabase = await createClient()
 
   const { data: paths, error: pathsError } = await supabase
@@ -67,6 +69,7 @@ export async function getAdminLearningPaths(): Promise<DataResult<LearningPathWi
  * Fetch a single learning path by ID for admin.
  */
 export async function getAdminLearningPathById(id: string): Promise<DataResult<LearningPath>> {
+  await requireAdmin('en')
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -87,6 +90,7 @@ export async function getAdminLearningPathById(id: string): Promise<DataResult<L
  * sort_order is auto-assigned as global max(sort_order) + 1.
  */
 export async function createLearningPath(input: LearningPathFormValues): Promise<DataResult<LearningPath>> {
+  await requireAdmin('en')
   const supabase = await createClient()
 
   // Auto-assign sort_order as global max + 1
@@ -128,6 +132,7 @@ export async function createLearningPath(input: LearningPathFormValues): Promise
  * Update an existing learning path.
  */
 export async function updateLearningPath(id: string, input: LearningPathFormValues): Promise<DataResult<LearningPath>> {
+  await requireAdmin('en')
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -159,6 +164,7 @@ export async function updateLearningPath(id: string, input: LearningPathFormValu
  * Toggle the active status of a learning path.
  */
 export async function toggleLearningPathStatus(id: string, isActive: boolean): Promise<DataResult<LearningPath>> {
+  await requireAdmin('en')
   const supabase = await createClient()
 
   const { data, error } = await supabase

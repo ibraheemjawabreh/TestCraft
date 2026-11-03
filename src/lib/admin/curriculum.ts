@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
 import type { Database } from '@/types/database.types'
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -85,6 +86,7 @@ interface Result<T> {
 // ── Fetch full curriculum tree ───────────────────────────────────────────────
 
 export async function getCurriculumTree(): Promise<Result<{ paths: CurriculumPath[]; stats: CurriculumStats }>> {
+  await requireAdmin('en')
   try {
     const supabase = await createClient()
 
@@ -219,6 +221,7 @@ export async function getCurriculumTree(): Promise<Result<{ paths: CurriculumPat
 // ── Reorder Actions ──────────────────────────────────────────────────────────
 
 export async function reorderPaths(orderedIds: string[]): Promise<Result<null>> {
+  await requireAdmin('en')
   try {
     const supabase = await createClient()
     const updates = orderedIds.map((id, index) =>
@@ -233,6 +236,7 @@ export async function reorderPaths(orderedIds: string[]): Promise<Result<null>> 
 }
 
 export async function reorderModules(orderedIds: string[]): Promise<Result<null>> {
+  await requireAdmin('en')
   try {
     const supabase = await createClient()
     const updates = orderedIds.map((id, index) =>
@@ -247,6 +251,7 @@ export async function reorderModules(orderedIds: string[]): Promise<Result<null>
 }
 
 export async function reorderLessons(orderedIds: string[]): Promise<Result<null>> {
+  await requireAdmin('en')
   try {
     const supabase = await createClient()
     const updates = orderedIds.map((id, index) =>
@@ -263,9 +268,10 @@ export async function reorderLessons(orderedIds: string[]): Promise<Result<null>
 // ── Delete Actions ───────────────────────────────────────────────────────────
 
 export async function deleteLearningPath(id: string): Promise<Result<null>> {
+  await requireAdmin('en')
   try {
     const supabase = await createClient()
-    const { error } = await supabase.from('learning_paths').delete().eq('id', id)
+    const { error } = await supabase.from('learning_paths').update({ is_active: false }).eq('id', id)
     if (error) throw error
     return { data: null, error: null }
   } catch (err: any) {
@@ -275,9 +281,10 @@ export async function deleteLearningPath(id: string): Promise<Result<null>> {
 }
 
 export async function deleteModule(id: string): Promise<Result<null>> {
+  await requireAdmin('en')
   try {
     const supabase = await createClient()
-    const { error } = await supabase.from('learning_modules').delete().eq('id', id)
+    const { error } = await supabase.from('learning_modules').update({ is_published: false }).eq('id', id)
     if (error) throw error
     return { data: null, error: null }
   } catch (err: any) {
@@ -287,9 +294,10 @@ export async function deleteModule(id: string): Promise<Result<null>> {
 }
 
 export async function deleteLesson(id: string): Promise<Result<null>> {
+  await requireAdmin('en')
   try {
     const supabase = await createClient()
-    const { error } = await supabase.from('lessons').delete().eq('id', id)
+    const { error } = await supabase.from('lessons').update({ is_published: false }).eq('id', id)
     if (error) throw error
     return { data: null, error: null }
   } catch (err: any) {
@@ -301,6 +309,7 @@ export async function deleteLesson(id: string): Promise<Result<null>> {
 // ── Toggle Publish Actions ───────────────────────────────────────────────────
 
 export async function togglePathActive(id: string, isActive: boolean): Promise<Result<null>> {
+  await requireAdmin('en')
   try {
     const supabase = await createClient()
     const { error } = await supabase.from('learning_paths').update({ is_active: isActive }).eq('id', id)
@@ -312,6 +321,7 @@ export async function togglePathActive(id: string, isActive: boolean): Promise<R
 }
 
 export async function toggleModulePublished(id: string, isPublished: boolean): Promise<Result<null>> {
+  await requireAdmin('en')
   try {
     const supabase = await createClient()
     const { error } = await supabase.from('learning_modules').update({ is_published: isPublished }).eq('id', id)
@@ -323,6 +333,7 @@ export async function toggleModulePublished(id: string, isPublished: boolean): P
 }
 
 export async function toggleLessonPublished(id: string, isPublished: boolean): Promise<Result<null>> {
+  await requireAdmin('en')
   try {
     const supabase = await createClient()
     const { error } = await supabase.from('lessons').update({ is_published: isPublished }).eq('id', id)

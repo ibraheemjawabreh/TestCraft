@@ -1,0 +1,1765 @@
+{
+  "version": 1,
+  "manifest": {
+    "version": 1,
+    "source": {
+      "name": "Verified repository demo inventory",
+      "location": "src/lib/admin/seeder.ts @ 100a4fc",
+      "canonical": false,
+      "note": "Exact repository EN titles/slugs/order. Not the missing approved Master Curriculum. Arabic SDLC typo corrected; new objectives authored. No live inventory claim."
+    },
+    "paths": [
+      {
+        "path_slug": "qa-foundations",
+        "title_en": "QA Foundations",
+        "title_ar": "أساسيات ضمان الجودة",
+        "sort_order": 1,
+        "description_en": "Foundational QA concepts, manual testing and defect reporting using controlled examples.",
+        "description_ar": "مفاهيم الجودة والاختبار اليدوي وكتابة البلاغات من خلال أمثلة محكومة.",
+        "modules": [
+          {
+            "module_slug": "intro-to-qa",
+            "title_en": "Introduction to Quality Assurance",
+            "title_ar": "مقدمة في ضمان الجودة",
+            "sort_order": 1,
+            "description_en": "Understand software testing basics, quality concepts, and the SDLC.",
+            "description_ar": "تعلم أساسيات اختبار البرمجيات ومفاهيم الجودة وتدفق دورة حياة تطوير البرمجيات.",
+            "practical_challenge_slug": null,
+            "lessons": [
+              {
+                "lesson_slug": "software-testing-fundamentals",
+                "title_en": "Software Testing Fundamentals",
+                "title_ar": "أساسيات اختبار البرمجيات",
+                "sort_order": 1,
+                "objectives_en": [
+                  "Distinguish observed behavior from a cause hypothesis.",
+                  "Compare a delivery result with an agreed cutoff rule.",
+                  "Describe one limitation of a passing test."
+                ],
+                "objectives_ar": [
+                  "ميّز السلوك المرصود عن فرضية سببه.",
+                  "قارن موعد التوصيل بقاعدة إغلاق متفق عليها.",
+                  "صف حدًا واحدًا للاستنتاج من نجاح الاختبار."
+                ],
+                "prerequisites": [],
+                "difficulty": "Beginner"
+              },
+              {
+                "lesson_slug": "qa-vs-qc",
+                "title_en": "Quality Assurance vs Quality Control",
+                "title_ar": "ضمان الجودة مقابل ضبط الجودة",
+                "sort_order": 2,
+                "objectives_en": [
+                  "Classify product checks and process-assurance activities.",
+                  "Propose an improvement for recurring requirement ambiguity.",
+                  "Identify evidence for evaluating an improvement."
+                ],
+                "objectives_ar": [
+                  "صنّف فحوص المنتج وأنشطة ضمان العمليات.",
+                  "اقترح تحسينًا يعالج غموض المتطلبات المتكرر.",
+                  "حدد دليلًا لتقييم فائدة التحسين."
+                ],
+                "prerequisites": [],
+                "difficulty": "Beginner"
+              },
+              {
+                "lesson_slug": "sdlc-and-qa",
+                "title_en": "Software Development Life Cycle & QA",
+                "title_ar": "دورة حياة تطوير البرمجيات وضمان الجودة",
+                "sort_order": 3,
+                "objectives_en": [
+                  "Place clarification, execution and release evidence in a life cycle.",
+                  "Distinguish Agile principles from the Scrum framework.",
+                  "Write a deadline acceptance example before implementation."
+                ],
+                "objectives_ar": [
+                  "ضع التوضيح والتنفيذ وأدلة التسليم في دورة الحياة.",
+                  "ميّز مبادئAgile عن إطارScrum.",
+                  "اكتب مثال قبول للموعد قبل التنفيذ."
+                ],
+                "prerequisites": [],
+                "difficulty": "Beginner"
+              }
+            ]
+          },
+          {
+            "module_slug": "manual-testing-fundamentals",
+            "title_en": "Manual Testing Fundamentals",
+            "title_ar": "أساسيات الاختبار اليدوي",
+            "sort_order": 2,
+            "description_en": "Master test case design, boundary value analysis, and equivalence partitioning.",
+            "description_ar": "إتقان تصميم حالات الاختبار وتحليل القيم الحدية وتقسيم التكافؤ.",
+            "practical_challenge_slug": null,
+            "lessons": [
+              {
+                "lesson_slug": "test-case-design",
+                "title_en": "Test Case Design & Execution",
+                "title_ar": "تصميم وتنفيذ حالات الاختبار",
+                "sort_order": 1,
+                "objectives_en": [
+                  "Write specific preconditions and recovery inputs.",
+                  "Derive expected results from the neutral-confirmation rule.",
+                  "Distinguish failed execution from blocked execution."
+                ],
+                "objectives_ar": [
+                  "اكتب شروطًا ومدخلات محددة لفحص الاستعادة.",
+                  "استمد المتوقع من قاعدة التأكيد المحايد.",
+                  "ميّز فشل التنفيذ عن تعذر إجرائه."
+                ],
+                "prerequisites": [],
+                "difficulty": "Intermediate"
+              },
+              {
+                "lesson_slug": "bva-and-ep",
+                "title_en": "Equivalence Partitioning & Boundary Value Analysis",
+                "title_ar": "تقسيم التكافؤ وتحليل القيم الحدية",
+                "sort_order": 2,
+                "objectives_en": [
+                  "Partition an integer domain by expected handling.",
+                  "Select a three-value boundary set for an inclusive range.",
+                  "State expected outcomes with other conditions controlled."
+                ],
+                "objectives_ar": [
+                  "قسّم مجال الأعداد الصحيحة وفق المعالجة المتوقعة.",
+                  "اختر حدودًا بأسلوب الثلاث قيم لمجال شامل الطرفين.",
+                  "حدد النتائج المتوقعة مع ضبط الشروط الأخرى."
+                ],
+                "prerequisites": [],
+                "difficulty": "Intermediate"
+              },
+              {
+                "lesson_slug": "exploratory-testing",
+                "title_en": "Exploratory Testing Techniques",
+                "title_ar": "تقنيات الاختبار الاستكشافي",
+                "sort_order": 3,
+                "objectives_en": [
+                  "Write a charter naming scope, resources and risk.",
+                  "Choose a follow-up based on an observation.",
+                  "Summarize examined conditions and open questions."
+                ],
+                "objectives_ar": [
+                  "اكتب ميثاقًا يحدد النطاق والموارد والخطر.",
+                  "اختر فحص متابعة بناء على ملاحظة.",
+                  "لخص الظروف المفحوصة والأسئلة المتبقية."
+                ],
+                "prerequisites": [],
+                "difficulty": "Intermediate"
+              }
+            ]
+          },
+          {
+            "module_slug": "bug-reporting-and-defect-management",
+            "title_en": "Bug Reporting & Defect Management",
+            "title_ar": "كتابة البلاغات وإدارة العيوب",
+            "sort_order": 3,
+            "description_en": "Learn how to write high-quality bug reports and manage defect lifecycles.",
+            "description_ar": "تعلم كيفية كتابة تقارير أخطاء احترافية وإدارة دورة حياة البلاغات.",
+            "practical_challenge_slug": null,
+            "lessons": [
+              {
+                "lesson_slug": "anatomy-of-a-bug-report",
+                "title_en": "Anatomy of an Effective Bug Report",
+                "title_ar": "مكونات بلاغ الخطأ الاحترافي",
+                "sort_order": 1,
+                "objectives_en": [
+                  "Write numbered steps using controlled data.",
+                  "Separate observations from cause hypotheses.",
+                  "Choose evidence without real personal credentials."
+                ],
+                "objectives_ar": [
+                  "اكتب خطوات مرقمة ببيانات مضبوطة.",
+                  "افصل الملاحظات عن فرضيات السبب.",
+                  "اختر دليلًا خاليًا من اعتمادات شخصية حقيقية."
+                ],
+                "prerequisites": [],
+                "difficulty": "Beginner"
+              },
+              {
+                "lesson_slug": "severity-vs-priority",
+                "title_en": "Defect Severity vs Priority",
+                "title_ar": "خطورة العيب مقابل الأولوية",
+                "sort_order": 2,
+                "objectives_en": [
+                  "Distinguish impact severity from urgency priority.",
+                  "Identify missing context for a triage decision.",
+                  "Write separate impact and urgency statements."
+                ],
+                "objectives_ar": [
+                  "ميّز خطورة الأثر عن أولوية الاستعجال.",
+                  "حدد السياق الناقص لقرار الفرز.",
+                  "اكتب بيانين مستقلين للأثر والاستعجال."
+                ],
+                "prerequisites": [],
+                "difficulty": "Beginner"
+              },
+              {
+                "lesson_slug": "defect-lifecycle",
+                "title_en": "Defect Lifecycle & Tracking",
+                "title_ar": "دورة حياة العيوب ومتابعتها",
+                "sort_order": 3,
+                "objectives_en": [
+                  "Explain evidence needed to verify a proposed fix.",
+                  "Distinguish confirmation from regression testing.",
+                  "Write a retest note preserving earlier evidence."
+                ],
+                "objectives_ar": [
+                  "اشرح الدليل اللازم للتحقق من إصلاح مقترح.",
+                  "ميّز التأكد من الإصلاح عن اختبار الانحدار.",
+                  "اكتب ملاحظة إعادة اختبار تحفظ الأدلة السابقة."
+                ],
+                "prerequisites": [],
+                "difficulty": "Beginner"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "lessons": [
+    {
+      "key": "qa-foundations/intro-to-qa/software-testing-fundamentals",
+      "title_en": "Software Testing Fundamentals",
+      "title_ar": "أساسيات اختبار البرمجيات",
+      "summary_en": "Use explicit expectations, controlled data and observable results to explain what software testing can and cannot tell a delivery team. Practice recording a delivery-date discrepancy.",
+      "summary_ar": "تعلم ربط الملاحظة بتوقع واضح وتوثيق بيانات الفحص وحدوده. تدرب على وصف فرق في موعد توصيل افتراضي دون تخمين سببه.",
+      "objectives_en": [
+        "Distinguish observed behavior from a cause hypothesis.",
+        "Compare a delivery result with an agreed cutoff rule.",
+        "Describe one limitation of a passing test."
+      ],
+      "objectives_ar": [
+        "ميّز السلوك المرصود عن فرضية سببه.",
+        "قارن موعد التوصيل بقاعدة إغلاق متفق عليها.",
+        "صف حدًا واحدًا للاستنتاج من نجاح الاختبار."
+      ],
+      "content_en": "## Start with a product decision\n\nWelcome to **Introduction to Quality Assurance**. Imagine a team preparing to release a delivery app. The screen looks polished, yet a customer can receive the wrong delivery date. Quality concerns whether a product satisfies relevant needs and requirements in its context. A tester helps the team make decisions using evidence about that product. Testing includes activities such as examining requirements, designing checks, executing software and evaluating results; it is more than clicking until something breaks.\n\n## What testing can tell a team\n\nA test compares an observation with a justified expectation, sometimes called a test oracle. A requirement, an agreed business rule or a known reference calculation can supply that expectation. Without one, “looks wrong” is an investigation lead rather than a complete defect finding. Testing can reveal failures and reduce uncertainty about risks. A passing set of checks does not prove there are no defects: the team has only examined selected conditions.\n\nTesting can begin before executable software exists. Reviewing “delivery is fast” exposes an unclear requirement; agreeing “orders confirmed before 14:00 arrive the next working day” makes later checks meaningful. Early feedback can prevent expensive misunderstandings. Running every combination of address, device, network and order time is rarely feasible, so choose checks according to impact, likelihood and available time.\n\n## Work example: delivery estimates\n\nUse a simulated shop with this rule: orders confirmed on Monday before 14:00 show Tuesday as the delivery day; orders at or after 14:00 show Wednesday. Assume no holidays and use the shop's configured local time.\n\n| Observation | Expected behavior | Recorded result |\n| --- | --- | --- |\n| Monday 13:59, confirmation screen | Tuesday | Tuesday: pass for this check |\n| Monday 14:00, confirmation screen | Wednesday | Tuesday: failure to investigate |\n\nKeep the inputs and environment fixed. Record the confirmation time, timezone, build and displayed date. A developer may investigate the implementation defect causing the failure; the tester's immediate contribution is a reproducible observation against the agreed rule. This example establishes the habit of comparing expected and actual behavior without assuming the cause.\n\n## A tester's next action\n\nAsk what would harm customers: an incorrect promise may matter more than a slightly misaligned icon. Select another useful condition, such as the next working day after a weekend, but clarify its expected behavior first. Share what was tested, the result and what remains unexamined. Avoid a release message saying simply “everything passed.” Report the scope: “These two cutoff-time checks ran on build D17; weekend rules remain untested.”\n\nA beginner misconception is that successful testing means finding many bugs. Useful work also includes clarifying an ambiguous rule or confirming a high-risk behavior. Another misconception is that a system with no observed failures is defect-free. Absence of observed failures is evidence limited by test coverage.\n\n## Try it: produce an observation\n\nIn the simulated shop, an order is confirmed Monday at 14:05 and the page promises Tuesday. Write the expected date, actual date and one piece of environment information needed to repeat the check. Then answer the scenario check below. Keep “the date calculator is broken” out of the observation unless you have investigated that cause.\n\n## Key takeaways\n\n- Compare behavior with an explicit, agreed expectation.\n- Record data and context so another person can reproduce your observation.\n- A passing check supports a limited claim about the tested conditions.\n- Prioritize evidence that reduces important product risks.\n\n## Next connection\n\nIn **Quality Assurance vs Quality Control**, you will distinguish activities that improve how the team works from activities that evaluate its product. Keep the unclear delivery rule in mind: quality work can start before a test is executed.",
+      "content_ar": "## البداية من قرار يخص المنتج\n\nمرحبًا بك في وحدة **مقدمة في ضمان الجودة**. تخيل فريقًا يستعد لإطلاق تطبيق لتوصيل الطلبات. قد تبدو الشاشة أنيقة، ومع ذلك تعرض موعد تسليم غير صحيح. ترتبط الجودة بتلبية احتياجات المستخدمين والمتطلبات ذات الصلة في سياق الاستخدام. ودور المختبِر هو تقديم أدلة تساعد الفريق على اتخاذ قرار واعٍ بشأن المنتج.\n\nيشمل اختبار البرمجيات مراجعة المتطلبات وتصميم الاختبارات وتنفيذها وتقييم نتائجها. فلا يبدأ العمل بالضرورة عند ظهور شاشة قابلة للنقر، ولا يقتصر على البحث العشوائي عن الأعطال.\n\n## ماذا نستنتج من الاختبار؟\n\nنقارن ما نلاحظه بتوقع يستند إلى مرجع واضح، مثل قاعدة عمل متفق عليها أو حساب موثوق. يسمى مرجع تحديد النتيجة المتوقعة أحيانًا **Test Oracle**. أما عبارة «أشعر أن النتيجة خطأ» فهي بداية للتحقيق، وليست وحدها دليلًا كافيًا على مخالفة محددة.\n\nتكشف الاختبارات عن حالات فشل وتقلل عدم اليقين بشأن مخاطر المنتج. لكن نجاح مجموعة اختبارات لا يثبت خلو النظام من العيوب، لأننا فحصنا ظروفًا محددة فقط. ومن الصعب عمليًا تجربة جميع تراكيب العناوين والأجهزة والشبكات ومواعيد الطلبات؛ لذلك نختار ما نختبره وفق أثر الخطر واحتماله والوقت المتاح.\n\nيمكن البدء مبكرًا بمراجعة عبارة غامضة مثل «التوصيل سريع». عندما يتفق الفريق على قاعدة قابلة للفحص، يصبح من الممكن تصميم اختبار له معنى قبل اكتمال البرمجة.\n\n## مثال من العمل: موعد التوصيل\n\nنستخدم متجرًا محاكى بهذه القاعدة: الطلب المؤكد يوم الاثنين قبل الساعة 14:00 يعرض الثلاثاء موعدًا للتوصيل، والطلب المؤكد من الساعة 14:00 فصاعدًا يعرض الأربعاء. نفترض عدم وجود عطلات، ونعتمد التوقيت المحلي المضبوط في المتجر.\n\n| بيانات الاختبار | النتيجة المتوقعة | ما ظهر بالفعل |\n| --- | --- | --- |\n| الاثنين 13:59، شاشة التأكيد | الثلاثاء | الثلاثاء: نجح هذا الفحص |\n| الاثنين 14:00، شاشة التأكيد | الأربعاء | الثلاثاء: حالة فشل تستحق التحقيق |\n\nثبّت المدخلات وسجل وقت التأكيد والمنطقة الزمنية ورقم الإصدار والتاريخ المعروض. قد يحقق المطور لاحقًا في العيب البرمجي المسبب للفشل. أما مساهمة المختبِر هنا فهي توثيق ملاحظة يمكن تكرارها ومقارنتها بقاعدة متفق عليها، دون القفز إلى استنتاج عن سببها الداخلي.\n\n## كيف يتصرف المختبِر؟\n\nابدأ بما قد يضر المستخدم: الوعد بموعد خاطئ قد يكون أهم من محاذاة أيقونة. اختر ظرفًا آخر مفيدًا للفحص، مثل طلب قريب من عطلة نهاية الأسبوع، بعد توضيح القاعدة الخاصة به. وعند مشاركة النتيجة، اذكر نطاق العمل وحدوده: «نفذنا فحصي موعد الإغلاق على الإصدار D17، ولم نفحص قواعد العطلات بعد».\n\nمن التصورات المضللة أن جودة عمل المختبِر تقاس بعدد البلاغات فقط. توضيح قاعدة غامضة أو تقديم دليل على سلوك عالي المخاطر عمل ذو قيمة أيضًا. ومن الخطأ كذلك اعتبار عدم ملاحظة فشل دليلًا على عدم وجود عيوب؛ فاستنتاجنا يظل مقيدًا بما اختبرناه.\n\n## جرّب: اكتب ملاحظة قابلة للتكرار\n\nتأكد طلب في المتجر المحاكى يوم الاثنين الساعة 14:05، وعرضت الصفحة الثلاثاء موعدًا للتوصيل. اكتب التاريخ المتوقع والتاريخ الفعلي ومعلومة واحدة عن البيئة تساعد زميلك على إعادة الفحص. ثم أجب عن سؤال الموقف أدناه. لا تجزم بأن «دالة حساب الموعد معطلة» دون دليل على السبب.\n\n## أهم ما تعلمته\n\n- اربط المقارنة بتوقع واضح ومتفق عليه.\n- سجل بيانات الاختبار وسياقه لتسهيل إعادة الملاحظة.\n- نجاح الفحص يدعم استنتاجًا محدودًا بالظروف التي جُرّبت.\n- وجّه جهدك إلى الأدلة التي تقلل مخاطر المنتج المهمة.\n\n## صلة الدرس التالي\n\nفي **ضمان الجودة مقابل ضبط الجودة** ستتعرف على الفرق بين تحسين طريقة عمل الفريق وتقييم المنتج نفسه. احتفظ بمثال قاعدة التوصيل الغامضة؛ فبعض أعمال الجودة تبدأ قبل تنفيذ أي اختبار.",
+      "estimated_minutes": 8,
+      "previous_key": null,
+      "next_key": "qa-foundations/intro-to-qa/qa-vs-qc",
+      "is_published": false,
+      "activities": [
+        {
+          "slug": "delivery-cutoff",
+          "kind": "scenario",
+          "prompt": {
+            "en": "Monday 14:05 order shows Tuesday. Under the stated rule, what should you record?",
+            "ar": "طلب الاثنين 14:05 يعرض الثلاثاء. ماذا تسجل وفق القاعدة؟"
+          },
+          "options": [
+            {
+              "id": "a",
+              "text": {
+                "en": "Expected Wednesday; actual Tuesday, with time/build evidence.",
+                "ar": "المتوقع الأربعاء والفعلي الثلاثاء، مع توثيق الوقت والإصدار."
+              }
+            },
+            {
+              "id": "b",
+              "text": {
+                "en": "Expected Tuesday because the screen says Tuesday.",
+                "ar": "المتوقع الثلاثاء لأن الشاشة تعرضه."
+              }
+            },
+            {
+              "id": "c",
+              "text": {
+                "en": "The database is definitely corrupt.",
+                "ar": "قاعدة البيانات تالفة بالتأكيد."
+              }
+            }
+          ],
+          "answer": [
+            "a"
+          ],
+          "explanation": {
+            "en": "The cutoff makes Wednesday the expectation. Record context; the screen is not the oracle and the cause is unproven.",
+            "ar": "تحدد قاعدة الإغلاق الأربعاء متوقعًا. وثق السياق؛ الشاشة ليست المرجع والسبب غير مثبت."
+          },
+          "rubric": [],
+          "sort_order": 1
+        },
+        {
+          "slug": "passing-evidence",
+          "kind": "true_false",
+          "prompt": {
+            "en": "Passing two cutoff checks proves the feature has no defects.",
+            "ar": "نجاح فحصين لموعد الإغلاق يثبت خلو الخاصية من العيوب."
+          },
+          "options": [
+            {
+              "id": "true",
+              "text": {
+                "en": "True",
+                "ar": "صحيح"
+              }
+            },
+            {
+              "id": "false",
+              "text": {
+                "en": "False",
+                "ar": "خطأ"
+              }
+            }
+          ],
+          "answer": [
+            "false"
+          ],
+          "explanation": {
+            "en": "Only two conditions were observed; weekend and timezone rules may remain untested.",
+            "ar": "فُحص ظرفان فقط؛ قد تبقى قواعد العطلات والمناطق الزمنية دون فحص."
+          },
+          "rubric": [],
+          "sort_order": 2
+        },
+        {
+          "slug": "delivery-observation",
+          "kind": "short_answer",
+          "prompt": {
+            "en": "Write expected/actual dates for Monday14:05 and context another tester needs.",
+            "ar": "اكتب الموعد المتوقع والفعلي لطلب الاثنين 14:05 وسياقًا يحتاجه مختبر آخر."
+          },
+          "options": [],
+          "answer": [],
+          "explanation": {
+            "en": "D17, Monday14:05 shop local time: expected Wednesday, actual Tuesday. This does not establish an implementation cause.",
+            "ar": "D17 ، الاثنين 14:05 بتوقيت المتجر: المتوقع الأربعاء والفعلي الثلاثاء. لا يثبت ذلك السبب البرمجي."
+          },
+          "rubric": [
+            {
+              "en": "States Wednesday expected and Tuesday observed.",
+              "ar": "يذكر الأربعاء متوقعًا والثلاثاء فعليًا."
+            },
+            {
+              "en": "Includes build and time/timezone context.",
+              "ar": "يحدد الإصدار والتوقيت والمنطقة الزمنية."
+            },
+            {
+              "en": "Avoids an unsupported internal cause.",
+              "ar": "يتجنب الجزم بسبب داخلي دون دليل."
+            }
+          ],
+          "sort_order": 3
+        }
+      ]
+    },
+    {
+      "key": "qa-foundations/intro-to-qa/qa-vs-qc",
+      "title_en": "Quality Assurance vs Quality Control",
+      "title_ar": "ضمان الجودة مقابل ضبط الجودة",
+      "summary_en": "Separate product evaluation from process assurance using recurring subscription-price misunderstandings. Propose a targeted process improvement and evidence for evaluating it.",
+      "summary_ar": "فرّق بين تقييم المنتج وتحسين العمليات من خلال غموض أسعار الاشتراك. اقترح تحسينًا محددًا ودليلًا لتقييم فائدته.",
+      "objectives_en": [
+        "Classify product checks and process-assurance activities.",
+        "Propose an improvement for recurring requirement ambiguity.",
+        "Identify evidence for evaluating an improvement."
+      ],
+      "objectives_ar": [
+        "صنّف فحوص المنتج وأنشطة ضمان العمليات.",
+        "اقترح تحسينًا يعالج غموض المتطلبات المتكرر.",
+        "حدد دليلًا لتقييم فائدة التحسين."
+      ],
+      "content_en": "## Connect the evidence to the team's work\n\nIn **Software Testing Fundamentals**, you compared delivery behavior with an agreed rule. That is evidence about a product. Now ask a second question: how can the team reduce the chance of shipping another ambiguous delivery rule? This lesson focuses on **Quality Assurance vs Quality Control**, two complementary parts of quality management.\n\n## Assurance and control have different targets\n\nQuality assurance (QA) focuses on providing confidence that quality requirements will be fulfilled, often by examining and improving processes. A team might agree that each delivery rule must include a timezone and a worked example before development begins, then check whether that practice is effective. QA is not a guarantee that no defects will escape.\n\nQuality control (QC) focuses on fulfilling quality requirements through product-oriented evaluation and corrective action. Software testing contributes to QC by checking work products and software behavior. QC is not restricted to the end of a project: reviewing a requirement or testing a small change during development can also evaluate product quality.\n\nThese categories describe the purpose of an activity rather than a person's job title. A person employed as a “QA engineer” may both help improve a review process and execute tests. Developers, designers and product owners also contribute to quality. Calling one person “QA” does not transfer all quality responsibility to them.\n\n## Work example: repeated pricing misunderstandings\n\nA subscription team has released two changes where customers saw the wrong renewal price. The requirement “use the current price” failed to distinguish an existing contract's renewal price from the price offered to new customers.\n\n| Team action | Main focus |\n| --- | --- |\n| Compare a renewal quote for contract C42 with its agreed price of 18 simulated units | Product evaluation: QC |\n| Add a requirement-review checklist asking whose price applies and at what date | Process assurance: QA |\n| Review the next five stories to see whether the checklist surfaces ambiguities | Confidence in the process: QA |\n\nThe checklist must change decisions, not merely collect ticks. A useful measure is whether reviewers identify unclear price rules before implementation. A reduction in escaped pricing defects may support improvement, but other changes may also explain it. Do not infer that a checklist alone caused every improvement.\n\n## Applying the distinction professionally\n\nWhen the simulated C42 quote shows 23 rather than 18 units, record the concrete discrepancy. Then discuss why the requirement failed to express the contract rule. The immediate product finding and the process improvement are related, but they solve different parts of the problem. Choose the improvement based on evidence; requiring a large approval meeting for every tiny change may create delay without reducing this risk.\n\nA misconception is that QA means prevention and QC means only reacting after release. Process assurance aims to reduce recurring causes, while product evaluation can happen early and prevent a faulty feature reaching users. Another misconception is that more test cases automatically mean a better process. Irrelevant checks do little to address missing price rules.\n\n## Try it: choose a response\n\nYour team keeps misunderstanding cancellation deadlines. Propose one action that checks the current cancellation feature and one action that improves how future deadlines are specified. State what evidence would show whether the process change helps. Use the short-response exercise below; a reviewer will assess your reasoning against explicit criteria.\n\n## Key takeaways\n\n- QA builds confidence in quality-related processes.\n- QC evaluates and controls the quality of work products.\n- Testing contributes product evidence throughout development.\n- An improvement should address an observed cause and be evaluated.\n- Quality is a team responsibility, regardless of job titles.\n\n## Next connection\n\n**Software Development Life Cycle & QA** places these activities in a development timeline. You will decide when a question, review or executable test gives the team useful feedback.",
+      "content_ar": "## اربط الأدلة بطريقة عمل الفريق\n\nفي **أساسيات اختبار البرمجيات** قارنت سلوك التوصيل بقاعدة متفق عليها. هذه أدلة عن المنتج. نطرح الآن سؤالًا آخر: كيف نخفض احتمال تكرار القواعد الغامضة في الإصدارات القادمة؟ يساعدنا التمييز بين ضمان الجودة وضبط الجودة على اختيار الإجراء المناسب.\n\n## لكل نشاط هدف مختلف\n\nيركز ضمان الجودة **QA** على توفير الثقة في أن متطلبات الجودة ستتحقق، وغالبًا يشمل فحص العمليات وتحسينها. قد يتفق الفريق على ضرورة توضيح المنطقة الزمنية وإضافة مثال لكل قاعدة توصيل قبل بدء التنفيذ، ثم يراجع مدى فاعلية هذا الأسلوب. ولا يعني ضمان الجودة التعهد بأن المنتج لن يحتوي على أي عيب.\n\nأما ضبط الجودة **QC** فيركز على تحقيق متطلبات الجودة من خلال تقييم مخرجات العمل والتحكم في جودتها واتخاذ الإجراء المناسب. ويسهم اختبار البرمجيات فيه بفحص الوثائق وسلوك النظام. ولا يقتصر ضبط الجودة على نهاية المشروع؛ فمراجعة متطلب أو اختبار تعديل صغير أثناء التطوير يمكن أن يكشف مشكلة في وقت مبكر.\n\nنصنف النشاط بحسب هدفه، وليس بحسب المسمى الوظيفي لمن ينفذه. قد يحسن مهندس يحمل مسمى QA عملية المراجعة، ثم ينفذ اختبارات للمنتج. ويسهم المطور والمصمم ومالك المنتج في الجودة أيضًا؛ فلا تنتقل المسؤولية كلها إلى شخص واحد بمجرد تسميته مسؤول الجودة.\n\n## مثال عملي: غموض أسعار التجديد\n\nأصدر فريق اشتراكات تعديلين ظهرت فيهما أسعار تجديد خاطئة. كانت العبارة «استخدم السعر الحالي» لا توضح الفرق بين سعر عقد قائم وسعر الاشتراك للعملاء الجدد.\n\n| الإجراء | موضع التركيز |\n| --- | --- |\n| مقارنة عرض تجديد العقد C42 بسعره المتفق عليه، 18 وحدة افتراضية | تقييم المنتج: ضبط الجودة |\n| إضافة سؤالين لمراجعة المتطلبات: سعر مَن؟ وفي أي تاريخ؟ | تحسين العملية: ضمان الجودة |\n| مراجعة القصص الخمس التالية لمعرفة هل كشفت الأسئلة الغموض فعلًا | الثقة في فاعلية العملية: ضمان الجودة |\n\nقائمة المراجعة وسيلة لاتخاذ قرار أفضل، وليست أوراقًا نملؤها فقط. يمكن متابعة ما إذا كانت المراجعات تكشف غموض الأسعار قبل التنفيذ. وقد يدعم انخفاض العيوب التي تصل إلى المستخدمين فائدة التحسين، لكن لا ننسب كل تحسن للقائمة وحدها؛ فقد تكون هناك عوامل أخرى.\n\n## من الفكرة إلى التصرف المهني\n\nإذا أظهر عرض العقد C42 مبلغ 23 بدلًا من 18 وحدة، وثّق الفرق أولًا. ثم ناقش سبب عدم توضيح قاعدة العقد في المتطلب. البلاغ الحالي وتحسين العملية مرتبطان، لكن لكل منهما دور. اختر إجراءً يناسب الأدلة؛ فإضافة اجتماع موافقات طويل لكل تعديل بسيط قد تزيد التأخير دون معالجة غموض الأسعار.\n\nمن التصورات الشائعة أن QA يعني الوقاية، بينما لا يبدأ QC إلا بعد وقوع المشكلة في الإنتاج. الواقع أن تقييم المنتج مبكرًا قد يمنع وصول سلوك خاطئ إلى المستخدم. كذلك لا يكفي رفع عدد حالات الاختبار للحكم على تحسن العملية؛ فالاختبارات غير المرتبطة بالخطر لا تعالج قاعدة عمل مفقودة.\n\n## جرّب: اقترح إجراءين متكاملين\n\nيتكرر سوء فهم موعد إلغاء الاشتراك في فريقك. اقترح إجراءً يفحص الخاصية الحالية، وإجراءً آخر يحسن وصف المواعيد في المتطلبات القادمة. حدد دليلًا يمكن متابعته لمعرفة مدى فائدة التحسين. اكتب تبريرك في النشاط القصير أدناه؛ سيقيّمه مراجع وفق معايير واضحة.\n\n## أهم ما تعلمته\n\n- يوفر ضمان الجودة الثقة في العمليات المتعلقة بالجودة.\n- يقيّم ضبط الجودة مخرجات العمل ويتعامل مع مدى مطابقتها.\n- يقدم الاختبار أدلة عن المنتج في مراحل متعددة.\n- يجب أن يستهدف التحسين سببًا تدعمه الأدلة، ثم تُراجع فائدته.\n- الجودة مسؤولية مشتركة بين أعضاء الفريق.\n\n## صلة الدرس التالي\n\nفي **دورة حياة تطوير البرمجيات وضمان الجودة** سنضع هذه الأنشطة في سياق مراحل التطوير، ونحدد متى يفيد السؤال أو المراجعة أو الاختبار التنفيذي في تقديم تغذية راجعة للفريق.",
+      "estimated_minutes": 9,
+      "previous_key": "qa-foundations/intro-to-qa/software-testing-fundamentals",
+      "next_key": "qa-foundations/intro-to-qa/sdlc-and-qa",
+      "is_published": false,
+      "activities": [
+        {
+          "slug": "price-action",
+          "kind": "single_choice",
+          "prompt": {
+            "en": "Which action mainly evaluates product quality?",
+            "ar": "أي إجراء يركز على تقييم جودة المنتج؟"
+          },
+          "options": [
+            {
+              "id": "a",
+              "text": {
+                "en": "Compare C42 renewal quote with its agreed18-unit price.",
+                "ar": "قارن عرض تجديد C42 بسعره المتفق عليه 18 وحدة."
+              }
+            },
+            {
+              "id": "b",
+              "text": {
+                "en": "Introduce a checklist for clarifying price rules.",
+                "ar": "أضف قائمة مراجعة لتوضيح قواعد الأسعار."
+              }
+            },
+            {
+              "id": "c",
+              "text": {
+                "en": "Evaluate whether reviewers use the checklist effectively.",
+                "ar": "قيّم فاعلية استخدام المراجعين للقائمة."
+              }
+            }
+          ],
+          "answer": [
+            "a"
+          ],
+          "explanation": {
+            "en": "The quote check evaluates the product. Introducing and evaluating review processes supports assurance.",
+            "ar": "يفحص عرض السعر المنتج، بينما تدعم إضافة أسلوب المراجعة وتقييمه ضمان العملية."
+          },
+          "rubric": [],
+          "sort_order": 1
+        },
+        {
+          "slug": "qa-reasoning",
+          "kind": "multi_select",
+          "prompt": {
+            "en": "Select the supported statements.",
+            "ar": "اختر العبارات التي يدعمها الدرس."
+          },
+          "options": [
+            {
+              "id": "a",
+              "text": {
+                "en": "Product evaluation can happen before release.",
+                "ar": "يمكن تقييم المنتج قبل التسليم."
+              }
+            },
+            {
+              "id": "b",
+              "text": {
+                "en": "A QA title makes one person solely responsible for quality.",
+                "ar": "يجعل مسمى QA شخصًا واحدًا مسؤولًا وحده عن الجودة."
+              }
+            },
+            {
+              "id": "c",
+              "text": {
+                "en": "A checklist should be evaluated for usefulness.",
+                "ar": "ينبغي تقييم فائدة قائمة المراجعة."
+              }
+            }
+          ],
+          "answer": [
+            "a",
+            "c"
+          ],
+          "explanation": {
+            "en": "QC can happen early, assurance needs evidence of usefulness, and quality remains shared.",
+            "ar": "يمكن أن يبدأ ضبط الجودة مبكرًا ويحتاج الضمان إلى دليل فائدة وتظل الجودة مشتركة."
+          },
+          "rubric": [],
+          "sort_order": 2
+        },
+        {
+          "slug": "cancellation-improvement",
+          "kind": "short_answer",
+          "prompt": {
+            "en": "Propose a current-feature check, process change and evidence of improvement for recurring deadline ambiguity.",
+            "ar": "اقترح فحصًا للخاصية الحالية وتحسينًا للعملية ودليل فائدته لغموض الموعد المتكرر."
+          },
+          "options": [],
+          "answer": [],
+          "explanation": {
+            "en": "Check cancellation against an explicit deadline; require timezone examples in review; sample later stories for ambiguity detected before coding.",
+            "ar": "افحص الإلغاء وفق موعد واضح، واشترط أمثلة للتوقيت في المراجعة، وراجع القصص التالية لرصد الغموض المكتشف مبكرًا."
+          },
+          "rubric": [
+            {
+              "en": "Checks product behavior against an agreed rule.",
+              "ar": "يفحص سلوك المنتج وفق قاعدة متفق عليها."
+            },
+            {
+              "en": "Targets recurring specification ambiguity.",
+              "ar": "يعالج الغموض المتكرر في وصف المتطلب."
+            },
+            {
+              "en": "Names observable improvement evidence.",
+              "ar": "يحدد دليل تحسن قابلًا للملاحظة."
+            }
+          ],
+          "sort_order": 3
+        }
+      ]
+    },
+    {
+      "key": "qa-foundations/intro-to-qa/sdlc-and-qa",
+      "title_en": "Software Development Life Cycle & QA",
+      "title_ar": "دورة حياة تطوير البرمجيات وضمان الجودة",
+      "summary_en": "Choose useful quality activities throughout a development life cycle. Compare sequential and iterative feedback timing and distinguish Agile from the Scrum framework.",
+      "summary_ar": "اختر أنشطة جودة عبر دورة التطوير وقارن توقيت التغذية الراجعة في العمل المتتابع والتكراري وميز مبادئAgile عن إطارScrum.",
+      "objectives_en": [
+        "Place clarification, execution and release evidence in a life cycle.",
+        "Distinguish Agile principles from the Scrum framework.",
+        "Write a deadline acceptance example before implementation."
+      ],
+      "objectives_ar": [
+        "ضع التوضيح والتنفيذ وأدلة التسليم في دورة الحياة.",
+        "ميّز مبادئAgile عن إطارScrum.",
+        "اكتب مثال قبول للموعد قبل التنفيذ."
+      ],
+      "content_en": "## Put quality activities on a timeline\n\nIn **Quality Assurance vs Quality Control**, you separated process improvement from product evaluation. **Software Development Life Cycle & QA** now asks when to do that work. A development life cycle organizes how a product moves from an idea through development, delivery, maintenance and eventual retirement. Quality activities belong throughout it, with timing adapted to the team's delivery approach.\n\n## Feedback before, during and after implementation\n\nDuring requirements work, ask whether a rule is clear, testable and useful. During design, inspect states, data flows and failure handling. During implementation, collaborate on examples and prepare suitable test data and environments. Once software runs, execute selected tests and investigate differences. Before delivery, summarize evidence, unresolved risks and untested scope. After delivery, operational feedback can reveal conditions the earlier work missed.\n\nThese activities do not require a separate department to “own quality.” Developers can test components, product owners clarify acceptance criteria and testers explore risks across features. A tester may need to explain a concern early rather than wait for a finished build. Testing in production, when organizations permit it, requires appropriate controls; this course uses simulated systems only.\n\n## Sequential and iterative delivery\n\nA sequential approach generally plans phases with defined handoffs, though feedback and corrections may still happen. Finding an ambiguous requirement during review is valuable even before a later test-execution phase. An iterative approach develops and evaluates smaller increments, revisiting the product as understanding changes.\n\nAgile describes values and principles; Scrum is one framework used for complex product work. They are not synonyms. A Scrum team can include quality-related work in each Sprint and use a shared Definition of Done to express the quality measures an Increment must meet. A retrospective examines how the team works; it is not simply a meeting where testers list defects.\n\n## Work example: a cancellation feature\n\nA simulated membership portal must allow cancellation until 18:00 on the day before renewal, using the account's timezone.\n\n1. Before coding, clarify whether exactly 18:00 is accepted and what happens if the account changes timezone.\n2. During design, agree how the deadline is displayed and how expired requests are handled.\n3. During implementation, prepare accounts whose deadlines have not passed and accounts whose deadlines have passed.\n4. Before release, record whether selected deadline scenarios passed and identify any timezone combinations not covered.\n5. After delivery, examine support patterns and use them to refine the next increment.\n\nIf the team waits until the final day to ask which timezone applies, test execution may reveal a disagreement rather than an implementation error. Earlier clarification reduces that risk. Earlier work does not eliminate the need to test the running feature.\n\n## Common timing mistakes\n\n“Shift left” encourages useful feedback earlier; it does not mean moving all tests earlier or removing later evaluation. Some performance or integration behavior requires realistic running components. Conversely, waiting until a feature is complete to read its requirements misses opportunities to prevent misunderstanding.\n\nAnother mistake is treating “Done” as “code written.” A team's agreed quality measures might include reviewed requirements, relevant checks, handled defects and adequate documentation. Those measures must be realistic and visible; copying a checklist without team agreement does not make an Increment ready.\n\n## Try it: move one question earlier\n\nThe cancellation team discovers during final testing that nobody agreed what happens exactly at 18:00. Write one acceptance example that would have made the decision explicit before implementation. Then identify one running-system check still needed. Use the module checkpoint to explain your choice of timing.\n\n## Key takeaways\n\n- Quality work spans the life cycle rather than only final test execution.\n- Adapt feedback timing to the product and delivery approach.\n- Agile and Scrum describe different levels of guidance.\n- Earlier clarification complements tests of running software.\n- Report evidence and remaining risk before a delivery decision.\n\n## Module wrap-up\n\nYou have connected observable behavior, process assurance and feedback timing. Review the module checkpoint using these three ideas. This is the final verified lesson in this module; return to the curriculum to continue to **Manual Testing Fundamentals** when it is available.",
+      "content_ar": "## ضع أنشطة الجودة في سياق زمني\n\nفي **ضمان الجودة مقابل ضبط الجودة** فرقت بين تحسين العملية وتقييم المنتج. يركز درس **دورة حياة تطوير البرمجيات وضمان الجودة** على توقيت هذه الأنشطة. تنظم دورة الحياة انتقال المنتج من الفكرة إلى التطوير والتسليم والصيانة، ثم إنهاء استخدامه عند الحاجة. وتتوزع أعمال الجودة على هذه الرحلة بحسب أسلوب الفريق وطبيعة المنتج.\n\n## تغذية راجعة قبل التنفيذ وأثناءه وبعده\n\nأثناء إعداد المتطلبات، اسأل هل القاعدة واضحة وقابلة للفحص ومفيدة للمستخدم. وأثناء التصميم، ناقش الحالات وتدفق البيانات والتعامل مع الفشل. وفي التنفيذ، تعاون على الأمثلة وجهز بيانات الاختبار والبيئة المناسبة. وعندما تتوفر برمجيات قابلة للتشغيل، نفذ الاختبارات المختارة وحقق في الفروق.\n\nقبل التسليم، لخص الأدلة والمخاطر المفتوحة وما لم يُختبر. وبعده، قد تكشف ملاحظات التشغيل عن ظروف لم تغطها الاختبارات السابقة. الاختبار في بيئات الإنتاج، إذا سمحت به المؤسسة، يحتاج إلى ضوابط مناسبة؛ أما أمثلة هذا المسار فكلها محاكاة آمنة.\n\nلا تتطلب هذه المشاركة أن يمتلك قسم واحد الجودة وحده. يمكن للمطور اختبار المكونات، ولمالك المنتج توضيح شروط القبول، وللمختبِر فحص المخاطر بين الخصائص. وقد يكون توضيح مخاوفك مبكرًا أنفع من انتظار نسخة مكتملة.\n\n## التطوير المتتابع والتطوير التكراري\n\nتنظم الأساليب المتتابعة العمل عادة في مراحل وتسليمات واضحة، مع إمكان الرجوع لتصحيح ما سبق. لذلك تبقى مراجعة متطلب غامض مفيدة حتى لو كان تنفيذ الاختبارات مخططًا لمرحلة لاحقة.\n\nأما الأسلوب التكراري فيبني المنتج ويقيّمه على دفعات أصغر، ويعيد النظر في القرارات مع نمو المعرفة. تشير Agile إلى قيم ومبادئ، بينما Scrum إطار عمل يمكن استخدامه لتنظيم العمل المعقد؛ فهما ليسا اسمين للشيء نفسه. يمكن لفريق Scrum تضمين أعمال الجودة في كل Sprint، والاتفاق على **Definition of Done** يوضح مقاييس الجودة التي يجب أن يحققها الجزء المنجز. ويناقش اجتماع التحسين طريقة عمل الفريق، ولا يقتصر على سرد العيوب.\n\n## مثال مهني: إلغاء عضوية\n\nيجب أن تسمح بوابة عضوية محاكية بالإلغاء حتى الساعة 18:00 من اليوم السابق للتجديد، وفق المنطقة الزمنية للحساب.\n\n1. قبل البرمجة، وضح هل تقبل العملية عند 18:00 بالضبط، وما أثر تغيير المنطقة الزمنية.\n2. أثناء التصميم، اتفق على عرض الموعد ورسالة الطلب المتأخر.\n3. أثناء التنفيذ، جهز حسابًا لم ينته موعده وآخر انتهى موعده.\n4. قبل التسليم، سجل نتائج السيناريوهات المختارة والمناطق الزمنية التي لم تُغطَّ.\n5. بعد التسليم، راجع أنماط طلبات الدعم للاستفادة منها في الدفعة التالية.\n\nإذا انتظر الفريق حتى اليوم الأخير ليسأل عن المنطقة الزمنية المعتمدة، فقد يكشف الاختبار خلافًا في المتطلب بدلًا من خطأ برمجي. يحد التوضيح المبكر من هذا الخطر، لكنه لا يغني عن اختبار الخاصية بعد تشغيلها.\n\n## أخطاء شائعة في التوقيت\n\nيشجع مفهوم **Shift Left** على تقديم التغذية الراجعة مبكرًا عندما تكون مفيدة. ولا يعني نقل كل اختبار إلى بداية المشروع أو إلغاء الفحص اللاحق؛ فقد تحتاج اختبارات التكامل أو الأداء إلى مكونات تعمل في ظروف واقعية.\n\nومن الخطأ مساواة «اكتمل العمل» بعبارة «كُتب الكود». قد تشمل مقاييس الفريق مراجعة المتطلبات وتنفيذ فحوص مناسبة ومعالجة العيوب وتحديث الوثائق. يجب أن تكون هذه المقاييس متفقًا عليها وقابلة للتطبيق، لا قائمة منسوخة لا يستخدمها أحد.\n\n## جرّب: قدّم سؤالًا إلى مرحلة أبكر\n\nاكتشف الفريق أثناء الاختبار النهائي أنه لم يتفق على السلوك عند 18:00 بالضبط. اكتب مثال قبول كان سيوضح القرار قبل التنفيذ. ثم حدد فحصًا لا يزال يحتاج إلى نظام يعمل. استخدم أسئلة نهاية الوحدة لتبرير توقيت الإجراءين.\n\n## أهم ما تعلمته\n\n- تمتد أنشطة الجودة عبر دورة الحياة.\n- اختر توقيت المراجعة والاختبار بما يخدم المنتج وطريقة التسليم.\n- تختلف مبادئ Agile عن إطار Scrum.\n- يكمل التوضيح المبكر اختبار البرمجيات العاملة.\n- قدم الأدلة والمخاطر المتبقية قبل اتخاذ قرار التسليم.\n\n## ختام الوحدة\n\nربطت بين السلوك المرصود وتحسين العمليات وتوقيت التغذية الراجعة. راجع أسئلة الوحدة بهذه الأفكار الثلاث. هذا آخر درس متحقق منه في هذه الوحدة؛ ارجع إلى المنهج للانتقال إلى **أساسيات الاختبار اليدوي** عند إتاحتها.",
+      "estimated_minutes": 10,
+      "previous_key": "qa-foundations/intro-to-qa/qa-vs-qc",
+      "next_key": null,
+      "is_published": false,
+      "activities": [
+        {
+          "slug": "deadline-timing",
+          "kind": "scenario",
+          "prompt": {
+            "en": "Nobody agreed what happens exactly at18:00. What useful earlier action was missed?",
+            "ar": "لم يتفق الفريق على السلوك عند 18:00 تمامًا. ما الإجراء المبكر الذي غاب؟"
+          },
+          "options": [
+            {
+              "id": "a",
+              "text": {
+                "en": "Agree an acceptance example including inclusivity and timezone.",
+                "ar": "الاتفاق على مثال قبول يوضح شمول الموعد والمنطقة الزمنية."
+              }
+            },
+            {
+              "id": "b",
+              "text": {
+                "en": "Remove all running-system tests.",
+                "ar": "إلغاء كل اختبارات النظام العامل."
+              }
+            },
+            {
+              "id": "c",
+              "text": {
+                "en": "Assume developers will choose the same rule.",
+                "ar": "افتراض اختيار المطورين القاعدة نفسها."
+              }
+            }
+          ],
+          "answer": [
+            "a"
+          ],
+          "explanation": {
+            "en": "Clarification reduces ambiguity before coding; running-system verification still matters.",
+            "ar": "يقلل التوضيح الغموض قبل البرمجة مع استمرار أهمية التحقق بعد التشغيل."
+          },
+          "rubric": [],
+          "sort_order": 1
+        },
+        {
+          "slug": "scrum-meaning",
+          "kind": "true_false",
+          "prompt": {
+            "en": "Agile and Scrum are interchangeable names.",
+            "ar": "Agile و Scrum اسمان قابلان للتبادل."
+          },
+          "options": [
+            {
+              "id": "true",
+              "text": {
+                "en": "True",
+                "ar": "صحيح"
+              }
+            },
+            {
+              "id": "false",
+              "text": {
+                "en": "False",
+                "ar": "خطأ"
+              }
+            }
+          ],
+          "answer": [
+            "false"
+          ],
+          "explanation": {
+            "en": "Agile describes values and principles; Scrum is a framework for organizing complex product work.",
+            "ar": "تشير Agile إلى قيم ومبادئ بينما Scrum إطار لتنظيم العمل المعقد."
+          },
+          "rubric": [],
+          "sort_order": 2
+        },
+        {
+          "slug": "deadline-example",
+          "kind": "short_answer",
+          "prompt": {
+            "en": "Write an explicit acceptance example at18:00 and a check requiring running software.",
+            "ar": "اكتب مثال قبول صريحًا عند 18:00 وفحصًا يحتاج إلى نظام يعمل."
+          },
+          "options": [],
+          "answer": [],
+          "explanation": {
+            "en": "Agreement: cancellation at exactly18:00 account time is accepted; verify confirmation on the running build. Either decision works if explicitly agreed.",
+            "ar": "اتفاق: قبول الإلغاء عند 18:00 بتوقيت الحساب؛ تحقق من التأكيد على الإصدار العامل. يجوز القرار الآخر إذا اتفق عليه صراحة."
+          },
+          "rubric": [
+            {
+              "en": "States an inclusive/exclusive decision explicitly.",
+              "ar": "يحدد قرار الشمول أو الاستبعاد صراحة."
+            },
+            {
+              "en": "Names account timezone.",
+              "ar": "يحدد المنطقة الزمنية للحساب."
+            },
+            {
+              "en": "Describes an observable execution check.",
+              "ar": "يصف فحصًا تنفيذيًا قابلًا للملاحظة."
+            }
+          ],
+          "sort_order": 3
+        }
+      ]
+    },
+    {
+      "key": "qa-foundations/manual-testing-fundamentals/test-case-design",
+      "title_en": "Test Case Design & Execution",
+      "title_ar": "تصميم وتنفيذ حالات الاختبار",
+      "summary_en": "Design and execute a focused recovery test with explicit preconditions, data, steps and expected results. Separate the reusable case from build-specific execution evidence.",
+      "summary_ar": "صمم ونفذ فحص استعادة محددًا بشروط وبيانات وخطوات ونتائج واضحة، وافصل الحالة القابلة للتكرار عن دليل تنفيذها على إصدار معين.",
+      "objectives_en": [
+        "Write specific preconditions and recovery inputs.",
+        "Derive expected results from the neutral-confirmation rule.",
+        "Distinguish failed execution from blocked execution."
+      ],
+      "objectives_ar": [
+        "اكتب شروطًا ومدخلات محددة لفحص الاستعادة.",
+        "استمد المتوقع من قاعدة التأكيد المحايد.",
+        "ميّز فشل التنفيذ عن تعذر إجرائه."
+      ],
+      "content_en": "## Turn a requirement into repeatable evidence\n\nWelcome to **Manual Testing Fundamentals**. This module starts with **Test Case Design & Execution**. You do not need a special tool to write a useful test case: you need a clear purpose, controlled starting conditions, suitable inputs and a result you can judge. A test case describes a particular check so that execution produces evidence related to a test objective.\n\n## Separate design from execution\n\nDesign identifies what to check and why. Execution performs the check on a particular build and records what happened. Keep the expected result independent of the current implementation; copying what a faulty screen does into the expected result makes a broken feature appear correct.\n\nA useful case includes an identifier and purpose, a requirement reference, preconditions, test data, numbered actions and observable expected results. An execution record adds the environment, build, time, actual result, pass/fail or blocked status and supporting evidence. Formats vary across teams; the point is to remove uncertainty, not to maximize paperwork.\n\n## Worked case: password recovery\n\nThe simulated membership portal has this agreed rule: an active account may request a recovery message; the UI must show the same neutral confirmation for registered and unregistered addresses. No real email is sent in this exercise.\n\n**Case REC-01 — request recovery for an active account**\n\n- Requirement: REC-R1, neutral confirmation after a syntactically valid recovery request.\n- Preconditions: build R12; signed out; simulated account `member@example.test` is active; reset the lab first.\n- Data: email `member@example.test`.\n- Step 1: open the recovery panel from the sign-in screen. Expect a labeled email field and submit control.\n- Step 2: enter the address and submit once. Expect “If an account exists, recovery instructions will be sent.”\n- Step 3: inspect the visible result. Expect no account-existence disclosure and no real email or navigation to an external service.\n\nAn execution might record: “R12, desktop browser, 10:15; expected neutral confirmation, actual ‘Account exists: member@example.test’; failed; screenshot rec01.png.” That result contradicts the rule even if the user can continue. Link a defect report to this execution rather than rewriting the original expected result.\n\n## Keep the case focused\n\nTest a nonexistent but valid address in a separate case so its result is independently interpretable. A malformed address, network failure and repeated submissions are different conditions. They may deserve their own cases depending on the risk. Combining all of them into one long script makes it hard to tell which expectation failed and which later steps were affected.\n\nPreconditions must be achievable. “User exists” is weaker than naming the simulated account and its active status. Steps such as “test recovery thoroughly” do not describe an action. An expected result such as “works correctly” cannot guide a pass/fail decision.\n\n## Execution judgement\n\nMark a case blocked when an unmet dependency prevents meaningful execution, for example the recovery panel cannot be opened because the lab service is unavailable. Do not mark it passed merely because no failure was seen. If a result differs because the requirement changed, confirm the change and update the case through the team's review process; do not conceal the discrepancy.\n\n## Try it: write the companion case\n\nCreate REC-02 for `new.person@example.test`, which is not registered. Include a starting state, data, actions and the exact expected message. Explain why the expected UI confirmation should match REC-01. Submit the structured practice below for human review; it is not automatically marked correct.\n\n## Key takeaways\n\n- Derive an expected result from an agreed rule.\n- Make starting conditions and data specific.\n- Keep execution evidence separate from the reusable design.\n- Use blocked status when the check cannot be meaningfully performed.\n- Split independently useful conditions into focused cases.\n\n## Next connection\n\nIn **Equivalence Partitioning & Boundary Value Analysis**, you will choose input examples systematically instead of writing a separate case for every possible value.",
+      "content_ar": "## حوّل المتطلب إلى فحص قابل للتكرار\n\nمرحبًا بك في **أساسيات الاختبار اليدوي**. تبدأ الوحدة بدرس **تصميم وتنفيذ حالات الاختبار**. لا تحتاج إلى أداة خاصة لكتابة حالة مفيدة؛ تحتاج إلى هدف واضح، وبداية مضبوطة، ومدخلات مناسبة، ونتيجة تستطيع الحكم عليها. تصف حالة الاختبار فحصًا محددًا ينتج عنه دليل مرتبط بهدف الاختبار.\n\n## افصل التصميم عن التنفيذ\n\nيحدد التصميم ما الذي سنفحصه ولماذا، بينما ينفذ المختبِر الحالة على إصدار معين ويسجل ما حدث. استمد النتيجة المتوقعة من قاعدة معتمدة، لا من السلوك الحالي للشاشة؛ فنسخ سلوك خاطئ إلى خانة المتوقع يجعل الخاصية المعيبة تبدو ناجحة.\n\nتتضمن الحالة المفيدة معرفًا وهدفًا ومرجعًا للمتطلب وشروطًا مسبقة وبيانات وخطوات ونتائج قابلة للملاحظة. ويضيف سجل التنفيذ البيئة ورقم الإصدار والوقت والنتيجة الفعلية والحالة والدليل. قد تختلف النماذج بين الفرق، لكن الغرض واحد: تقليل الغموض بما يخدم الفحص.\n\n## مثال مكتمل: استعادة كلمة المرور\n\nتنص قاعدة بوابة عضوية محاكية على إتاحة طلب الاستعادة، مع عرض رسالة محايدة واحدة للبريد المسجل وغير المسجل. لا ترسل المحاكاة أي بريد حقيقي.\n\n**الحالة REC-01 — طلب الاستعادة لحساب نشط**\n\n- المرجع: REC-R1؛ تأكيد محايد بعد طلب استعادة ذي صيغة بريد صحيحة.\n- الشروط المسبقة: الإصدار R12، المستخدم خارج الحساب، والحساب الافتراضي `member@example.test` نشط، مع إعادة ضبط المعمل.\n- البيانات: عنوان البريد `member@example.test`.\n- الخطوة 1: افتح لوحة الاستعادة من شاشة الدخول. المتوقع ظهور حقل بريد ذي تسمية وزر إرسال.\n- الخطوة 2: أدخل العنوان واضغط إرسال مرة واحدة. المتوقع: «إذا كان الحساب موجودًا، فستُرسل تعليمات الاستعادة».\n- الخطوة 3: افحص النتيجة الظاهرة. المتوقع عدم كشف وجود الحساب وعدم إرسال بريد حقيقي أو الانتقال لخدمة خارجية.\n\nقد يسجل التنفيذ: «R12، متصفح سطح مكتب، الساعة 10:15؛ المتوقع تأكيد محايد، والفعلي رسالة تفصح عن وجود الحساب؛ فشل، مع لقطة rec01.png». النتيجة تخالف القاعدة حتى لو استطاع المستخدم متابعة العمل. اربط بلاغ العيب بهذا التنفيذ، ولا تغير المتوقع لمجرد موافقة ما فعلته الشاشة.\n\n## اجعل لكل حالة غرضًا واضحًا\n\nافحص عنوانًا صحيح الصيغة وغير مسجل في حالة مستقلة حتى يمكن تفسير نتيجته وحدها. أما الصيغة غير الصحيحة أو انقطاع الشبكة أو تكرار الإرسال فهي ظروف مختلفة، وقد تحتاج إلى حالات أخرى وفق الخطر. دمجها كلها في سيناريو طويل يجعل تحديد موضع الفشل وتأثيره على بقية الخطوات أصعب.\n\nيجب أن تكون الشروط قابلة للتحقيق. «يوجد مستخدم» أضعف من تحديد حساب افتراضي نشط معروف. و«اختبر الاستعادة جيدًا» ليست خطوة تنفيذية، مثلما أن «يعمل بصورة صحيحة» ليست نتيجة متوقعة دقيقة.\n\n## الحكم أثناء التنفيذ\n\nاستخدم حالة «متعذر التنفيذ» عندما يمنع اعتماد غير متاح إجراء الفحص بصورة ذات معنى، مثل تعطل خدمة المعمل قبل فتح لوحة الاستعادة. عدم رؤية فشل هنا لا يعني النجاح. وإذا تغير المتطلب، أكد التغيير وحدث الحالة عبر مراجعة الفريق، مع إبقاء السجل واضحًا.\n\n## جرّب: اكتب الحالة المكملة\n\nصمم REC-02 للعنوان `new.person@example.test` غير المسجل. حدد البداية والبيانات والخطوات ونص التأكيد المتوقع. وضح سبب تطابق رسالة الواجهة مع REC-01. أرسل الحل في نشاط الممارسة للمراجعة البشرية؛ لن يحصل النص المفتوح على حكم آلي تخميني.\n\n## أهم ما تعلمته\n\n- استمد المتوقع من قاعدة متفق عليها.\n- حدد حالة البداية وبيانات الاختبار بدقة.\n- افصل سجل التنفيذ عن التصميم القابل لإعادة الاستخدام.\n- استخدم «متعذر التنفيذ» إذا لم يكن إجراء الفحص ممكنًا.\n- افصل الظروف التي تحتاج إلى نتائج مستقلة.\n\n## صلة الدرس التالي\n\nفي **تقسيم التكافؤ وتحليل القيم الحدية** ستختار أمثلة المدخلات بأسلوب منظم، بدلًا من كتابة حالة لكل قيمة ممكنة.",
+      "estimated_minutes": 10,
+      "previous_key": null,
+      "next_key": "qa-foundations/manual-testing-fundamentals/bva-and-ep",
+      "is_published": false,
+      "activities": [
+        {
+          "slug": "recovery-expectation",
+          "kind": "scenario",
+          "prompt": {
+            "en": "For a valid unregistered address, what confirmation follows REC-R1?",
+            "ar": "ما التأكيد المتوقع لعنوان صحيح الصيغة وغير مسجل وفق REC-R1 ؟"
+          },
+          "options": [
+            {
+              "id": "a",
+              "text": {
+                "en": "The same neutral message used for registered addresses.",
+                "ar": "الرسالة المحايدة نفسها للعناوين المسجلة."
+              }
+            },
+            {
+              "id": "b",
+              "text": {
+                "en": "Account not found; please register.",
+                "ar": "الحساب غير موجود؛ سجل أولًا."
+              }
+            },
+            {
+              "id": "c",
+              "text": {
+                "en": "Whatever the current build shows.",
+                "ar": "أي رسالة يعرضها الإصدار الحالي."
+              }
+            }
+          ],
+          "answer": [
+            "a"
+          ],
+          "explanation": {
+            "en": "The rule avoids disclosing account existence. Expected behavior comes from the requirement, not the current screen.",
+            "ar": "تمنع القاعدة كشف وجود الحساب. نستمد المتوقع من المتطلب وليس الشاشة الحالية."
+          },
+          "rubric": [],
+          "sort_order": 1
+        },
+        {
+          "slug": "blocked-execution",
+          "kind": "single_choice",
+          "prompt": {
+            "en": "The lab is unavailable before you can open recovery. Record the check as:",
+            "ar": "المعمل غير متاح قبل فتح الاستعادة. تسجل الفحص بوصفه:"
+          },
+          "options": [
+            {
+              "id": "a",
+              "text": {
+                "en": "Blocked, documenting the dependency.",
+                "ar": "متعذر التنفيذ مع توثيق الاعتماد."
+              }
+            },
+            {
+              "id": "b",
+              "text": {
+                "en": "Passed because no defect was seen.",
+                "ar": "ناجح لعدم ملاحظة عيب."
+              }
+            },
+            {
+              "id": "c",
+              "text": {
+                "en": "Deleted because it cannot pass.",
+                "ar": "محذوف لأنه لا ينجح."
+              }
+            }
+          ],
+          "answer": [
+            "a"
+          ],
+          "explanation": {
+            "en": "The check could not be meaningfully performed. Preserve the case and the reason for blocked execution.",
+            "ar": "لم يكن إجراء الفحص ممكنًا بصورة مفيدة. احفظ الحالة وسبب تعذر التنفيذ."
+          },
+          "rubric": [],
+          "sort_order": 2
+        },
+        {
+          "slug": "recovery-case",
+          "kind": "short_answer",
+          "prompt": {
+            "en": "Write REC-02 for unregistered new.person@example.test with preconditions, steps and exact neutral confirmation.",
+            "ar": "اكتب REC-02 للعنوان غير المسجل new.person@example.test مع الشروط والخطوات والتأكيد المحايد."
+          },
+          "options": [],
+          "answer": [],
+          "explanation": {
+            "en": "Reset R12; open recovery while signed out; submit the address once; expect “If an account exists, recovery instructions will be sent.”",
+            "ar": "أعد ضبط R12 وافتح الاستعادة دون دخول وأرسل العنوان مرة؛ المتوقع «إذا كان الحساب موجودًا، فستُرسل تعليمات الاستعادة»."
+          },
+          "rubric": [
+            {
+              "en": "Uses reset signed-out state and synthetic unregistered data.",
+              "ar": "يستخدم حالة خروج بعد الضبط وبيانات اصطناعية غير مسجلة."
+            },
+            {
+              "en": "Provides ordered actions and observable outcomes.",
+              "ar": "يقدم خطوات مرتبة ونتائج قابلة للملاحظة."
+            },
+            {
+              "en": "Does not disclose account existence.",
+              "ar": "لا يكشف وجود الحساب."
+            }
+          ],
+          "sort_order": 3
+        }
+      ]
+    },
+    {
+      "key": "qa-foundations/manual-testing-fundamentals/bva-and-ep",
+      "title_en": "Equivalence Partitioning & Boundary Value Analysis",
+      "title_ar": "تقسيم التكافؤ وتحليل القيم الحدية",
+      "summary_en": "Model input partitions and test values near inclusive integer boundaries. Practice selecting age data while recognizing the limits of representative and boundary checks.",
+      "summary_ar": "نمذج فئات المدخلات واختبر حدود مجال صحيح شامل الطرفين. تدرب على اختيار بيانات العمر مع إدراك حدود الفحوص الممثلة والحدية.",
+      "objectives_en": [
+        "Partition an integer domain by expected handling.",
+        "Select a three-value boundary set for an inclusive range.",
+        "State expected outcomes with other conditions controlled."
+      ],
+      "objectives_ar": [
+        "قسّم مجال الأعداد الصحيحة وفق المعالجة المتوقعة.",
+        "اختر حدودًا بأسلوب الثلاث قيم لمجال شامل الطرفين.",
+        "حدد النتائج المتوقعة مع ضبط الشروط الأخرى."
+      ],
+      "content_en": "## Select data deliberately\n\nIn **Test Case Design & Execution**, you made inputs and expected outcomes explicit. **Equivalence Partitioning & Boundary Value Analysis** helps you decide which values to use. These are specification-based techniques: select data from the rules without depending on the internal implementation.\n\n## Equivalence partitions are a model\n\nEquivalence partitioning groups values expected to be handled similarly for the purpose of a particular condition. Testing one representative from a partition provides evidence about that representative; the grouping is a reasoned assumption, not proof that every value behaves identically. An implementation can violate your model, so revise it when new evidence appears.\n\nConsider a simulated wholesale order quantity. The rule accepts **whole numbers from 10 through 50 inclusive**. For the numeric range condition, useful partitions are integers below 10, integers 10–50, and integers above 50. Representatives might be 6, 25 and 60. Missing input, decimals and nonnumeric text need separate handling because they are not members of those integer partitions.\n\n## Boundaries deserve targeted checks\n\nBoundary value analysis selects values on and near partition boundaries where adjacent values change expected classification. For a three-value approach around each boundary in this integer example, use 9, 10, 11 and 49, 50, 51.\n\n| Quantity | Expected range decision |\n| --- | --- |\n| 9 | Reject: below minimum |\n| 10 and 11 | Accept |\n| 49 and 50 | Accept |\n| 51 | Reject: above maximum |\n\nFor each accepted value, also check that the confirmation preserves the selected quantity. For a rejected value, the order must not be confirmed and a helpful validation message should appear. A numeric field's HTML minimum is not sufficient evidence that the complete application enforces the rule.\n\nDifferent boundary approaches use different numbers of values. State which approach you selected and why. This example uses whole numbers, so “immediately below 10” is 9. For a currency field the nearest allowed step could be 0.01; for a date it may be a day or a second. Determine the input domain and allowed precision before choosing neighbors.\n\n## Work example: catch an off-by-one defect\n\nStart the simulated order with stock fixed at 100 and no other restrictions. Reset between checks so stock changes do not confuse the range rule. Enter 10 and submit. If the UI rejects it with “minimum 10,” record expected acceptance versus actual rejection. Repeat with 11. Acceptance at 11 alongside rejection at 10 suggests a boundary problem, but do not state a code-level cause without investigation.\n\nA case for 50 guards the inclusive upper bound. Choosing only 25 would miss defects at either edge. Choosing every integer from 10 to 50 spends more effort yet still omits malformed input and other relevant conditions.\n\n## Misconceptions to avoid\n\nBoundaries are not a guarantee of where most defects occur in every system. They are a useful way to target plausible comparison errors. Equivalence partitioning also does not mean one valid value is enough for every feature: multiple rules, interactions and risks may require more checks.\n\nThis lesson combines two related techniques because that is the verified repository lesson scope. Keep their purposes clear: partitions organize the domain; boundary analysis concentrates examples around transitions.\n\n## Try it: build a small data set\n\nFor a different rule accepting integer ages 18–65 inclusive, list the three numeric partitions and a three-value boundary set. State the expected result for 17, 18 and 66, and add one noninteger condition. Explain the set in the structured exercise below.\n\n## Key takeaways\n\n- Define the domain, precision and inclusivity before choosing data.\n- Partition by expected handling for a particular rule.\n- Check both ends of an inclusive interval.\n- Keep other conditions stable while examining a boundary.\n- Passing representatives do not prove every member is correct.\n\n## Next connection\n\n**Exploratory Testing Techniques** uses what you observe to choose further investigations, including conditions your initial data model did not anticipate.",
+      "content_ar": "## اختر بياناتك لسبب واضح\n\nفي **تصميم وتنفيذ حالات الاختبار** حددت المدخلات والنتائج المتوقعة. يساعدك درس **تقسيم التكافؤ وتحليل القيم الحدية** على اختيار القيم التي ستستخدمها. تنطلق التقنيتان من المواصفات وقواعد العمل، دون الحاجة إلى معرفة تفاصيل الكود الداخلي.\n\n## فئات التكافؤ نموذج نفترضه ونختبره\n\nيجمع تقسيم التكافؤ **EP** القيم التي نتوقع أن يعالجها النظام بطريقة متشابهة بالنسبة إلى شرط معين. تمثل نتيجة اختبار قيمة واحدة دليلًا عن هذه القيمة، وليست إثباتًا بأن جميع عناصر الفئة سليمة. قد يكشف التنفيذ عن سلوك يخالف افتراض التجميع، وعندها نعيد النظر في النموذج.\n\nلنفترض أن متجر جملة محاكى يقبل كمية طلب من **10 إلى 50 عددًا صحيحًا، شاملًا الطرفين**. يمكن تقسيم الأعداد الصحيحة إلى ثلاث فئات: أقل من 10، ومن 10 إلى 50، وأكبر من 50. ومن القيم الممثلة 6 و25 و60. أما ترك الحقل فارغًا أو إدخال كسر أو نص فله معالجة مستقلة؛ فهذه المدخلات لا تنتمي إلى فئات الأعداد الصحيحة المذكورة.\n\n## ركز على الانتقال بين الفئات\n\nيختار تحليل القيم الحدية **BVA** قيمًا عند الحدود وبجوارها، حيث تتغير النتيجة المتوقعة من القبول إلى الرفض أو العكس. في أسلوب الثلاث قيم حول كل حد، نختار لهذا المثال: 9 و10 و11، ثم 49 و50 و51.\n\n| الكمية | القرار المتوقع |\n| --- | --- |\n| 9 | رفض لأنها أقل من الحد الأدنى |\n| 10 و11 | قبول |\n| 49 و50 | قبول |\n| 51 | رفض لأنها أكبر من الحد الأقصى |\n\nتحقق عند القبول من بقاء الكمية نفسها في التأكيد، وعند الرفض من عدم تأكيد الطلب وظهور رسالة مفيدة. ضبط حد أدنى في حقل HTML وحده لا يثبت أن التطبيق كله يطبق القاعدة.\n\nتختلف أساليب اختبار الحدود في عدد القيم المختارة؛ وضح الأسلوب الذي تستخدمه وسببه. لأن المجال هنا أعداد صحيحة، فالقيمة السابقة مباشرة لـ10 هي 9. لكن أقرب خطوة مسموحة قد تكون 0.01 في مبلغ مالي، أو يومًا أو ثانية في موعد. حدد المجال والدقة المسموحة قبل اختيار الجيران.\n\n## مثال مهني: خطأ عند الطرف المسموح\n\nابدأ بطلب محاكى مع مخزون ثابت يساوي 100 ودون قيود أخرى. أعد ضبط الحالة بين الفحوص حتى لا يختلط أثر نقص المخزون بقاعدة المجال. أدخل 10 وأرسل الطلب. إذا رفضت الواجهة القيمة برسالة «الحد الأدنى 10»، فسجل أن المتوقع القبول وأن الفعلي الرفض. أعد الفحص بالقيمة 11.\n\nقبول 11 مع رفض 10 يوجه التحقيق إلى الحد، لكنه لا يثبت وحده سببًا في الكود. واختبار 50 يحمي شمول الطرف الأعلى. الاقتصار على 25 قد يفوّت عيوب الطرفين، بينما تجربة كل عدد من 10 إلى 50 لا تغطي النصوص والكسور ولا جميع الشروط الأخرى.\n\n## تصورات تحتاج إلى تصحيح\n\nلا يعني استخدام القيم الحدية أن معظم عيوب كل نظام تقع عند الحدود. هي طريقة مفيدة لاستهداف أخطاء المقارنة المحتملة. ولا يعني تقسيم التكافؤ أن قيمة صالحة واحدة تكفي لكل خاصية؛ فقد تستدعي القواعد المتعددة والتفاعلات والمخاطر فحوصًا إضافية.\n\nيجمع نطاق هذا الدرس المتحقق منه التقنيتين معًا، مع بقاء الغرض من كل منهما واضحًا: تقسيم المجال بحسب المعالجة، ثم تركيز أمثلة حول الانتقالات.\n\n## جرّب: صمم مجموعة صغيرة\n\nلقاعدة أخرى تقبل أعمارًا صحيحة من 18 إلى 65 شاملًا الطرفين، حدد الفئات العددية الثلاث ومجموعة الحدود بأسلوب الثلاث قيم. اذكر المتوقع للأعمار 17 و18 و66، وأضف حالة لمدخل غير صحيح عدديًا مثل 18.5. اشرح منطقك في نشاط الممارسة.\n\n## أهم ما تعلمته\n\n- حدد المجال والدقة وشمول الأطراف قبل اختيار البيانات.\n- قسم القيم بحسب المعالجة المتوقعة لقاعدة معينة.\n- افحص طرفي المجال المشمول.\n- ثبت الشروط الأخرى أثناء فحص الحد.\n- نجاح القيم الممثلة لا يثبت سلامة كل عناصر الفئة.\n\n## صلة الدرس التالي\n\nفي **تقنيات الاختبار الاستكشافي** ستستفيد من الملاحظات لاختيار تحقيقات جديدة، بما فيها ظروف لم يتوقعها نموذج البيانات الأول.",
+      "estimated_minutes": 12,
+      "previous_key": "qa-foundations/manual-testing-fundamentals/test-case-design",
+      "next_key": "qa-foundations/manual-testing-fundamentals/exploratory-testing",
+      "is_published": false,
+      "activities": [
+        {
+          "slug": "quantity-boundary",
+          "kind": "multi_select",
+          "prompt": {
+            "en": "Quantity accepts integers10–50 inclusive. Which values must be rejected?",
+            "ar": "تقبل الكمية أعدادًا صحيحة 10–50 شاملًا الطرفين. أي القيم تُرفض؟"
+          },
+          "options": [
+            {
+              "id": "a",
+              "text": {
+                "en": "9",
+                "ar": "القيمة 9"
+              }
+            },
+            {
+              "id": "b",
+              "text": {
+                "en": "10",
+                "ar": "القيمة 10"
+              }
+            },
+            {
+              "id": "c",
+              "text": {
+                "en": "50",
+                "ar": "القيمة 50"
+              }
+            },
+            {
+              "id": "d",
+              "text": {
+                "en": "51",
+                "ar": "القيمة 51"
+              }
+            }
+          ],
+          "answer": [
+            "a",
+            "d"
+          ],
+          "explanation": {
+            "en": "9 is below minimum and51 above maximum. The endpoints10 and50 are accepted.",
+            "ar": "9 أقل من الأدنى و 51 أعلى من الأقصى، بينما يُقبل الطرفان 10 و 50."
+          },
+          "rubric": [],
+          "sort_order": 1
+        },
+        {
+          "slug": "boundary-domain",
+          "kind": "single_choice",
+          "prompt": {
+            "en": "Why is9 the immediate lower neighbor of10 here?",
+            "ar": "لماذا 9 هي القيمة السابقة مباشرة لـ 10 هنا؟"
+          },
+          "options": [
+            {
+              "id": "a",
+              "text": {
+                "en": "The domain uses whole numbers.",
+                "ar": "لأن المجال أعداد صحيحة."
+              }
+            },
+            {
+              "id": "b",
+              "text": {
+                "en": "All system inputs have a step of one.",
+                "ar": "لأن كل المدخلات تزيد بمقدارواحد."
+              }
+            },
+            {
+              "id": "c",
+              "text": {
+                "en": "The programming language requires this.",
+                "ar": "لأن لغة البرمجة تفرضه."
+              }
+            }
+          ],
+          "answer": [
+            "a"
+          ],
+          "explanation": {
+            "en": "The input domain determines adjacency; currency and time may use other precision.",
+            "ar": "يحدد مجال المدخلات التجاور؛ وقد تختلف دقة المبالغ والمواعيد."
+          },
+          "rubric": [],
+          "sort_order": 2
+        },
+        {
+          "slug": "age-data",
+          "kind": "short_answer",
+          "prompt": {
+            "en": "For integer ages18–65 give partitions, three-value boundaries, outcomes for17/18/66 and a noninteger check.",
+            "ar": "للأعمار الصحيحة 18–65 حدد الفئات والحدود والمتوقع لـ 17 و 18 و 66 وفحصًا لغير الصحيح."
+          },
+          "options": [],
+          "answer": [],
+          "explanation": {
+            "en": "Partitions <18,18–65,>65; boundaries17/18/19/64/65/66. Reject17,66 and18.5; accept18.",
+            "ar": "الفئات أقل من 18 ، ومن 18 إلى 65 ، وأكبر من 65 ؛ الحدود 17 و 18 و 19 و 64 و 65 و 66. يُرفض 17 و 66 و 18.5 ويُقبل 18."
+          },
+          "rubric": [
+            {
+              "en": "Defines below, in-range and above integer partitions.",
+              "ar": "يحدد فئات الصحيح الأقل وداخل المجال والأعلى."
+            },
+            {
+              "en": "Includes17,18,19,64,65,66 with consistent results.",
+              "ar": "يتضمن 17 و 18 و 19 و 64 و 65 و 66 بنتائج متسقة."
+            },
+            {
+              "en": "Includes decimal/missing/text outside integer partitions.",
+              "ar": "يضيف كسرًا أو فراغًا أو نصًا خارج فئات الصحيح."
+            }
+          ],
+          "sort_order": 3
+        }
+      ]
+    },
+    {
+      "key": "qa-foundations/manual-testing-fundamentals/exploratory-testing",
+      "title_en": "Exploratory Testing Techniques",
+      "title_ar": "تقنيات الاختبار الاستكشافي",
+      "summary_en": "Plan a focused exploratory session with a charter, timebox and reproducible notes. Adapt the next test to observed cart behavior and distinguish observations from hypotheses.",
+      "summary_ar": "خطط لاستكشاف ذي غرض وزمن وملاحظات قابلة للتكرار. كيف الفحص التالي وفق سلوك السلة، وميز الملاحظة عن فرضية السبب.",
+      "objectives_en": [
+        "Write a charter naming scope, resources and risk.",
+        "Choose a follow-up based on an observation.",
+        "Summarize examined conditions and open questions."
+      ],
+      "objectives_ar": [
+        "اكتب ميثاقًا يحدد النطاق والموارد والخطر.",
+        "اختر فحص متابعة بناء على ملاحظة.",
+        "لخص الظروف المفحوصة والأسئلة المتبقية."
+      ],
+      "content_en": "## Let observation guide the next test\n\nIn **Equivalence Partitioning & Boundary Value Analysis**, you selected data using a specification-based model. **Exploratory Testing Techniques** adds a complementary approach: learning about a product, designing checks and executing them inform one another during the work. You still use expectations and evidence. What changes is that an observation can immediately influence your next investigation.\n\n## A charter gives the session a purpose\n\nA charter states what to explore, with what resources, and what kind of risk you want to investigate. A timebox limits the session so you can reflect and share findings. Neither replaces professional judgement. A useful charter is “Explore cart persistence across refresh and sign-in, using two simulated accounts, to discover lost or mixed items.” “Click around the shop” gives no comparable focus.\n\nPrepare a stable build, known data and a way to capture observations. Keep notes of actions, inputs, findings, questions and coverage. When something surprising happens, distinguish an observation from a hypothesis. “Cart lost two units after refresh” is an observation; “the database write failed” is an unproven explanation until investigated.\n\n## Worked session: saved carts\n\nUse a simulated shop where cart quantities must persist across refresh for the same signed-in account. Accounts A and B must never see each other's carts. Begin with both carts empty on build S8.\n\n- Minute 0–3: sign in as A, add one notebook, set quantity to 2 and refresh. Compare the cart with the persistence rule.\n- Minute 3–6: if quantity becomes 1, repeat from reset with quantity 3. Record whether the issue depends on changing quantity rather than adding an item.\n- Minute 6–9: sign out and sign in as B. Inspect for any carryover, then return to A.\n- Minute 9–12: organize notes and identify untested conditions, such as two browser tabs or session expiry.\n\nSuppose adding one item survives refresh but changing its quantity does not. That observation guides a focused follow-up, not an unplanned switch to unrelated search colors. Save a minimal reproduction so a colleague can confirm the finding.\n\n## Debrief and reusable evidence\n\nAfter the timebox, report the charter, build, data, areas covered, findings and open questions. For a useful discovered scenario, create a focused regression case using the structure from the first lesson. Exploration and scripted cases can support one another: one discovers a condition and the other makes repeated checking easier.\n\nA debrief can lead to another charter, such as exploring simultaneous tabs, when the risk warrants it. It can also end the investigation when evidence is adequate for the current decision. Exploration is not an excuse for an endless session or unrecorded activity.\n\n## Common misconceptions\n\nExploratory testing is not the same as random input or testing without preparation. Its value depends on informed choices, notes and interpretation. It is also not reserved for experts: beginners can use a narrow charter, clear rules and frequent reflection. Experience helps generate richer hypotheses, but disciplined observation can be practiced immediately.\n\nDo not infer a coverage percentage from elapsed time. Twelve minutes of work does not mean 100% cart coverage. Describe the conditions actually examined and the risks still open.\n\n## Try it: plan your own session\n\nWrite a ten-minute charter for exploring recovery confirmation after navigating away and back. Name the simulated data, the rule you will use as an oracle, two starting checks and one observation that would change your next check. Submit the plan for review, then run it only in the controlled lab.\n\n## Key takeaways\n\n- Combine learning, design and execution deliberately.\n- Use a charter and timebox to focus effort.\n- Keep observations separate from explanations of their causes.\n- Record enough context for reproduction and debrief.\n- Convert valuable discoveries into reusable checks when useful.\n\n## Module wrap-up\n\nYou can now write a repeatable case, select useful data and adapt investigations to evidence. Complete the module assessment. The next verified module is **Bug Reporting & Defect Management**, where your observations become clear reports that support decisions.",
+      "content_ar": "## دع الملاحظة توجه فحصك التالي\n\nفي **تقسيم التكافؤ وتحليل القيم الحدية** اخترت البيانات انطلاقًا من نموذج مستمد من المواصفات. تضيف **تقنيات الاختبار الاستكشافي** أسلوبًا مكملًا: تتبادل عملية تعلم المنتج وتصميم الاختبار وتنفيذه التأثير أثناء العمل. ما زلت تحتاج إلى توقعات وأدلة، لكن ملاحظة جديدة قد تغير الفحص التالي مباشرة.\n\n## ميثاق قصير يحدد الغرض\n\nيصف ميثاق الاستكشاف ما ستستكشفه والموارد التي ستستخدمها والخطر الذي تريد التحقيق فيه. ويحدد الإطار الزمني متى تتوقف لتلخيص ما تعلمته. مثال مفيد: «استكشاف بقاء السلة بعد التحديث وتبديل الحساب، باستخدام حسابين محاكيين، بحثًا عن فقد العناصر أو اختلاطها». أما «النقر في المتجر» فلا يحدد غرضًا مماثلًا.\n\nجهز إصدارًا ثابتًا وبيانات معروفة ووسيلة لتسجيل الملاحظات. دون الإجراءات والمدخلات والنتائج والأسئلة والنطاق الذي فحصته. وعند ظهور أمر مفاجئ، افصل الملاحظة عن الفرضية: «نقصت وحدتان بعد التحديث» ملاحظة، بينما «فشلت الكتابة في قاعدة البيانات» تفسير لم نثبته بعد.\n\n## جلسة عملية: حفظ السلة\n\nتنص قاعدة متجر محاكى على حفظ كمية السلة بعد تحديث الصفحة للحساب نفسه، وعدم ظهور سلة الحساب A للحساب B. ابدأ بسلتين فارغتين على الإصدار S8.\n\n- الدقائق 0–3: ادخل بالحساب A، وأضف دفترًا، وغير الكمية إلى 2، ثم حدث الصفحة وقارن بالقاعدة.\n- الدقائق 3–6: إذا أصبحت الكمية 1، أعد الضبط وجرب الكمية 3 لمعرفة هل يرتبط الفشل بتغيير الكمية أم بإضافة العنصر.\n- الدقائق 6–9: اخرج وادخل بالحساب B، وافحص انتقال العناصر، ثم عد إلى A.\n- الدقائق 9–12: نظم الملاحظات وحدد ظروفًا لم تُفحص، مثل فتح تبويبين أو انتهاء الجلسة.\n\nإذا بقي العنصر الواحد بعد التحديث بينما لم يبق تعديل كميته، فهذه ملاحظة تدعم فحصًا مركزًا. لا تتركها للانتقال إلى ألوان نتائج البحث دون سبب. سجل أقل خطوات لازمة لإعادة الفشل كي يستطيع زميل تأكيده.\n\n## استفد من الجلسة بعد انتهائها\n\nشارك الميثاق والإصدار والبيانات والنطاق والنتائج والأسئلة المفتوحة. ويمكن تحويل سيناريو مفيد اكتشفته إلى حالة اختبار مركزة بالصيغة التي تعلمتها في بداية الوحدة. بذلك يكمل الاستكشاف والحالات المكتوبة بعضهما: الأول يساعد على اكتشاف الظروف، والثاني يسهل إعادة فحصها.\n\nقد تنتج جلسة المراجعة ميثاقًا جديدًا عن التبويبات المتزامنة إذا برر الخطر ذلك، وقد تنهي التحقيق عندما تكفي الأدلة للقرار الحالي. الاستكشاف ليس مبررًا لجلسة بلا نهاية أو نشاط لا يترك أثرًا قابلًا للمراجعة.\n\n## تصورات شائعة\n\nالاختبار الاستكشافي ليس إدخالًا عشوائيًا، ولا اختبارًا بلا استعداد. تعتمد قيمته على اختيارات واعية وملاحظات وتفسير للأدلة. وليس حكرًا على الخبير؛ يمكن للمبتدئ البدء بميثاق ضيق وقواعد واضحة ومراجعة متكررة. تضيف الخبرة فرضيات أغنى، لكن مهارة الملاحظة المنضبطة قابلة للتدريب من اليوم الأول.\n\nلا تحول زمن الجلسة إلى نسبة تغطية. مرور اثنتي عشرة دقيقة لا يعني تغطية السلة بالكامل. اذكر الظروف التي اختبرتها فعلًا والمخاطر التي بقيت دون فحص.\n\n## جرّب: خطط لجلسة\n\nاكتب ميثاقًا لعشر دقائق يستكشف تأكيد استعادة كلمة المرور بعد مغادرة الصفحة والعودة إليها. حدد البيانات المحاكية والقاعدة المرجعية وفحصين للبدء وملاحظة قد تغير فحصك التالي. أرسل الخطة للمراجعة، ثم نفذها في المعمل المحكوم فقط.\n\n## أهم ما تعلمته\n\n- اجمع التعلم والتصميم والتنفيذ بصورة مقصودة.\n- استخدم ميثاقًا ووقتًا محددًا لتركيز الجهد.\n- افصل الملاحظة عن تفسير سببها.\n- سجل السياق اللازم للتكرار والمراجعة.\n- حوّل الاكتشافات المفيدة إلى فحوص قابلة لإعادة الاستخدام عند الحاجة.\n\n## ختام الوحدة\n\nأصبحت قادرًا على كتابة حالة قابلة للتكرار واختيار بيانات مفيدة وتكييف التحقيق وفق الأدلة. أكمل تقييم الوحدة، ثم انتقل إلى **كتابة البلاغات وإدارة العيوب**، وهي الوحدة التالية المتحقق منها، لتتعلم تحويل الملاحظات إلى تقارير تدعم القرار.",
+      "estimated_minutes": 10,
+      "previous_key": "qa-foundations/manual-testing-fundamentals/bva-and-ep",
+      "next_key": null,
+      "is_published": false,
+      "activities": [
+        {
+          "slug": "cart-follow-up",
+          "kind": "scenario",
+          "prompt": {
+            "en": "One notebook persists after refresh, but changing quantity to2 does not. Choose a focused next check.",
+            "ar": "يبقى دفتر بعد التحديث لكن تغيير الكمية إلى 2 لا يبقى. اختر متابعة مركزة."
+          },
+          "options": [
+            {
+              "id": "a",
+              "text": {
+                "en": "Reset and repeat with quantity3 on the same build/account.",
+                "ar": "أعد الضبط وكرر بكمية 3 على الإصدار والحساب نفسيهما."
+              }
+            },
+            {
+              "id": "b",
+              "text": {
+                "en": "Switch silently to testing search colors.",
+                "ar": "انتقل بصمت إلى ألوان البحث."
+              }
+            },
+            {
+              "id": "c",
+              "text": {
+                "en": "Declare the database broken without investigating.",
+                "ar": "اجزم بتعطل قاعدة البيانات دون تحقيق."
+              }
+            }
+          ],
+          "answer": [
+            "a"
+          ],
+          "explanation": {
+            "en": "Varying quantity examines the observed persistence condition while controlling context. The cause is still a hypothesis.",
+            "ar": "يفحص تغيير الكمية شرط الحفظ المرصود مع ضبط السياق، ويظل السبب فرضية."
+          },
+          "rubric": [],
+          "sort_order": 1
+        },
+        {
+          "slug": "exploration-evidence",
+          "kind": "multi_select",
+          "prompt": {
+            "en": "What belongs in the debrief?",
+            "ar": "ما الذي يُضمّن في مراجعة الجلسة؟"
+          },
+          "options": [
+            {
+              "id": "a",
+              "text": {
+                "en": "Charter, build, data and observations.",
+                "ar": "الميثاق والإصدار والبيانات والملاحظات."
+              }
+            },
+            {
+              "id": "b",
+              "text": {
+                "en": "Untested conditions and questions.",
+                "ar": "الظروف غير المفحوصة والأسئلة."
+              }
+            },
+            {
+              "id": "c",
+              "text": {
+                "en": "A100%coverage guarantee because time ended.",
+                "ar": "ضمان تغطية 100%لانتهاء الوقت."
+              }
+            }
+          ],
+          "answer": [
+            "a",
+            "b"
+          ],
+          "explanation": {
+            "en": "Report actual scope and limitations. Time elapsed cannot establish coverage.",
+            "ar": "صف النطاق الفعلي وحدوده؛ الزمن المنقضي لا يثبت التغطية."
+          },
+          "rubric": [],
+          "sort_order": 2
+        },
+        {
+          "slug": "recovery-charter",
+          "kind": "short_answer",
+          "prompt": {
+            "en": "Write a ten-minute recovery-navigation charter with data, oracle, two checks and an observation-led follow-up.",
+            "ar": "اكتب ميثاقًا لعشر دقائق عن الاستعادة والتنقل مع البيانات والمرجع وفحصين ومتابعة تقودها الملاحظة."
+          },
+          "options": [],
+          "answer": [],
+          "explanation": {
+            "en": "Explore confirmation across back navigation; submit a synthetic address, navigate away/back, then investigate unexpected duplicate confirmation.",
+            "ar": "استكشف التأكيد بعد الرجوع؛ أرسل عنوانًا اصطناعيًا وغادر وعد ثم تحقق من تكرار تأكيد غير متوقع."
+          },
+          "rubric": [
+            {
+              "en": "Names narrow scope, timebox and synthetic data.",
+              "ar": "يحدد نطاقًا ضيقًا وزمنًا وبيانات اصطناعية."
+            },
+            {
+              "en": "Uses the neutral-confirmation rule and two starting checks.",
+              "ar": "يستخدم قاعدة التأكيد المحايد وفحصين للبدء."
+            },
+            {
+              "en": "Explains how an observation changes the next check.",
+              "ar": "يشرح كيف تغير الملاحظة الفحص التالي."
+            }
+          ],
+          "sort_order": 3
+        }
+      ]
+    },
+    {
+      "key": "qa-foundations/bug-reporting-and-defect-management/anatomy-of-a-bug-report",
+      "title_en": "Anatomy of an Effective Bug Report",
+      "title_ar": "مكونات بلاغ الخطأ الاحترافي",
+      "summary_en": "Write a reproducible report with safe evidence, clear expected/actual results and a focused title. Separate the cart observation from unsupported cause or payment-impact claims.",
+      "summary_ar": "اكتب بلاغًا قابلًا للتكرار بأدلة آمنة ونتائج واضحة وعنوان محدد. افصل ملاحظة السلة عن افتراضات السبب أو أثر الدفع غير المثبتة.",
+      "objectives_en": [
+        "Write numbered steps using controlled data.",
+        "Separate observations from cause hypotheses.",
+        "Choose evidence without real personal credentials."
+      ],
+      "objectives_ar": [
+        "اكتب خطوات مرقمة ببيانات مضبوطة.",
+        "افصل الملاحظات عن فرضيات السبب.",
+        "اختر دليلًا خاليًا من اعتمادات شخصية حقيقية."
+      ],
+      "content_en": "## Make an observation useful to another person\n\nWelcome to **Bug Reporting & Defect Management**. **Anatomy of an Effective Bug Report** starts with a practical goal: another person should understand the discrepancy, reproduce it when possible and assess its impact without guessing. A report is a communication artifact about an observed problem, not a verdict about who caused it.\n\n## Describe a specific discrepancy\n\nUse a concise title naming the affected feature, triggering condition and observed failure. “Cart total omits extra units after quantity changes” is more informative than “Cart broken.” Record the environment and build, prerequisites, test data, numbered reproduction steps, expected result, actual result and evidence. Add frequency and impact when known.\n\nThe expected result needs a basis such as an agreed rule. Keep cause hypotheses separate from facts. “The amount displayed is 12 rather than 36” is an observation; “the database multiplies incorrectly” is a claim requiring additional investigation. Avoid personal blame and unsupported language such as “everything is unusable.”\n\n## Worked report: a cart quantity mismatch\n\n**Title:** Cart total remains 12 units after notebook quantity increases to 3.\n\n**Environment:** simulated storefront S8, desktop browser, fresh session; no discount or shipping charge. Currency amounts are fictional units.\n\n**Preconditions and data:** cart empty; notebook N1 costs 12 units each; stock is 10.\n\n**Steps to reproduce:**\n\n1. Reset the simulated shop.\n2. Add notebook N1 once. Observe quantity 1 and subtotal 12.\n3. Change N1 quantity to 3.\n4. Inspect line subtotal and cart subtotal before checkout.\n\n**Expected:** quantity 3, line subtotal 36 and cart subtotal 36, based on unit price × quantity with no other charges.\n\n**Actual:** quantity is 3 but both subtotals remain 12.\n\n**Frequency:** reproduced in 3 of 3 reset runs on S8.\n\n**Impact:** customer sees a misleading order amount; check whether the confirmation also uses the wrong amount before claiming any financial loss.\n\n**Evidence:** a screenshot showing product, quantity and subtotal; avoid capturing personal information or real payment data.\n\nThis report is narrow enough to reproduce independently. A separate issue in search filtering should receive its own report because it has different steps and may need a different fix.\n\n## Improve reproducibility without adding noise\n\nResetting matters: a prior cart item or discount can explain a different total. If the failure is intermittent, document attempts and relevant conditions rather than promising it always occurs. A short recording can help with timing-dependent behavior, but it supplements clear steps instead of replacing them.\n\nBefore submitting, search existing reports according to the team's process. Similar symptoms may share a cause, but a similar title alone does not prove a duplicate. Link related evidence and let review establish the relationship. If a failure cannot yet be reproduced, record what you know and what remains uncertain.\n\n## Common reporting mistakes\n\nA screenshot with “see image” is rarely a complete report. Reviewers still need a starting state and expectation. Likewise, a large report containing five unrelated failures is difficult to track through independent fixes. Report the smallest coherent issue while preserving context.\n\nDo not put a real user's password, authentication token or personal record in evidence. This course uses synthetic accounts and fictional data; keep that habit when practicing in the lab.\n\n## Try it: repair a weak report\n\nRewrite “Checkout wrong, urgent, see screenshot” using the simulated N1 example. Include a title, environment, preconditions, numbered steps and expected versus actual outcomes. Explain one limitation of the evidence: the displayed subtotal alone does not prove the final charged amount in a real payment system. Submit your report for rubric-based review.\n\n## Key takeaways\n\n- Give the reader a specific, reproducible discrepancy.\n- Name the environment, starting state and data.\n- Separate facts, impact and cause hypotheses.\n- Keep unrelated issues in separate reports.\n- Use safe evidence that supports the written steps.\n\n## Next connection\n\nIn **Defect Severity vs Priority**, you will distinguish the impact of this cart failure from the urgency of fixing it in a particular business context.",
+      "content_ar": "## اجعل الملاحظة مفيدة لزميلك\n\nمرحبًا بك في **كتابة البلاغات وإدارة العيوب**. يبدأ درس **مكونات بلاغ الخطأ الاحترافي** بهدف عملي: أن يستطيع شخص آخر فهم الفرق وإعادته متى أمكن وتقدير أثره دون تخمين. البلاغ وسيلة تواصل بشأن مشكلة مرصودة، وليس حكمًا على الشخص الذي تسبب فيها.\n\n## صف فرقًا محددًا\n\nاكتب عنوانًا يوضح الخاصية والظرف المحفز والفشل الظاهر. «إجمالي السلة لا يحتسب الوحدات الإضافية بعد تعديل الكمية» أدق من «السلة معطلة». سجل البيئة والإصدار والشروط المسبقة والبيانات وخطوات التكرار والنتيجة المتوقعة والفعلية والدليل. وأضف التكرار والأثر عندما تتوفر معلومات عنهما.\n\nيجب أن يستند المتوقع إلى قاعدة متفق عليها. وافصل فرضية السبب عن الحقيقة: «ظهر المبلغ 12 بدلًا من 36» ملاحظة، بينما «قاعدة البيانات تضرب الأعداد خطأ» ادعاء يحتاج إلى تحقيق. تجنب اللوم والعبارات المطلقة غير المدعومة.\n\n## بلاغ مكتمل: فرق في إجمالي السلة\n\n**العنوان:** يظل إجمالي الدفتر 12 وحدة بعد زيادة الكمية إلى 3.\n\n**البيئة:** متجر محاكى S8، متصفح سطح مكتب، جلسة جديدة، دون خصم أو رسوم شحن. المبالغ وحدات افتراضية.\n\n**الشروط والبيانات:** السلة فارغة، سعر الدفتر N1 يساوي 12 للوحدة، والمخزون 10.\n\n**خطوات إعادة التكرار:**\n\n1. أعد ضبط المتجر المحاكى.\n2. أضف الدفتر N1 مرة واحدة؛ تظهر كمية 1 ومجموع 12.\n3. غير كمية N1 إلى 3.\n4. افحص مجموع السطر وإجمالي السلة قبل التأكيد.\n\n**المتوقع:** كمية 3 ومجموع سطر 36 وإجمالي سلة 36، وفق السعر مضروبًا في الكمية ودون رسوم أخرى.\n\n**الفعلي:** الكمية 3، لكن كلا المجموعين لا يزال 12.\n\n**التكرار:** أعيد الفشل في ثلاث محاولات من ثلاث بعد الضبط على S8.\n\n**الأثر:** يرى العميل مبلغ طلب مضللًا. افحص مبلغ التأكيد قبل الادعاء بوجود خسارة مالية أو مبلغ دفع خاطئ.\n\n**الدليل:** لقطة تتضمن المنتج والكمية والمجموع، دون بيانات شخصية أو معلومات دفع حقيقية.\n\nيمكن لشخص آخر تنفيذ هذا البلاغ بصورة مستقلة. أما عيب مختلف في مرشح البحث فيحتاج إلى بلاغ منفصل، لأن خطواته وإصلاحه قد يختلفان.\n\n## زد قابلية التكرار دون حشو\n\nتمنع إعادة الضبط الخلط بين العيب وأثر عنصر سابق أو خصم نشط. وإذا كان الفشل متقطعًا، سجل عدد المحاولات وظروفها بدلًا من الجزم بأنه يحدث دائمًا. وقد يساعد تسجيل قصير في مشكلات التوقيت، لكنه يكمل الخطوات الواضحة ولا يحل محلها.\n\nابحث عن بلاغ سابق وفق آلية الفريق. تشابه العناوين وحده لا يثبت التكرار، وقد تحتاج مراجعة الأدلة إلى تحديد العلاقة. وإذا لم تستطع إعادة الفشل، وضح ما تعرفه وما بقي غير مؤكد.\n\n## أخطاء شائعة في البلاغات\n\nلقطة شاشة مع عبارة «انظر الصورة» لا توفر عادة بلاغًا كاملًا؛ فما زال المراجع يحتاج إلى نقطة بداية وتوقع. كما أن جمع خمس مشكلات مستقلة في بلاغ واحد يصعب متابعة إصلاح كل منها. اختر أصغر مشكلة مترابطة مع الاحتفاظ بالسياق الضروري.\n\nلا تضع كلمة مرور حقيقية أو رمز جلسة أو سجلًا شخصيًا في الأدلة. نستخدم في هذه الدورة حسابات اصطناعية وبيانات افتراضية، فحافظ على ذلك أثناء الممارسة.\n\n## جرّب: أصلح بلاغًا ضعيفًا\n\nأعد كتابة «الدفع خطأ، عاجل، انظر الصورة» باستخدام مثال N1. أضف العنوان والبيئة والشروط والخطوات والنتيجتين. اشرح حدًا واحدًا للدليل: خطأ الإجمالي الظاهر وحده لا يثبت المبلغ الذي يُخصم في نظام دفع حقيقي. أرسل البلاغ للمراجعة وفق معايير النشاط.\n\n## أهم ما تعلمته\n\n- صف فرقًا محددًا يمكن إعادة فحصه.\n- حدد البيئة وحالة البداية والبيانات.\n- افصل الحقائق عن الأثر وفرضيات السبب.\n- اجعل للمشكلات المستقلة بلاغات مستقلة.\n- استخدم أدلة آمنة تدعم الخطوات المكتوبة.\n\n## صلة الدرس التالي\n\nفي **خطورة العيب مقابل الأولوية** ستفصل بين أثر مشكلة السلة ومدى استعجال إصلاحها في سياق العمل.",
+      "estimated_minutes": 10,
+      "previous_key": null,
+      "next_key": "qa-foundations/bug-reporting-and-defect-management/severity-vs-priority",
+      "is_published": false,
+      "activities": [
+        {
+          "slug": "cart-report-title",
+          "kind": "single_choice",
+          "prompt": {
+            "en": "Choose the clearest title for the worked cart finding.",
+            "ar": "اختر أوضح عنوان لملاحظة السلة."
+          },
+          "options": [
+            {
+              "id": "a",
+              "text": {
+                "en": "N1 subtotal stays12 after quantity increases to3.",
+                "ar": "يظل مجموع N1 يساوي 12 بعد رفع الكمية إلى 3."
+              }
+            },
+            {
+              "id": "b",
+              "text": {
+                "en": "Everything is broken; urgent.",
+                "ar": "كل شيء معطل؛ عاجل."
+              }
+            },
+            {
+              "id": "c",
+              "text": {
+                "en": "The database multiplication code is wrong.",
+                "ar": "كود الضرب في قاعدة البيانات خاطئ."
+              }
+            }
+          ],
+          "answer": [
+            "a"
+          ],
+          "explanation": {
+            "en": "It names the condition and observation; the alternatives are vague or assert an unproven cause.",
+            "ar": "يسمي الظرف والملاحظة، بينما البديلان غامضان أو يجزمان بسبب غير مثبت."
+          },
+          "rubric": [],
+          "sort_order": 1
+        },
+        {
+          "slug": "safe-reporting",
+          "kind": "multi_select",
+          "prompt": {
+            "en": "Which details support safe reproducibility?",
+            "ar": "أي التفاصيل تدعم تكرارًا آمنًا؟"
+          },
+          "options": [
+            {
+              "id": "a",
+              "text": {
+                "en": "Reset state, buildS8 and fictional productN1.",
+                "ar": "حالة بعد الضبط وإصدار S8 ومنتج افتراضي N1."
+              }
+            },
+            {
+              "id": "b",
+              "text": {
+                "en": "Expected36, actual12 and numbered steps.",
+                "ar": "المتوقع 36 والفعلي 12 وخطوات مرقمة."
+              }
+            },
+            {
+              "id": "c",
+              "text": {
+                "en": "A real customer password in a screenshot.",
+                "ar": "كلمة مرور عميل حقيقي بلقطة."
+              }
+            }
+          ],
+          "answer": [
+            "a",
+            "b"
+          ],
+          "explanation": {
+            "en": "Controlled context and explicit results support reproduction. Do not capture real credentials.",
+            "ar": "يدعم السياق المضبوط والنتائج الواضحة التكرار. لا تلتقط اعتمادات حقيقية."
+          },
+          "rubric": [],
+          "sort_order": 2
+        },
+        {
+          "slug": "cart-bug-report",
+          "kind": "short_answer",
+          "prompt": {
+            "en": "Rewrite “Checkout wrong, urgent” usingN1 and explain evidence limitations.",
+            "ar": "أعد كتابة«الدفع خطأ،عاجل»باستخدام N1 واشرح حدود الدليل."
+          },
+          "options": [],
+          "answer": [],
+          "explanation": {
+            "en": "S8, reset cart,N1price12, quantity3, expected36/actual12; the displayed total does not prove a charged amount.",
+            "ar": "S8 ،سلة بعد الضبط،سعر N1 يساوي 12 وكمية 3 والمتوقع 36 والفعلي 12 ؛ لا يثبت العرض المبلغ المخصوم."
+          },
+          "rubric": [
+            {
+              "en": "Includes title, build, reset precondition and price data.",
+              "ar": "يتضمن العنوان والإصدار والضبط وبيانات السعر."
+            },
+            {
+              "en": "Gives steps and expected36/actual12 at quantity3.",
+              "ar": "يقدم الخطوات والمتوقع 36 والفعلي 12 عند كمية 3."
+            },
+            {
+              "en": "Does not infer real payment loss from display alone.",
+              "ar": "لا يستنتج خسارة دفع حقيقية من العرض وحده."
+            }
+          ],
+          "sort_order": 3
+        }
+      ]
+    },
+    {
+      "key": "qa-foundations/bug-reporting-and-defect-management/severity-vs-priority",
+      "title_en": "Defect Severity vs Priority",
+      "title_ar": "خطورة العيب مقابل الأولوية",
+      "summary_en": "Explain defect impact separately from scheduling urgency. Use affected scope, workarounds and release context to justify triage without assuming universal severity labels.",
+      "summary_ar": "فسر أثر العيب مستقلًا عن استعجال الإصلاح، واستخدم النطاق والبدائل وسياق التسليم لتبرير الفرز دون افتراض معان عالمية للدرجات.",
+      "objectives_en": [
+        "Distinguish impact severity from urgency priority.",
+        "Identify missing context for a triage decision.",
+        "Write separate impact and urgency statements."
+      ],
+      "objectives_ar": [
+        "ميّز خطورة الأثر عن أولوية الاستعجال.",
+        "حدد السياق الناقص لقرار الفرز.",
+        "اكتب بيانين مستقلين للأثر والاستعجال."
+      ],
+      "content_en": "## Separate impact from scheduling\n\nIn **Anatomy of an Effective Bug Report**, you documented a cart displaying 12 units instead of 36. **Defect Severity vs Priority** asks two different questions about a report. How serious is the effect? How urgently should this work be addressed relative to other work? Separating them makes triage decisions clearer.\n\n## Severity describes impact\n\nSeverity describes the degree of impact on stakeholders or the system under specified conditions. A team's scale might use Critical, High, Medium and Low, but the meanings must be agreed locally. Consider whether a core task is prevented, data is lost or exposed, how many users are affected, and whether a practical workaround exists. Avoid assigning severity solely from the visual size of a problem.\n\nA complete inability to submit orders for all active customers could be severe even when the screen looks normal. A misplaced decorative icon might have limited impact. However, a seemingly small label can have serious consequences if it causes users to make an unsafe or irreversible choice. Examine behavior and context.\n\n## Priority describes urgency and ordering\n\nPriority expresses the relative urgency or order of addressing work. It can depend on severity, frequency, release timing, customer commitments, business exposure, dependencies and available mitigation. Product owners, engineers, support and testers may participate in triage; follow the team's decision process rather than assuming a tester alone owns the schedule.\n\nSeverity can inform priority without determining it automatically. A high-impact failure in a rarely used feature that is disabled for the current release may be scheduled after a lower-impact but widely visible error affecting a campaign tomorrow. Disabling that feature reduces exposure; it does not magically make the original failure harmless when enabled.\n\n## Work examples: reason with evidence\n\n**Case A:** a report export crashes for archived records, but the export feature is disabled in the current public release and an internal workaround exists. The crash can still have significant impact in the affected use case. Urgency depends on who needs it and when the feature will be enabled.\n\n**Case B:** the public event page shows the wrong event date and a campaign launches tomorrow. The software still loads, but customers may attend on the wrong day. A triage team might prioritize it urgently even though it does not crash.\n\n**Case C:** the simulated cart shows 12 rather than 36, but the confirmation correctly shows 36 before any commitment. This is still misleading and needs evaluation. Do not assert an undercharge without evidence. If confirmation also shows 12, the scope and potential impact change; update the report with the new observation.\n\n## A useful triage note\n\nWrite the observed impact, affected scope, known frequency, workaround and time-sensitive context. For the event page: “Wrong date visible to every visitor on build E4; campaign tomorrow; content correction available; no crash observed.” Then propose a severity using the team's definitions and explain the scheduling urgency separately.\n\nA misconception is that every severe issue must receive the same priority. Another is that “cosmetic” always means low priority. These shortcuts hide the context decision makers need. Avoid using “urgent” as a replacement for evidence, and avoid minimizing harm merely because a workaround technically exists but is impractical for users.\n\n## Try it: justify two decisions\n\nA rarely used administrative export crashes, while a renewal notice sent tonight names the wrong renewal date. Write one impact statement and one urgency statement for each. State what additional facts you need before choosing severity and priority. Submit the reasoning for review; no fixed automatic score can fairly evaluate all defensible contexts.\n\n## Key takeaways\n\n- Severity concerns impact under specified conditions.\n- Priority concerns urgency and ordering of work.\n- Use agreed team scales rather than universal label assumptions.\n- Record scope, exposure and realistic workarounds.\n- Update decisions when new evidence changes the impact or timing.\n\n## Next connection\n\n**Defect Lifecycle & Tracking** follows a report through assignment, a proposed fix and verification while preserving the reasoning behind decisions.",
+      "content_ar": "## افصل الأثر عن توقيت الإصلاح\n\nفي **مكونات بلاغ الخطأ الاحترافي** وثقت سلة تعرض 12 وحدة بدلًا من 36. يطرح درس **خطورة العيب مقابل الأولوية** سؤالين مختلفين: ما حجم الأثر؟ وما مدى استعجال معالجة العمل مقارنة بالأعمال الأخرى؟ يساعد الفصل بينهما على وضوح قرارات فرز العيوب.\n\n## الخطورة تصف الأثر\n\nتعبر الخطورة **Severity** عن درجة تأثير العيب على النظام أو أصحاب المصلحة في ظروف محددة. قد يستخدم الفريق درجات حرجة وعالية ومتوسطة ومنخفضة، لكن عليه الاتفاق على معناها. انظر إلى تعطل مهمة أساسية، أو فقد البيانات أو كشفها، وعدد المتأثرين، وإمكان وجود بديل عملي. لا تعتمد على حجم المشكلة بصريًا.\n\nقد يمنع سلوك لا يغير شكل الشاشة جميع العملاء من إرسال الطلبات. وقد يكون أثر أيقونة زخرفية غير محاذاة محدودًا. لكن تسمية صغيرة مضللة قد تقود إلى قرار خطر أو غير قابل للتراجع؛ لذلك يجب فحص السلوك والسياق قبل الحكم.\n\n## الأولوية تصف الاستعجال وترتيب العمل\n\nتعبر الأولوية **Priority** عن مدى استعجال المعالجة أو ترتيبها. تتأثر بالخطورة والتكرار وتوقيت الإصدار والتزامات العملاء والتعرض للمشكلة والاعتماد على أعمال أخرى وإمكان تخفيف الأثر. وقد يشارك في الفرز مالك المنتج والمطور والدعم والمختبِر وفق آلية الفريق.\n\nتؤثر الخطورة في الأولوية، لكنها لا تحددها آليًا. قد يؤجل الفريق فشلًا كبير الأثر في خاصية نادرة ومعطلة للإصدار الحالي، بينما يصلح خطأ أقل أثرًا لكنه ظاهر لجمهور حملة تبدأ غدًا. تعطيل الخاصية يقلل التعرض للمشكلة، لكنه لا يجعل الفشل الأصلي بسيطًا عند تفعيلها.\n\n## أمثلة تتطلب تبريرًا\n\n**الحالة أ:** يفشل تصدير تقارير السجلات المؤرشفة، لكن الخاصية غير متاحة في الإصدار العام ويوجد بديل داخلي. قد يبقى الأثر كبيرًا في الاستخدام المتضرر، بينما يتوقف الاستعجال على موعد الحاجة إلى التصدير وتفعيل الخاصية.\n\n**الحالة ب:** تعرض صفحة فعالية عامة تاريخًا خاطئًا قبل حملة تبدأ غدًا. الصفحة تعمل دون انهيار، لكن المستخدم قد يحضر في اليوم الخطأ. قد تستحق المعالجة العاجلة رغم عدم تعطل البرنامج.\n\n**الحالة ج:** تعرض السلة المحاكية 12 بدلًا من 36، لكن شاشة التأكيد تظهر 36 قبل أي التزام. يظل العرض مضللًا ويحتاج إلى تقييم. لا تدعِ خصم مبلغ خاطئ دون دليل. وإذا أظهر التأكيد 12 أيضًا، يتغير نطاق المشكلة وأثرها المحتمل، ويجب تحديث البلاغ بالملاحظة الجديدة.\n\n## اكتب ملاحظة فرز مفيدة\n\nاذكر الأثر المرصود والنطاق والتكرار المعروف والبديل والموعد الحساس. مثلًا: «تاريخ الفعالية خاطئ لكل زوار الإصدار E4؛ الحملة غدًا؛ يمكن تصحيح المحتوى؛ لم نلاحظ انهيارًا». اقترح درجة خطورة وفق تعريفات الفريق، ثم فسر الاستعجال بصورة مستقلة.\n\nمن الاختصارات المضللة اعتبار كل عيب شديد ذا أولوية واحدة، أو اعتبار كل مشكلة شكلية منخفضة الأولوية. تحجب هذه الأحكام معلومات يحتاج إليها أصحاب القرار. ولا تستخدم «عاجل» بدل الأدلة، ولا تقلل الأثر لأن بديلًا نظريًا موجود بينما يصعب على المستخدم تطبيقه.\n\n## جرّب: برر قرارين\n\nينهار تصدير إداري نادر الاستخدام، وفي المقابل يحتوي إشعار تجديد سيُرسل الليلة على تاريخ تجديد خاطئ. اكتب لكل مشكلة بيان أثر وبيان استعجال. حدد معلومات إضافية تحتاجها قبل اختيار الخطورة والأولوية. ستُراجع الأسباب بشريًا لأن السياق قد يسمح بأكثر من قرار مبرر.\n\n## أهم ما تعلمته\n\n- تتعلق الخطورة بالأثر في ظروف محددة.\n- تتعلق الأولوية بالاستعجال وترتيب العمل.\n- استخدم مقياس الفريق المتفق عليه.\n- سجل النطاق والتعرض والبدائل العملية.\n- حدث القرار إذا تغيرت الأدلة أو المواعيد.\n\n## صلة الدرس التالي\n\nفي **دورة حياة العيوب ومتابعتها** ستتابع البلاغ عبر الإسناد والإصلاح المقترح والتحقق، مع الحفاظ على أسباب القرارات.",
+      "estimated_minutes": 10,
+      "previous_key": "qa-foundations/bug-reporting-and-defect-management/anatomy-of-a-bug-report",
+      "next_key": "qa-foundations/bug-reporting-and-defect-management/defect-lifecycle",
+      "is_published": false,
+      "activities": [
+        {
+          "slug": "campaign-context",
+          "kind": "scenario",
+          "prompt": {
+            "en": "Wrong event date before tomorrow’s campaign: which statement addresses priority?",
+            "ar": "تاريخ فعالية خاطئ قبل حملة الغد: أي عبارة تتعلق بالأولوية؟"
+          },
+          "options": [
+            {
+              "id": "a",
+              "text": {
+                "en": "The campaign starts tomorrow, making correction time-sensitive.",
+                "ar": "تبدأ الحملة غدًا، ما يجعل التصحيح حساسًا للوقت."
+              }
+            },
+            {
+              "id": "b",
+              "text": {
+                "en": "The application did not crash.",
+                "ar": "لم ينهَر التطبيق."
+              }
+            },
+            {
+              "id": "c",
+              "text": {
+                "en": "Noncrashing issues always have low priority.",
+                "ar": "كل عيب دون انهيار منخفض الأولوية."
+              }
+            }
+          ],
+          "answer": [
+            "a"
+          ],
+          "explanation": {
+            "en": "The campaign timing affects urgency; lack of a crash does not determine priority.",
+            "ar": "يؤثر توقيت الحملة في الاستعجال؛ وعدم الانهيار لا يحدد الأولوية."
+          },
+          "rubric": [],
+          "sort_order": 1
+        },
+        {
+          "slug": "severity-priority-relation",
+          "kind": "true_false",
+          "prompt": {
+            "en": "Severity automatically determines priority in every team.",
+            "ar": "تحدد الخطورة الأولوية آليًا في كل فريق."
+          },
+          "options": [
+            {
+              "id": "true",
+              "text": {
+                "en": "True",
+                "ar": "صحيح"
+              }
+            },
+            {
+              "id": "false",
+              "text": {
+                "en": "False",
+                "ar": "خطأ"
+              }
+            }
+          ],
+          "answer": [
+            "false"
+          ],
+          "explanation": {
+            "en": "Exposure, commitments, release timing and mitigation also inform priority under local policy.",
+            "ar": "يسهم التعرض والالتزامات والتوقيت والتخفيف في الأولوية وفق سياسة الفريق."
+          },
+          "rubric": [],
+          "sort_order": 2
+        },
+        {
+          "slug": "triage-note",
+          "kind": "short_answer",
+          "prompt": {
+            "en": "Compare an admin export crash with a wrong renewal date in tonight’s notices: impact, urgency and missing facts.",
+            "ar": "قارن انهيار تصدير إداري بتاريخ تجديد خاطئ في إشعارات الليلة: الأثر والاستعجال والوقائع الناقصة."
+          },
+          "options": [],
+          "answer": [],
+          "explanation": {
+            "en": "Export impact depends on affected tasks and workaround; urgency on need date. Renewal dates may mislead users tonight; ask scope and mitigation.",
+            "ar": "يتوقف أثر التصدير على المهام والبديل واستعجاله على الموعد. قد تضلل تواريخ التجديد مستخدمين الليلة؛ اسأل عن النطاق والتخفيف."
+          },
+          "rubric": [
+            {
+              "en": "Separates impact from urgency for both reports.",
+              "ar": "يفصل الأثر عن الاستعجال للبلاغين."
+            },
+            {
+              "en": "Considers exposure, timing and practical workarounds.",
+              "ar": "يراعي التعرض والتوقيت والبدائل العملية."
+            },
+            {
+              "en": "Requests missing facts before assigning local labels.",
+              "ar": "يطلب الوقائع الناقصة قبل اختيار الدرجات."
+            }
+          ],
+          "sort_order": 3
+        }
+      ]
+    },
+    {
+      "key": "qa-foundations/bug-reporting-and-defect-management/defect-lifecycle",
+      "title_en": "Defect Lifecycle & Tracking",
+      "title_ar": "دورة حياة العيوب ومتابعتها",
+      "summary_en": "Track evidence and responsibility from discovery through retest and closure. Distinguish confirmation from regression and retain report history when a fix remains incomplete.",
+      "summary_ar": "تابع الأدلة والمسؤولية من الاكتشاف إلى التحقق والإغلاق. ميز التأكد من الإصلاح عن الانحدار واحفظ تاريخ البلاغ إذا لم يكتمل الإصلاح.",
+      "objectives_en": [
+        "Explain evidence needed to verify a proposed fix.",
+        "Distinguish confirmation from regression testing.",
+        "Write a retest note preserving earlier evidence."
+      ],
+      "objectives_ar": [
+        "اشرح الدليل اللازم للتحقق من إصلاح مقترح.",
+        "ميّز التأكد من الإصلاح عن اختبار الانحدار.",
+        "اكتب ملاحظة إعادة اختبار تحفظ الأدلة السابقة."
+      ],
+      "content_en": "## Keep a useful history of decisions\n\nIn **Defect Severity vs Priority**, you explained impact and urgency separately. **Defect Lifecycle & Tracking** follows what happens next. A defect lifecycle describes the states and transitions a team uses to move a report from discovery toward a resolution. Teams use different labels and rules; there is no single mandatory sequence that every issue tracker must follow.\n\n## States communicate responsibility and evidence\n\nA simple example is New → Triaged → Assigned → Fixed / Ready for Retest → Verified → Closed. A report may instead be rejected with a reason, marked duplicate with a link, deferred, or reopened when the expected behavior still fails. The important questions are who acts next, what evidence supports a transition, and which decision was made.\n\n“Fixed” generally records an implementation claim, not independent proof that the reported condition is resolved. Verification checks the relevant behavior on the build containing the change. A team's workflow may combine Verified and Closed, or allow automatic closure after review. Learn the local definitions instead of assuming that a label alone guarantees quality.\n\n## Worked history: cart subtotal\n\nUse the simulated N1 cart report: quantity 3 at 12 units each should show 36, but build S8 shows 12.\n\n1. **New:** the tester submits the reproducible report with build and data.\n2. **Triaged:** the team confirms the discrepancy, records impact and chooses when to address it.\n3. **Assigned:** a developer is responsible for investigation.\n4. **Ready for Retest:** the developer identifies build S9 and describes the changed behavior.\n5. **Verification:** the tester resets S9, repeats the original steps and records actual subtotal 36.\n6. **Closed:** the team closes according to its workflow after reviewing the verification evidence.\n\nIf S9 still shows 12, record the new execution and reopen or return the report according to the team's policy. Do not erase the earlier build evidence. If a similar symptom appears only when a discount is used, investigate whether it is the same unresolved issue or a distinct defect; link related reports without guessing.\n\n## Confirmation and regression are related but different\n\nConfirmation testing checks that the original reported failure has been corrected. Regression testing checks for adverse consequences in previously working behavior after a change. After confirming quantity 3, useful regression checks might include reducing quantity back to 1, removing the item and recalculating a two-product cart. Choose them according to what changed and the risk; repeating only the original case is not broad regression coverage.\n\nA status transition should include enough context for later review: build, environment, check performed, result and any remaining limitations. “Works now” is weaker than “S9, reset cart, N1 quantity 3: subtotal 36; original failure not observed; discount combinations not examined.”\n\n## Preserve references and handle disagreement\n\nDo not create a fresh report for every retest of the same issue just to restart its history. Keep the thread of decisions and evidence. A duplicate should point to the report being tracked, and a rejection should explain the reasoning so the reporter can improve or provide missing information.\n\nA misconception is that closure means the product has no defects. Closure concerns a particular issue under a defined process. Another is that reopening proves someone did poor work. New evidence may show an incomplete fix, a build mismatch or a misunderstood requirement. Investigate the evidence before assigning blame.\n\n## Try it: write a retest note\n\nA developer says S9 fixes the cart. You repeat the original reset-and-quantity steps but still observe 12 instead of 36. Write a retest note with build, data, expected and actual results, the requested workflow transition and one related regression check to perform after a successful fix.\n\n## Key takeaways\n\n- Workflow labels and transition rules vary across teams.\n- A fix claim needs verification on an identified build.\n- Confirmation checks the reported failure; regression checks side effects.\n- Preserve reports, links and execution history.\n- Explain closure, duplicate and rejection decisions with evidence.\n\n## Module wrap-up\n\nYou can now communicate a defect, justify its impact and follow it through evidence-based review. Complete the module assessment and use a published practical lab when your administrator links one. This is the last verified lesson in this pilot; no unverified next lesson is implied.",
+      "content_ar": "## احتفظ بتاريخ مفيد للقرارات\n\nفي **خطورة العيب مقابل الأولوية** فصلت بين الأثر والاستعجال. يتابع درس **دورة حياة العيوب ومتابعتها** ما يحدث بعد ذلك. تصف دورة الحياة الحالات والانتقالات التي يستخدمها الفريق لنقل البلاغ من الاكتشاف إلى قرار المعالجة. تختلف الأسماء والقواعد بين الفرق، ولا توجد سلسلة إلزامية واحدة لكل أدوات التتبع.\n\n## الحالة توضح المسؤولية والدليل\n\nقد يستخدم الفريق تسلسلًا مثل: جديد، ثم فرز، ثم إسناد، ثم جاهز لإعادة الاختبار، ثم تحقق، ثم إغلاق. وقد يُرفض البلاغ مع سبب، أو يصنف مكررًا مع رابط، أو يؤجل، أو يعاد فتحه إذا استمر الفشل. اسأل دائمًا: من يتصرف بعد ذلك؟ وما الدليل على الانتقال؟ وما القرار الذي اتخذ؟\n\nتعبر حالة «تم الإصلاح» عادة عن إعلان تنفيذ تعديل، وليست وحدها إثباتًا مستقلًا بأن الحالة المبلغ عنها انتهت. يجري التحقق على إصدار محدد يحتوي التغيير. وقد يدمج الفريق التحقق والإغلاق أو يغلق بعد مراجعة معينة؛ لذلك افهم التعريف المحلي بدلًا من افتراض أن الاسم يضمن الجودة.\n\n## تاريخ عملي: مجموع السلة\n\nنستخدم بلاغ الدفتر N1: الكمية 3 وسعر الوحدة 12، فيجب أن يكون المجموع 36، لكن الإصدار S8 يعرض 12.\n\n1. **جديد:** يرسل المختبِر بلاغًا قابلًا للتكرار مع الإصدار والبيانات.\n2. **فرز:** يؤكد الفريق الفرق ويسجل الأثر ويختار توقيت المعالجة.\n3. **إسناد:** يصبح المطور مسؤولًا عن التحقيق.\n4. **جاهز لإعادة الاختبار:** يحدد المطور الإصدار S9 ويصف التعديل.\n5. **تحقق:** يعيد المختبِر ضبط S9 وينفذ الخطوات الأصلية ويسجل ظهور 36.\n6. **إغلاق:** يُغلق البلاغ وفق قواعد الفريق بعد مراجعة دليل التحقق.\n\nإذا استمر ظهور 12 في S9، سجل التنفيذ الجديد وأعد فتح البلاغ أو أرجعه وفق الآلية المتفق عليها. لا تمحُ دليل الإصدار السابق. وإذا ظهر عرض مشابه مع خصم فقط، فحقق هل هو جزء من المشكلة الأصلية أم عيب مستقل، واربط البلاغات ذات الصلة دون تخمين.\n\n## التأكد من الإصلاح واختبار الانحدار\n\nيفحص **Confirmation Testing** ما إذا كان الفشل الأصلي قد أُصلح. أما **Regression Testing** فيبحث عن آثار سلبية لتغيير ما على سلوك كان يعمل سابقًا. بعد نجاح فحص الكمية 3، قد تشمل فحوص الانحدار خفضها إلى 1 وحذف العنصر وإعادة حساب سلة بها منتجان.\n\nاختر الفحوص بناء على التغيير والخطر. إعادة الحالة الأصلية وحدها ليست تغطية واسعة للانحدار. واربط انتقال الحالة بإصدار وبيئة وفحص ونتيجة وحدود واضحة. «يعمل الآن» أضعف من «S9، سلة بعد الضبط، N1 بكمية 3: المجموع 36؛ لم يظهر الفشل الأصلي؛ لم تُفحص الخصومات».\n\n## حافظ على الروابط وعالج الاختلاف\n\nلا تنشئ بلاغًا جديدًا لكل إعادة اختبار للمشكلة نفسها؛ احتفظ بتسلسل الأدلة والقرارات. يجب أن يشير البلاغ المكرر إلى البلاغ الذي يتابعه الفريق، وأن يوضح الرفض سببه حتى يستطيع المبلغ استكمال المعلومات أو تحسين وصفه.\n\nمن الخطأ أن يعني إغلاق البلاغ خلو المنتج كله من العيوب؛ فالقرار يخص مشكلة محددة ضمن آلية عمل. كما لا تثبت إعادة الفتح تقصير شخص بعينه. قد تكشف الأدلة عن إصلاح جزئي أو اختلاف إصدار أو سوء فهم للمتطلب. ابدأ بالتحقيق في الوقائع.\n\n## جرّب: اكتب نتيجة إعادة الاختبار\n\nقال المطور إن S9 يصلح السلة، لكنك أعدت الضبط ونفذت خطوات تغيير الكمية الأصلية ولا يزال المجموع 12 بدلًا من 36. اكتب ملاحظة تتضمن الإصدار والبيانات والمتوقع والفعلي والانتقال المطلوب في سير العمل. أضف فحص انحدار ذا صلة لإجرائه بعد نجاح الإصلاح.\n\n## أهم ما تعلمته\n\n- تختلف أسماء الحالات وقواعد الانتقال بين الفرق.\n- يحتاج إعلان الإصلاح إلى تحقق على إصدار معلوم.\n- يفحص التأكد الفشل الأصلي، ويفحص الانحدار الآثار الجانبية.\n- حافظ على البلاغات والروابط وتاريخ التنفيذ.\n- برر الإغلاق والتكرار والرفض بالأدلة.\n\n## ختام الوحدة\n\nأصبحت قادرًا على توصيل العيب وتبرير أثره ومتابعته خلال المراجعة. أكمل تقييم الوحدة، ثم استخدم معملًا منشورًا إذا ربطه المسؤول بهذه الوحدة. هذا آخر درس متحقق منه في المجموعة التجريبية؛ ولا نفترض وجود درس تالٍ غير موثق.",
+      "estimated_minutes": 10,
+      "previous_key": "qa-foundations/bug-reporting-and-defect-management/severity-vs-priority",
+      "next_key": null,
+      "is_published": false,
+      "activities": [
+        {
+          "slug": "retest-failure",
+          "kind": "scenario",
+          "prompt": {
+            "en": "S9 is marked fixed, but original steps still show12 instead of36. What next?",
+            "ar": "وُسم S9 بأنه مُصلح لكن الخطوات الأصلية تعرض 12 بدل 36. ماذا تفعل؟"
+          },
+          "options": [
+            {
+              "id": "a",
+              "text": {
+                "en": "RecordS9 evidence and reopen/return under team policy.",
+                "ar": "سجل دليل S9 وأعد الفتح أو الإرجاع وفق السياسة."
+              }
+            },
+            {
+              "id": "b",
+              "text": {
+                "en": "Close because the developer changed status.",
+                "ar": "أغلق لأن المطور غير الحالة."
+              }
+            },
+            {
+              "id": "c",
+              "text": {
+                "en": "EraseS8 and create unrelated reports.",
+                "ar": "امح S8 وأنشئ بلاغات غير مترابطة."
+              }
+            }
+          ],
+          "answer": [
+            "a"
+          ],
+          "explanation": {
+            "en": "A fix claim requires verification. Preserve executions and follow the local workflow.",
+            "ar": "يحتاج إعلان الإصلاح إلى تحقق؛ احفظ التنفيذات واتبع سير العمل المحلي."
+          },
+          "rubric": [],
+          "sort_order": 1
+        },
+        {
+          "slug": "regression-scope",
+          "kind": "multi_select",
+          "prompt": {
+            "en": "After confirming quantity3 totals36, which checks address side effects?",
+            "ar": "بعد التأكد أن كمية 3 مجموعها 36 ،أي الفحوص تستهدف آثارًا جانبية؟"
+          },
+          "options": [
+            {
+              "id": "a",
+              "text": {
+                "en": "Reduce quantity to1 and check total.",
+                "ar": "اخفض الكمية إلى 1 وافحص المجموع."
+              }
+            },
+            {
+              "id": "b",
+              "text": {
+                "en": "Remove the item and inspect the empty cart.",
+                "ar": "احذف العنصر وافحص السلة الفارغة."
+              }
+            },
+            {
+              "id": "c",
+              "text": {
+                "en": "Treat fixed status alone as regression evidence.",
+                "ar": "اعتبر حالة تم الإصلاح دليل انحدار وحدها."
+              }
+            }
+          ],
+          "answer": [
+            "a",
+            "b"
+          ],
+          "explanation": {
+            "en": "Related previously working behaviors are regression candidates. A status label is not executed evidence.",
+            "ar": "تصلح السلوكيات المرتبطة التي كانت تعمل لفحوص الانحدار. اسم الحالة ليس دليل تنفيذ."
+          },
+          "rubric": [],
+          "sort_order": 2
+        },
+        {
+          "slug": "retest-note",
+          "kind": "short_answer",
+          "prompt": {
+            "en": "Write anS9 retest note for unresolvedN1 subtotal, requested transition and one later regression check.",
+            "ar": "اكتب ملاحظة إعادة اختبار S9 لمجموع N1 المستمر والانتقال المطلوب وفحص انحدار لاحق."
+          },
+          "options": [],
+          "answer": [],
+          "explanation": {
+            "en": "S9 reset,N1quantity3 still12 instead of36: return for investigation withS8 link. After a fix, check removal and quantity reduction.",
+            "ar": "S9 بعد الضبط،كمية N1 تساوي 3 والمجموع 12 بدل 36:أرجع للتحقيق مع رابط S8.بعد الإصلاح افحص الحذف وخفض الكمية."
+          },
+          "rubric": [
+            {
+              "en": "NamesS9, reset, quantity3 and expected36/actual12.",
+              "ar": "يحدد S9 والضبط وكمية 3 والمتوقع 36 والفعلي 12."
+            },
+            {
+              "en": "PreservesS8 evidence and requests return under policy.",
+              "ar": "يحفظ دليل S8 ويطلب الإرجاع وفق السياسة."
+            },
+            {
+              "en": "Names a regression check distinct from original confirmation.",
+              "ar": "يسمي فحص انحدار مختلفًا عن التأكد الأصلي."
+            }
+          ],
+          "sort_order": 3
+        }
+      ]
+    }
+  ],
+  "module_assessments": [
+    {
+      "module_key": "qa-foundations/intro-to-qa",
+      "activities": [
+        {
+          "slug": "release-evidence",
+          "kind": "scenario",
+          "prompt": {
+            "en": "Do two passing delivery checks prove the release is safe? Choose a defensible response.",
+            "ar": "هل يثبت نجاح فحصي التوصيل أمان التسليم؟ اختر ردًا مدعومًا."
+          },
+          "options": [
+            {
+              "id": "a",
+              "text": {
+                "en": "Describe tested conditions and remaining risks before deciding.",
+                "ar": "صف الظروف المفحوصة والمخاطر المتبقية قبل القرار."
+              }
+            },
+            {
+              "id": "b",
+              "text": {
+                "en": "Guarantee there are no defects.",
+                "ar": "اضمن عدم وجود عيوب."
+              }
+            },
+            {
+              "id": "c",
+              "text": {
+                "en": "Discard the passing evidence entirely.",
+                "ar": "تجاهل أدلة النجاح كلها."
+              }
+            }
+          ],
+          "answer": [
+            "a"
+          ],
+          "explanation": {
+            "en": "Passing evidence is useful within its scope, but cannot guarantee defect absence.",
+            "ar": "تفيد أدلة النجاح ضمن نطاقها، لكنها لا تضمن غياب العيوب."
+          },
+          "rubric": [],
+          "sort_order": 1
+        },
+        {
+          "slug": "quality-timing",
+          "kind": "multi_select",
+          "prompt": {
+            "en": "An ambiguous deadline needs which complementary actions?",
+            "ar": "ما الإجراءات المتكاملة لموعد غامض؟"
+          },
+          "options": [
+            {
+              "id": "a",
+              "text": {
+                "en": "Clarify an acceptance example before coding.",
+                "ar": "وضح مثال قبول قبل البرمجة."
+              }
+            },
+            {
+              "id": "b",
+              "text": {
+                "en": "Test the running behavior against that example.",
+                "ar": "اختبر السلوك العامل وفق المثال."
+              }
+            },
+            {
+              "id": "c",
+              "text": {
+                "en": "Make one tester solely responsible for quality.",
+                "ar": "اجعل مختبرًا واحدًا مسؤولًا وحده عن الجودة."
+              }
+            }
+          ],
+          "answer": [
+            "a",
+            "b"
+          ],
+          "explanation": {
+            "en": "Earlier clarification and later execution address different uncertainties; quality is shared.",
+            "ar": "يعالج التوضيح المبكر والتنفيذ اللاحق جوانب مختلفة من عدم اليقين، والجودة مشتركة."
+          },
+          "rubric": [],
+          "sort_order": 2
+        },
+        {
+          "slug": "team-response",
+          "kind": "short_answer",
+          "prompt": {
+            "en": "For recurring delivery-cutoff ambiguity, propose a product check, a process improvement and the timing of each.",
+            "ar": "لغموض موعد التوصيل المتكرر، اقترح فحص منتج وتحسين عملية وتوقيت كل منهما."
+          },
+          "options": [],
+          "answer": [],
+          "explanation": {
+            "en": "Review timezone/cutoff examples before coding, then run an agreed example on the build and report scope and limits.",
+            "ar": "راجع أمثلة التوقيت والإغلاق قبل البرمجة، ثم نفذ مثالًا متفقًا عليه وسجل النطاق والحدود."
+          },
+          "rubric": [
+            {
+              "en": "Uses explicit data and expectation for the product check.",
+              "ar": "يستخدم بيانات وتوقعًا واضحين لفحص المنتج."
+            },
+            {
+              "en": "Targets requirement clarity in the process change.",
+              "ar": "يستهدف وضوح المتطلب في تحسين العملية."
+            },
+            {
+              "en": "Combines early feedback and running verification.",
+              "ar": "يجمع التغذية المبكرة والتحقق بعد التشغيل."
+            }
+          ],
+          "sort_order": 3
+        }
+      ]
+    },
+    {
+      "module_key": "qa-foundations/manual-testing-fundamentals",
+      "activities": [
+        {
+          "slug": "minimum-case",
+          "kind": "scenario",
+          "prompt": {
+            "en": "Inclusive range10–50 rejects10 but accepts11. What should the test record say?",
+            "ar": "مجال شامل 10–50 يرفض 10 ويقبل 11. ماذا تسجل؟"
+          },
+          "options": [
+            {
+              "id": "a",
+              "text": {
+                "en": "At10 expect acceptance; actual rejection, with build/reset/data.",
+                "ar": "عند 10 المتوقع قبول والفعلي رفض مع الإصدار والضبط والبيانات."
+              }
+            },
+            {
+              "id": "b",
+              "text": {
+                "en": "Change the expected result to rejection.",
+                "ar": "غير المتوقع إلى الرفض."
+              }
+            },
+            {
+              "id": "c",
+              "text": {
+                "en": "All quantities fail.",
+                "ar": "كل الكميات تفشل."
+              }
+            }
+          ],
+          "answer": [
+            "a"
+          ],
+          "explanation": {
+            "en": "The inclusive requirement determines the expected result. Do not generalize beyond observed values.",
+            "ar": "يحدد المتطلب الشامل المتوقع. لا تعمم على قيم لم تُفحص."
+          },
+          "rubric": [],
+          "sort_order": 1
+        },
+        {
+          "slug": "session-notes",
+          "kind": "multi_select",
+          "prompt": {
+            "en": "Which artifacts make an exploratory finding reusable?",
+            "ar": "ما المخرجات التي تجعل نتيجة الاستكشاف قابلة لإعادة الاستخدام؟"
+          },
+          "options": [
+            {
+              "id": "a",
+              "text": {
+                "en": "Charter and notes with build, state and findings.",
+                "ar": "ميثاق وملاحظات بالإصدار والحالة والنتائج."
+              }
+            },
+            {
+              "id": "b",
+              "text": {
+                "en": "A focused reproduction case with expected/actual results.",
+                "ar": "حالة تكرار مركزة بمتوقع وفعلي."
+              }
+            },
+            {
+              "id": "c",
+              "text": {
+                "en": "A coverage guarantee based on elapsed minutes.",
+                "ar": "ضمان تغطية مبني على الزمن."
+              }
+            }
+          ],
+          "answer": [
+            "a",
+            "b"
+          ],
+          "explanation": {
+            "en": "Purposeful notes and repeatable checks communicate evidence; time alone is not coverage.",
+            "ar": "تنقل الملاحظات الهادفة والفحوص المتكررة الأدلة؛ الوقت وحده ليس تغطية."
+          },
+          "rubric": [],
+          "sort_order": 2
+        },
+        {
+          "slug": "test-plan",
+          "kind": "short_answer",
+          "prompt": {
+            "en": "Outline a quantity10 boundary case and a ten-minute charter for a different cart risk.",
+            "ar": "صمم حالة لحد الكمية 10 وميثاقًا لعشر دقائق عن خطر آخر في السلة."
+          },
+          "options": [],
+          "answer": [],
+          "explanation": {
+            "en": "Reset and check10 with expected acceptance; separately explore persistence after refresh using a controlled account and notes.",
+            "ar": "أعد الضبط وافحص 10 مع توقع القبول؛ واستكشف منفصلًا الحفظ بعد التحديث بحساب مضبوط وملاحظات."
+          },
+          "rubric": [
+            {
+              "en": "Includes preconditions, data, steps and expected outcome.",
+              "ar": "يشمل الشروط والبيانات والخطوات والمتوقع."
+            },
+            {
+              "en": "Uses inclusive boundaries consistently.",
+              "ar": "يستخدم الحدود الشاملة باتساق."
+            },
+            {
+              "en": "Charter names another risk and records observations.",
+              "ar": "يسمي الميثاق خطرًا آخر ويسجل الملاحظات."
+            }
+          ],
+          "sort_order": 3
+        }
+      ]
+    },
+    {
+      "module_key": "qa-foundations/bug-reporting-and-defect-management",
+      "activities": [
+        {
+          "slug": "fix-verification",
+          "kind": "scenario",
+          "prompt": {
+            "en": "A report is fixed with no build number or retest evidence. What is still needed?",
+            "ar": "وسم البلاغ بأنه مُصلح دون إصدار أو دليل إعادة اختبار. ما المطلوب؟"
+          },
+          "options": [
+            {
+              "id": "a",
+              "text": {
+                "en": "Identify the fixed build and verify the original condition.",
+                "ar": "حدد إصدار الإصلاح وتحقق من الحالة الأصلية."
+              }
+            },
+            {
+              "id": "b",
+              "text": {
+                "en": "Close all related reports automatically.",
+                "ar": "أغلق كل البلاغات المرتبطة آليًا."
+              }
+            },
+            {
+              "id": "c",
+              "text": {
+                "en": "Remove original steps.",
+                "ar": "احذف الخطوات الأصلية."
+              }
+            }
+          ],
+          "answer": [
+            "a"
+          ],
+          "explanation": {
+            "en": "A status is a claim; confirmation on an identified build supports the next decision.",
+            "ar": "الحالة إعلان؛ ويدعم التحقق على إصدار محدد القرار التالي."
+          },
+          "rubric": [],
+          "sort_order": 1
+        },
+        {
+          "slug": "triage-evidence",
+          "kind": "multi_select",
+          "prompt": {
+            "en": "Which statements separate impact, urgency and facts?",
+            "ar": "أي العبارات تفصل الأثر والاستعجال والوقائع؟"
+          },
+          "options": [
+            {
+              "id": "a",
+              "text": {
+                "en": "Wrong event date affects all visitors; campaign starts tomorrow.",
+                "ar": "تاريخ الفعالية خاطئ لكل الزوار والحملة غدًا."
+              }
+            },
+            {
+              "id": "b",
+              "text": {
+                "en": "Subtotal differs; actual payment has not been investigated.",
+                "ar": "الإجمالي مختلف ولم يُحقق في الدفع الفعلي."
+              }
+            },
+            {
+              "id": "c",
+              "text": {
+                "en": "No crash means no impact or urgency.",
+                "ar": "عدم الانهيار يعني غياب الأثر والاستعجال."
+              }
+            }
+          ],
+          "answer": [
+            "a",
+            "b"
+          ],
+          "explanation": {
+            "en": "The first two describe scope/context and limitations. A noncrashing issue can still mislead users.",
+            "ar": "تصف الأوليان النطاق والسياق والحدود. قد يضلل عيب دون انهيار المستخدمين."
+          },
+          "rubric": [],
+          "sort_order": 2
+        },
+        {
+          "slug": "report-review",
+          "kind": "short_answer",
+          "prompt": {
+            "en": "Write a cart report, impact/urgency notes and a retest decision ifS9 still fails.",
+            "ar": "اكتب بلاغ سلة وملاحظات أثر واستعجال وقرار إعادة اختبار إذا استمر الفشل في S9."
+          },
+          "options": [],
+          "answer": [],
+          "explanation": {
+            "en": "N1quantity3 expected36/actual12; explain misleading display and timing; preserveS8/S9 evidence and return the unresolved report.",
+            "ar": "N1 بكمية 3 والمتوقع 36 والفعلي 12 ؛ وضح تضليل العرض والتوقيت واحفظ أدلة S8 و S9 وأرجع البلاغ غير المحلول."
+          },
+          "rubric": [
+            {
+              "en": "Report is reproducible with explicit expected/actual values.",
+              "ar": "البلاغ قابل للتكرار وبقيم متوقعة وفعلية صريحة."
+            },
+            {
+              "en": "Separates impact and timing without unsupported payment claims.",
+              "ar": "يفصل الأثر والتوقيت دون ادعاء دفع غير مثبت."
+            },
+            {
+              "en": "Preserves history and requests appropriate return transition.",
+              "ar": "يحفظ التاريخ ويطلب انتقال الإرجاع المناسب."
+            }
+          ],
+          "sort_order": 3
+        }
+      ]
+    }
+  ]
+}

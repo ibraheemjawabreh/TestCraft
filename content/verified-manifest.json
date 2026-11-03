@@ -1,0 +1,216 @@
+{
+  "version": 1,
+  "source": {
+    "name": "Verified repository demo inventory",
+    "location": "src/lib/admin/seeder.ts @ 100a4fc",
+    "canonical": false,
+    "note": "Exact repository EN titles/slugs/order. Not the missing approved Master Curriculum. Arabic SDLC typo corrected; new objectives authored. No live inventory claim."
+  },
+  "paths": [
+    {
+      "path_slug": "qa-foundations",
+      "title_en": "QA Foundations",
+      "title_ar": "أساسيات ضمان الجودة",
+      "sort_order": 1,
+      "description_en": "Foundational QA concepts, manual testing and defect reporting using controlled examples.",
+      "description_ar": "مفاهيم الجودة والاختبار اليدوي وكتابة البلاغات من خلال أمثلة محكومة.",
+      "modules": [
+        {
+          "module_slug": "intro-to-qa",
+          "title_en": "Introduction to Quality Assurance",
+          "title_ar": "مقدمة في ضمان الجودة",
+          "sort_order": 1,
+          "description_en": "Understand software testing basics, quality concepts, and the SDLC.",
+          "description_ar": "تعلم أساسيات اختبار البرمجيات ومفاهيم الجودة وتدفق دورة حياة تطوير البرمجيات.",
+          "practical_challenge_slug": null,
+          "lessons": [
+            {
+              "lesson_slug": "software-testing-fundamentals",
+              "title_en": "Software Testing Fundamentals",
+              "title_ar": "أساسيات اختبار البرمجيات",
+              "sort_order": 1,
+              "objectives_en": [
+                "Distinguish observed behavior from a cause hypothesis.",
+                "Compare a delivery result with an agreed cutoff rule.",
+                "Describe one limitation of a passing test."
+              ],
+              "objectives_ar": [
+                "ميّز السلوك المرصود عن فرضية سببه.",
+                "قارن موعد التوصيل بقاعدة إغلاق متفق عليها.",
+                "صف حدًا واحدًا للاستنتاج من نجاح الاختبار."
+              ],
+              "prerequisites": [],
+              "difficulty": "Beginner"
+            },
+            {
+              "lesson_slug": "qa-vs-qc",
+              "title_en": "Quality Assurance vs Quality Control",
+              "title_ar": "ضمان الجودة مقابل ضبط الجودة",
+              "sort_order": 2,
+              "objectives_en": [
+                "Classify product checks and process-assurance activities.",
+                "Propose an improvement for recurring requirement ambiguity.",
+                "Identify evidence for evaluating an improvement."
+              ],
+              "objectives_ar": [
+                "صنّف فحوص المنتج وأنشطة ضمان العمليات.",
+                "اقترح تحسينًا يعالج غموض المتطلبات المتكرر.",
+                "حدد دليلًا لتقييم فائدة التحسين."
+              ],
+              "prerequisites": [],
+              "difficulty": "Beginner"
+            },
+            {
+              "lesson_slug": "sdlc-and-qa",
+              "title_en": "Software Development Life Cycle & QA",
+              "title_ar": "دورة حياة تطوير البرمجيات وضمان الجودة",
+              "sort_order": 3,
+              "objectives_en": [
+                "Place clarification, execution and release evidence in a life cycle.",
+                "Distinguish Agile principles from the Scrum framework.",
+                "Write a deadline acceptance example before implementation."
+              ],
+              "objectives_ar": [
+                "ضع التوضيح والتنفيذ وأدلة التسليم في دورة الحياة.",
+                "ميّز مبادئAgile عن إطارScrum.",
+                "اكتب مثال قبول للموعد قبل التنفيذ."
+              ],
+              "prerequisites": [],
+              "difficulty": "Beginner"
+            }
+          ]
+        },
+        {
+          "module_slug": "manual-testing-fundamentals",
+          "title_en": "Manual Testing Fundamentals",
+          "title_ar": "أساسيات الاختبار اليدوي",
+          "sort_order": 2,
+          "description_en": "Master test case design, boundary value analysis, and equivalence partitioning.",
+          "description_ar": "إتقان تصميم حالات الاختبار وتحليل القيم الحدية وتقسيم التكافؤ.",
+          "practical_challenge_slug": null,
+          "lessons": [
+            {
+              "lesson_slug": "test-case-design",
+              "title_en": "Test Case Design & Execution",
+              "title_ar": "تصميم وتنفيذ حالات الاختبار",
+              "sort_order": 1,
+              "objectives_en": [
+                "Write specific preconditions and recovery inputs.",
+                "Derive expected results from the neutral-confirmation rule.",
+                "Distinguish failed execution from blocked execution."
+              ],
+              "objectives_ar": [
+                "اكتب شروطًا ومدخلات محددة لفحص الاستعادة.",
+                "استمد المتوقع من قاعدة التأكيد المحايد.",
+                "ميّز فشل التنفيذ عن تعذر إجرائه."
+              ],
+              "prerequisites": [],
+              "difficulty": "Intermediate"
+            },
+            {
+              "lesson_slug": "bva-and-ep",
+              "title_en": "Equivalence Partitioning & Boundary Value Analysis",
+              "title_ar": "تقسيم التكافؤ وتحليل القيم الحدية",
+              "sort_order": 2,
+              "objectives_en": [
+                "Partition an integer domain by expected handling.",
+                "Select a three-value boundary set for an inclusive range.",
+                "State expected outcomes with other conditions controlled."
+              ],
+              "objectives_ar": [
+                "قسّم مجال الأعداد الصحيحة وفق المعالجة المتوقعة.",
+                "اختر حدودًا بأسلوب الثلاث قيم لمجال شامل الطرفين.",
+                "حدد النتائج المتوقعة مع ضبط الشروط الأخرى."
+              ],
+              "prerequisites": [],
+              "difficulty": "Intermediate"
+            },
+            {
+              "lesson_slug": "exploratory-testing",
+              "title_en": "Exploratory Testing Techniques",
+              "title_ar": "تقنيات الاختبار الاستكشافي",
+              "sort_order": 3,
+              "objectives_en": [
+                "Write a charter naming scope, resources and risk.",
+                "Choose a follow-up based on an observation.",
+                "Summarize examined conditions and open questions."
+              ],
+              "objectives_ar": [
+                "اكتب ميثاقًا يحدد النطاق والموارد والخطر.",
+                "اختر فحص متابعة بناء على ملاحظة.",
+                "لخص الظروف المفحوصة والأسئلة المتبقية."
+              ],
+              "prerequisites": [],
+              "difficulty": "Intermediate"
+            }
+          ]
+        },
+        {
+          "module_slug": "bug-reporting-and-defect-management",
+          "title_en": "Bug Reporting & Defect Management",
+          "title_ar": "كتابة البلاغات وإدارة العيوب",
+          "sort_order": 3,
+          "description_en": "Learn how to write high-quality bug reports and manage defect lifecycles.",
+          "description_ar": "تعلم كيفية كتابة تقارير أخطاء احترافية وإدارة دورة حياة البلاغات.",
+          "practical_challenge_slug": null,
+          "lessons": [
+            {
+              "lesson_slug": "anatomy-of-a-bug-report",
+              "title_en": "Anatomy of an Effective Bug Report",
+              "title_ar": "مكونات بلاغ الخطأ الاحترافي",
+              "sort_order": 1,
+              "objectives_en": [
+                "Write numbered steps using controlled data.",
+                "Separate observations from cause hypotheses.",
+                "Choose evidence without real personal credentials."
+              ],
+              "objectives_ar": [
+                "اكتب خطوات مرقمة ببيانات مضبوطة.",
+                "افصل الملاحظات عن فرضيات السبب.",
+                "اختر دليلًا خاليًا من اعتمادات شخصية حقيقية."
+              ],
+              "prerequisites": [],
+              "difficulty": "Beginner"
+            },
+            {
+              "lesson_slug": "severity-vs-priority",
+              "title_en": "Defect Severity vs Priority",
+              "title_ar": "خطورة العيب مقابل الأولوية",
+              "sort_order": 2,
+              "objectives_en": [
+                "Distinguish impact severity from urgency priority.",
+                "Identify missing context for a triage decision.",
+                "Write separate impact and urgency statements."
+              ],
+              "objectives_ar": [
+                "ميّز خطورة الأثر عن أولوية الاستعجال.",
+                "حدد السياق الناقص لقرار الفرز.",
+                "اكتب بيانين مستقلين للأثر والاستعجال."
+              ],
+              "prerequisites": [],
+              "difficulty": "Beginner"
+            },
+            {
+              "lesson_slug": "defect-lifecycle",
+              "title_en": "Defect Lifecycle & Tracking",
+              "title_ar": "دورة حياة العيوب ومتابعتها",
+              "sort_order": 3,
+              "objectives_en": [
+                "Explain evidence needed to verify a proposed fix.",
+                "Distinguish confirmation from regression testing.",
+                "Write a retest note preserving earlier evidence."
+              ],
+              "objectives_ar": [
+                "اشرح الدليل اللازم للتحقق من إصلاح مقترح.",
+                "ميّز التأكد من الإصلاح عن اختبار الانحدار.",
+                "اكتب ملاحظة إعادة اختبار تحفظ الأدلة السابقة."
+              ],
+              "prerequisites": [],
+              "difficulty": "Beginner"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

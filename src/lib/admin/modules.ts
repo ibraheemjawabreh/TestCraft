@@ -1,5 +1,6 @@
 'use server'
 import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
 import type { Database } from '@/types/database.types'
 
 type LearningModule = Database['public']['Tables']['learning_modules']['Row']
@@ -12,6 +13,7 @@ interface Result<T> {
 }
 
 export async function getAdminModules(): Promise<Result<(LearningModule & { learning_paths: { title_en: string; title_ar: string | null } | null })[]>> {
+  await requireAdmin('en')
   try {
     const supabase = await createClient()
     const { data, error } = await supabase
@@ -29,6 +31,7 @@ export async function getAdminModules(): Promise<Result<(LearningModule & { lear
 }
 
 export async function getAdminModule(id: string): Promise<Result<LearningModule>> {
+  await requireAdmin('en')
   try {
     const supabase = await createClient()
     const { data, error } = await supabase
@@ -47,6 +50,7 @@ export async function getAdminModule(id: string): Promise<Result<LearningModule>
 }
 
 export async function createAdminModule(moduleData: InsertModule): Promise<Result<LearningModule>> {
+  await requireAdmin('en')
   try {
     const supabase = await createClient()
 
@@ -83,6 +87,7 @@ export async function createAdminModule(moduleData: InsertModule): Promise<Resul
 }
 
 export async function updateAdminModule(id: string, moduleData: UpdateModule): Promise<Result<LearningModule>> {
+  await requireAdmin('en')
   try {
     const supabase = await createClient()
     const { data, error } = await supabase

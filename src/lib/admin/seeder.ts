@@ -43,7 +43,7 @@ export async function seedDemoData(locale: string = 'en'): Promise<SeedResult> {
         description_ar: 'مسار تعليمي شامل لمبادئ ومفاهيم هندسة ضمان الجودة.',
         slug: pathSlug,
         sort_order: 1,
-        is_active: true,
+        is_active: false,
       })
       .select('id')
       .single()
@@ -244,7 +244,7 @@ export async function seedDemoData(locale: string = 'en'): Promise<SeedResult> {
           description_en: mData.description,
           description_ar: mData.description_ar,
           sort_order: mData.sort_order,
-          is_published: true,
+          is_published: false,
         })
         .select('id')
         .single()
@@ -288,7 +288,7 @@ export async function seedDemoData(locale: string = 'en'): Promise<SeedResult> {
             sort_order: lData.sort_order,
             estimated_minutes: 10,
             difficulty: 'Beginner',
-            is_published: true,
+            is_published: false,
           })
           .select('id')
           .single()
@@ -338,7 +338,7 @@ export async function seedDemoData(locale: string = 'en'): Promise<SeedResult> {
             challenge_type: 'bug_hunt',
             workflow_type: 'practical',
             practical_app_key: 'login_form',
-            is_active: true,
+            is_active: false,
             status: 'published',
             is_required: true,
             sort_order: mData.sort_order,

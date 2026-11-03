@@ -20,7 +20,7 @@ export const practicalChallengeSchema = z.object({
   base_xp_reward: z.number().int().min(10).max(10000),
   sort_order: z.number().int().min(1).default(1),
   is_required: z.boolean().default(true),
-  is_active: z.boolean().default(true),
+  is_active: z.boolean().default(false),
 
   // Practical Application system
   practical_app_key: z.string().nullable().optional(),

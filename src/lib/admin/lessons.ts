@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
 import type { LessonFormValues } from '@/lib/validations/lesson'
 import { getLocalizedContent } from '@/lib/i18n/content'
 import { Locale } from '@/i18n/config'
@@ -40,6 +41,7 @@ export interface LessonWithPath extends Lesson {
  * Fetch all lessons with learning path title and module title for admin.
  */
 export async function getAdminLessons(locale: Locale = 'en'): Promise<DataResult<LessonWithPath[]>> {
+  await requireAdmin('en')
   const supabase = await createClient()
 
   const { data: lessons, error: lessonsError } = await supabase
@@ -93,6 +95,7 @@ export async function getAdminLessons(locale: Locale = 'en'): Promise<DataResult
  * Fetch a single lesson by ID for admin.
  */
 export async function getAdminLessonById(id: string, locale: Locale = 'en'): Promise<DataResult<LessonWithPath>> {
+  await requireAdmin('en')
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -148,6 +151,7 @@ export async function getAdminLessonById(id: string, locale: Locale = 'en'): Pro
  * (or learning_path if no module) if not explicitly given.
  */
 export async function createLesson(input: LessonFormValues): Promise<DataResult<Lesson>> {
+  await requireAdmin('en')
   const supabase = await createClient()
 
   let sortOrder = input.sort_order
@@ -209,6 +213,7 @@ export async function createLesson(input: LessonFormValues): Promise<DataResult<
  * Update an existing lesson.
  */
 export async function updateLesson(id: string, input: LessonFormValues): Promise<DataResult<Lesson>> {
+  await requireAdmin('en')
   const supabase = await createClient()
 
   const slug = input.slug?.trim() || `lesson-${Date.now().toString(36)}`
@@ -252,6 +257,7 @@ export async function updateLesson(id: string, input: LessonFormValues): Promise
  * Toggle the published status of a lesson.
  */
 export async function toggleLessonPublished(id: string, isPublished: boolean): Promise<DataResult<Lesson>> {
+  await requireAdmin('en')
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -272,6 +278,7 @@ export async function toggleLessonPublished(id: string, isPublished: boolean): P
  * Duplicate an existing lesson into a new Draft lesson.
  */
 export async function duplicateLesson(id: string): Promise<DataResult<Lesson>> {
+  await requireAdmin('en')
   const supabase = await createClient()
 
   // 1. Fetch source lesson
@@ -342,6 +349,7 @@ export async function duplicateLesson(id: string): Promise<DataResult<Lesson>> {
  * Delete a lesson by ID.
  */
 export async function deleteLesson(id: string): Promise<DataResult<null>> {
+  await requireAdmin('en')
   const supabase = await createClient()
 
   const { error } = await supabase

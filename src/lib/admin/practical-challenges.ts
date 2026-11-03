@@ -1,3 +1,5 @@
+import 'server-only'
+import { requireAdmin } from '@/lib/auth/require-admin'
 import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/types/database.types'
 import type { PracticalChallengeFormValues } from '@/lib/validations/practical-challenge'
@@ -10,6 +12,7 @@ interface DataResult<T> {
 }
 
 export async function createPracticalChallenge(input: PracticalChallengeFormValues): Promise<DataResult<Challenge>> {
+  await requireAdmin('en')
   const supabase = await createClient()
 
   if (input.slug) {
@@ -102,6 +105,7 @@ export async function createPracticalChallenge(input: PracticalChallengeFormValu
 }
 
 export async function updatePracticalChallenge(id: string, input: PracticalChallengeFormValues): Promise<DataResult<Challenge>> {
+  await requireAdmin('en')
   const supabase = await createClient()
 
   if (input.slug) {
@@ -156,31 +160,8 @@ export async function updatePracticalChallenge(id: string, input: PracticalChall
     return { data: null, error: `Failed to update challenge: ${challengeError.message}` }
   }
 
-  // Handle bugs: We'll delete all old bugs for this challenge and re-insert the new ones to keep it simple.
-  await supabase
-    .from('hidden_bugs')
-    .delete()
-    .eq('challenge_id', id)
-
-  if (input.embedded_bugs && input.embedded_bugs.length > 0) {
-    const bugsToInsert = input.embedded_bugs.map(bug => ({
-      challenge_id: id,
-      bug_key: bug.bug_key,
-      bug_title: bug.bug_title,
-      description: bug.description || null,
-      actual_severity: bug.actual_severity,
-      bonus_xp: bug.bonus_xp,
-      is_active: bug.is_active,
-    }))
-
-    const { error: bugsError } = await supabase
-      .from('hidden_bugs')
-      .insert(bugsToInsert)
-
-    if (bugsError) {
-      console.error('Supabase Hidden Bugs Update Error:', bugsError)
-    }
-  }
+  const { error: syncError } = await supabase.rpc('curriculum_sync_bugs', { p_challenge: id, p_bugs: input.embedded_bugs || [] })
+  if (syncError) return { data: null, error: syncError.message }
 
   return { data: challenge as unknown as Challenge, error: null }
 }
