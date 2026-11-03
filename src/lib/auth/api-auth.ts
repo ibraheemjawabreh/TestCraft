@@ -19,8 +19,27 @@ export function checkOrigin(request:Request) {
 }
 export function apiFailure(error:unknown) {
   if (error instanceof ApiError) return Response.json({error:error.message},{status:error.status})
+  if (error instanceof SyntaxError) return Response.json({error:'Malformed JSON'},{status:400})
   if (error instanceof Error && error.name==='ZodError') return Response.json({error:'Validation failed',details:JSON.parse(error.message)},{status:400})
   console.error('TestCraft API failure', error instanceof Error ? error.name : 'UnknownError')
   return Response.json({error:'Operation failed. Check migrations, connection and server configuration.'},{status:500})
 }
 
+
+export async function readRequestText(request:Request,limit=10000):Promise<string>{
+ const declared=Number(request.headers.get('content-length')||0)
+ if(declared>limit)throw new ApiError(413,'Request exceeds the allowed size')
+ const reader=request.body?.getReader()
+ if(!reader)return ''
+ const decoder=new TextDecoder();let bytes=0,text=''
+ try{
+  while(true){
+   const {value,done}=await reader.read()
+   if(done)break
+   bytes+=value.byteLength
+   if(bytes>limit){await reader.cancel();throw new ApiError(413,'Request exceeds the allowed size')}
+   text+=decoder.decode(value,{stream:true})
+  }
+  return text+decoder.decode()
+ }finally{reader.releaseLock()}
+}

@@ -43,16 +43,16 @@ export const lessonSchema = z.object({
     .array(z.string().max(160, 'objectiveMax'))
     .default([]),
   estimated_minutes: z
-    .number({ invalid_type_error: 'required' })
+    .number({ error: 'required' })
     .int()
     .min(1, 'estMinutesMin')
     .max(240, 'estMinutesMax')
     .default(10),
   difficulty: z.enum(['Beginner', 'Intermediate', 'Advanced'], {
-    required_error: 'required',
+    error: 'required',
   }).default('Beginner'),
   sort_order: z
-    .number({ invalid_type_error: 'required' })
+    .number({ error: 'required' })
     .int()
     .min(0, 'sortOrderMin')
     .default(0),
@@ -60,4 +60,3 @@ export const lessonSchema = z.object({
 })
 
 export type LessonFormValues = z.infer<typeof lessonSchema>
-

@@ -1,4 +1,6 @@
 'use client'
+import type { z } from 'zod'
+import type { practicalChallengeSchema } from '@/lib/validations/practical-challenge'
 
 import { useFormContext } from 'react-hook-form'
 import type { PracticalChallengeFormValues } from '@/lib/validations/practical-challenge'
@@ -21,7 +23,7 @@ const SEVERITY_COLORS: Record<SeverityLevel, string> = {
 }
 
 export function IntentionalBugsSection({ locale }: { locale: Locale }) {
-  const form = useFormContext<PracticalChallengeFormValues>()
+  const form = useFormContext<z.input<typeof practicalChallengeSchema>, unknown, PracticalChallengeFormValues>()
   const appKey = form.watch('practical_app_key')
 
   if (!appKey) return null

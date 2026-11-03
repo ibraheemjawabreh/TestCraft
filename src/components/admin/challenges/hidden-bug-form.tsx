@@ -1,4 +1,5 @@
 'use client'
+import type { z } from 'zod'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -77,7 +78,7 @@ export function HiddenBugForm({
   const router = useRouter()
   const [serverError, setServerError] = useState<string | null>(null)
 
-  const form = useForm<HiddenBugFormValues>({
+  const form = useForm<z.input<typeof hiddenBugSchema>, unknown, HiddenBugFormValues>({
     resolver: zodResolver(hiddenBugSchema),
     defaultValues: {
       bug_title: bug?.bug_title ?? '',

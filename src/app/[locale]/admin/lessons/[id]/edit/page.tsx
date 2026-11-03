@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import { notFound } from 'next/navigation'
 import { getAdminLessonById } from '@/lib/admin/lessons'
 import { getAdminLearningPaths } from '@/lib/admin/learning-paths'
@@ -6,15 +7,18 @@ import { LessonContentStudio } from '@/components/admin/lessons/lesson-content-s
 import type { Locale } from '@/i18n/config'
 
 interface EditLessonPageProps {
-  params: {
-    locale: Locale
+  params: Promise<{
+    locale: string
     id: string
-  }
+  }>
 }
 
 export default async function EditLessonPage({
-  params: { locale, id },
+  params,
 }: EditLessonPageProps) {
+  const { locale: routeLocale, id } = await params
+  const locale = resolveLocale(routeLocale)
+
   const [lessonRes, pathsRes, modulesRes] = await Promise.all([
     getAdminLessonById(id, locale),
     getAdminLearningPaths(),

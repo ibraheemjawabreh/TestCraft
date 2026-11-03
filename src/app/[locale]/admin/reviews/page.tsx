@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import { getAdminReviewQueue } from '@/lib/admin/reviews'
 import { getDictionary } from '@/i18n/get-dictionary'
 import { type Locale } from '@/i18n/config'
@@ -5,12 +6,15 @@ import { ReviewQueueClient } from '@/components/admin/reviews/review-queue-clien
 import { ClipboardCheck } from 'lucide-react'
 
 interface AdminReviewsPageProps {
-  params: {
-    locale: Locale
-  }
+  params: Promise<{
+    locale: string
+  }>
 }
 
-export default async function AdminReviewsPage({ params: { locale } }: AdminReviewsPageProps) {
+export default async function AdminReviewsPage({ params }: AdminReviewsPageProps) {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+
   const dictionary = await getDictionary(locale)
   const result = await getAdminReviewQueue()
   const t = dictionary.admin.reviews

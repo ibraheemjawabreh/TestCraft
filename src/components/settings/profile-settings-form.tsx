@@ -1,4 +1,5 @@
 'use client'
+import type { z } from 'zod'
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
@@ -29,7 +30,7 @@ export function ProfileSettingsForm({ profile, dictionary }: ProfileSettingsForm
     register,
     handleSubmit,
     formState: { errors, isSubmitting, isDirty },
-  } = useForm<UpdateProfileValues>({
+  } = useForm<z.input<typeof updateProfileSchema>, unknown, UpdateProfileValues>({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
       username: profile.username,
@@ -121,7 +122,7 @@ export function ProfileSettingsForm({ profile, dictionary }: ProfileSettingsForm
               />
               <p className="text-xs text-muted-foreground">{dictionary.settings.readOnlyRole}</p>
             </div>
-            
+
             <div className="space-y-1.5">
               <label className="block text-sm font-medium text-foreground">
                 {dictionary.settings.totalXp}
@@ -154,7 +155,7 @@ export function ProfileSettingsForm({ profile, dictionary }: ProfileSettingsForm
               {serverError}
             </div>
           )}
-          
+
           {successMessage && (
             <div className="rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-400" role="status">
               {successMessage}

@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 export const runtime = 'nodejs';
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
@@ -26,8 +27,11 @@ const reviewSchema = z.object({
 
 export async function POST(
   request: Request,
-  { params: { locale } }: { params: { locale: Locale } }
+  { params }: { params: Promise<{ locale: string }> }
 ) {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+
   try {
     await requireAdmin(locale)
 

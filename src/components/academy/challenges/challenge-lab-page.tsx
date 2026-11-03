@@ -5,16 +5,12 @@ import type { Dictionary } from '@/i18n/types'
 import type { Locale } from '@/i18n/config'
 import type { ChallengeLabResult } from '@/lib/academy/challenge-lab'
 
-import dynamic from 'next/dynamic'
+import { BugReportForm } from '@/components/academy/challenges/bug-report-form'
 import { AcademyLayout } from '@/components/academy/academy-layout'
 import { ChallengeInstructionsCard } from '@/components/academy/challenges/challenge-instructions-card'
 import { MyChallengeReports } from '@/components/academy/challenges/my-challenge-reports'
 import { PracticalAppRenderer } from '@/components/practical-apps/PracticalAppRenderer'
 
-const BugReportForm = dynamic(
-  () => import('@/components/academy/challenges/bug-report-form').then(mod => mod.BugReportForm),
-  { ssr: false }
-)
 
 interface ChallengeLabPageProps {
   data: ChallengeLabResult
@@ -64,7 +60,7 @@ export function ChallengeLabPage({
       <div className="grid gap-8 lg:grid-cols-3">
         {/* Main Column */}
         <div className="lg:col-span-2 space-y-8">
-          
+
           {/* Challenge Header */}
           <div className="overflow-hidden rounded-2xl border border-border/50 bg-card/60 p-6 backdrop-blur-xl shadow-sm">
             <div className="flex flex-wrap gap-3 mb-4">
@@ -87,10 +83,10 @@ export function ChallengeLabPage({
           </div>
 
           {/* Scenario and Instructions */}
-          <ChallengeInstructionsCard 
-            dictionary={dictionary} 
-            scenario={challenge.scenario} 
-            instructions={challenge.instructions} 
+          <ChallengeInstructionsCard
+            dictionary={dictionary}
+            scenario={challenge.scenario}
+            instructions={challenge.instructions}
           />
 
           {/* The Lab Environment */}
@@ -101,7 +97,7 @@ export function ChallengeLabPage({
                 {dictionary.challengeLab.lab}
               </h2>
             </div>
-            
+
             {challenge.practical_app_key === 'login_form' && (
               <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 text-sm mb-4">
                 <p className="font-semibold mb-2 text-foreground">
@@ -124,7 +120,7 @@ export function ChallengeLabPage({
               </div>
             )}
 
-            <PracticalAppRenderer 
+            <PracticalAppRenderer
               appKey={challenge.practical_app_key}
               config={challenge.practical_app_config}
               challengeId={challenge.id}
@@ -143,9 +139,9 @@ export function ChallengeLabPage({
                 {dictionary.challengeLab.submitBugReport}
               </h2>
             </div>
-            
-            <BugReportForm 
-              challengeId={challenge.id} 
+
+            <BugReportForm
+              challengeId={challenge.id}
               labTemplateId={null}
               dictionary={dictionary}
             />

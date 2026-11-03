@@ -1,5 +1,4 @@
 import 'server-only'
-import { zodToJsonSchema } from 'zod-to-json-schema'
 import { z } from 'zod'
 import { activitySchema, lessonDraftSchema, qualityIssues } from './content.schema'
 import type { ManifestLesson } from './curriculum-manifest.schema'
@@ -7,7 +6,20 @@ export const generationOutputSchema=z.object({
  lesson:lessonDraftSchema,
  module_assessment:z.array(activitySchema).max(6),
 }).strict()
-const structuredSchema = zodToJsonSchema(generationOutputSchema,{$refStrategy:'none',target:'openAi'})
+function strictJSONSchema(value:unknown):unknown {
+ if(Array.isArray(value))return value.map(strictJSONSchema)
+ if(value&&typeof value==='object'){
+  const result:Record<string,unknown>={}
+  for(const [k,v] of Object.entries(value)){
+   if(k==='$schema'||k==='default')continue
+   if(k==='const')result.enum=[v]
+   else result[k]=strictJSONSchema(v)
+  }
+  return result
+ }
+ return value
+}
+const structuredSchema = strictJSONSchema(z.toJSONSchema(generationOutputSchema,{target:'draft-7'}))
 const schemaInputBound = Buffer.byteLength(JSON.stringify(structuredSchema),'utf8') + 4096
 export class ProviderError extends Error {
  constructor(message:string, public retryable:boolean,public actualCost=0){super(message)}
@@ -62,4 +74,3 @@ export async function generateLesson(spec:ManifestLesson,config:ProviderConfig,f
  return {output,actualCost}
  }catch{throw new ProviderError('Provider result failed content/schema validation; retry or editorial review required',true,actualCost)}
 }
-

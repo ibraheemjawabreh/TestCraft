@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import type { Metadata } from 'next'
 
 import { type Locale } from '@/i18n/config'
@@ -5,14 +6,17 @@ import { getDictionary } from '@/i18n/get-dictionary'
 import { MarketingHomepage } from '@/components/marketing/marketing-homepage'
 
 interface HomePageProps {
-  params: {
-    locale: Locale
-  }
+  params: Promise<{
+    locale: string
+  }>
 }
 
 export async function generateMetadata({
-  params: { locale },
+  params,
 }: HomePageProps): Promise<Metadata> {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+
   const dictionary = await getDictionary(locale)
 
   return {
@@ -26,7 +30,10 @@ export async function generateMetadata({
  * Replaces the previous redirect-to-login behavior.
  * Admin and academy routes remain fully protected and unaffected.
  */
-export default async function HomePage({ params: { locale } }: HomePageProps) {
+export default async function HomePage({ params }: HomePageProps) {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+
   const dictionary = await getDictionary(locale)
 
   return <MarketingHomepage dictionary={dictionary} locale={locale} />

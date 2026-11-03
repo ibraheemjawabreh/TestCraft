@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import type { Metadata } from 'next'
 
 import { Logo } from '@/components/brand/Logo'
@@ -13,7 +14,10 @@ export const metadata: Metadata = {
     'Create your free TestCraft account and start your QA engineering journey with real-world testing challenges.',
 }
 
-export default async function RegisterPage({ params: { locale } }: { params: { locale: Locale } }) {
+export default async function RegisterPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+
   const dictionary = await getDictionary(locale)
 
   return (

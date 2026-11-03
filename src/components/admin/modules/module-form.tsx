@@ -1,4 +1,5 @@
 'use client'
+import type { z } from 'zod'
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
@@ -32,7 +33,7 @@ export function ModuleForm({ paths, locale, initialData, onSuccess, defaultPathI
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<ModuleFormValues>({
+  } = useForm<z.input<typeof moduleSchema>, unknown, ModuleFormValues>({
     resolver: zodResolver(moduleSchema),
     defaultValues: initialData ?? {
       learning_path_id: defaultPathId ?? paths[0]?.id ?? '',

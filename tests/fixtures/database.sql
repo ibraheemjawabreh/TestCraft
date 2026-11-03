@@ -97,3 +97,9 @@ create policy fixture_attempts_read on challenge_attempts for select to authenti
 create policy fixture_attempts_insert on challenge_attempts for insert to authenticated with check(user_id=auth.uid() or public.is_admin());
 create policy fixture_attempts_update on challenge_attempts for update to authenticated using(user_id=auth.uid() or public.is_admin()) with check(user_id=auth.uid() or public.is_admin());
 
+
+-- Historical evaluation association retained privately by migration032.
+create table public.ai_evaluations(id uuid primary key default gen_random_uuid(),report_id uuid references bug_reports(id),matched_hidden_bug_id uuid references hidden_bugs(id),ai_score integer);
+alter table public.ai_evaluations enable row level security;
+grant select on public.ai_evaluations to authenticated;
+create policy fixture_evaluation_read on public.ai_evaluations for select to authenticated using(public.is_admin() or exists(select 1 from public.bug_reports r where r.id=report_id and r.user_id=auth.uid()));

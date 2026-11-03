@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import { LessonActivities } from '@/components/academy/learning/lesson-activities'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
@@ -13,10 +14,13 @@ import { LessonViewer } from '@/components/academy/learning/lesson-viewer'
 import { LessonActions } from '@/components/academy/learning/lesson-actions'
 
 export default async function TesterLessonPage({
-  params: { locale, id },
+  params,
 }: {
-  params: { locale: Locale; id: string }
+  params: Promise<{ locale: string; id: string }>
 }) {
+  const { locale: routeLocale, id } = await params
+  const locale = resolveLocale(routeLocale)
+
   const dictionary = await getDictionary(locale)
   const { user, profile } = await requireTester(locale)
   const isRtl = locale === 'ar'

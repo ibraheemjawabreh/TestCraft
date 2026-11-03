@@ -1,5 +1,16 @@
 # TestCraft
 
+The integrated Curriculum Factory now provides verified JSON/CSV import, budgeted resumable draft generation, bilingual revision/activity editing, explicit publication and private backups in the existing admin workspace. Learners have persisted checks and controlled login, registration and storefront practice apps.
+
+Actual authored output: **1 path,3 modules,9 English/Arabic lesson drafts and36 question/practice items**. All remain unpublished. The original complete Master Curriculum is missing; no346-lesson coverage or live Supabase insertion is claimed.
+
+- [Release audit and executed tests](docs/RELEASE_AUDIT.md)
+- [Migration, configuration and admin runbook](docs/TESTCRAFT_GO_LIVE.md)
+- [Exact content production report](docs/CONTENT_PRODUCTION_REPORT.md)
+- [Missing curriculum source](docs/CURRICULUM_SOURCE_MISSING.md)
+
+Use `npm ci`, `npm run content:validate`, `npm run type-check`, `npm test`, `npm run build` and `npm run test:ui`. Browser tests need `npx playwright install chromium`. The verified runtime is Next15.5.28 / React19 with Node24. Apply new migrations020–032 only after reconciling the existing database through019; historical base migrations002/003 are absent, so this checkout does not verify a fresh production bootstrap. Never replay the old attempt-rebuild migration on existing student data.
+
 ![TestCraft Platform](public/screenshots/hero-banner.png)
 
 TestCraft is a bilingual (Arabic & English) QA learning platform designed to help learners study Quality Assurance through structured learning paths, modules, lessons, and hands-on practical testing challenges. The platform features an extensive gamification engine that evaluates bug reports, tracks progress, and rewards users with XP, Levels, Ranks, and Badges as they advance in their QA journey.
@@ -87,7 +98,7 @@ TestCraft uses an automated gamification engine to motivate learners:
 
 2. **Install dependencies:**
    ```bash
-   npm install
+   npm ci
    # or yarn install / pnpm install
    ```
 

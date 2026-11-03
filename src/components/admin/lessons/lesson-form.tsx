@@ -1,4 +1,5 @@
 'use client'
+import type { z } from 'zod'
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
@@ -37,7 +38,7 @@ export function LessonForm({ paths, modules, dictionary, locale, initialData, on
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm<LessonFormValues>({
+  } = useForm<z.input<typeof lessonSchema>, unknown, LessonFormValues>({
     resolver: zodResolver(lessonSchema),
     defaultValues: initialData ?? {
       learning_path_id: defaultPathId ?? paths[0]?.id ?? '',

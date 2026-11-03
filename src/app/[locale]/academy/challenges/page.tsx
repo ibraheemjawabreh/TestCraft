@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import { requireTester } from '@/lib/auth/require-tester'
 import { getActiveChallengesForTester } from '@/lib/academy/challenges'
 import { getDictionary } from '@/i18n/get-dictionary'
@@ -6,10 +7,13 @@ import { ChallengesClient } from '@/components/academy/challenges-client'
 import { Sword } from 'lucide-react'
 
 export default async function AcademyChallengesPage({
-  params: { locale },
+  params,
 }: {
-  params: { locale: Locale }
+  params: Promise<{ locale: string }>
 }) {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+
   const dictionary = await getDictionary(locale)
   const { user, profile } = await requireTester(locale)
 

@@ -2,7 +2,10 @@
 
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 import { cn } from '@/lib/utils'
+import { factoryAr, factoryEn } from '@/i18n/factory'
 
 interface MarkdownRendererProps {
   content: string
@@ -23,7 +26,7 @@ interface MarkdownRendererProps {
 export function MarkdownRenderer({ content, className, dir = 'ltr' }: MarkdownRendererProps) {
   if (!content || content.trim() === '') {
     return (
-      <p className="text-muted-foreground italic text-sm">No content yet.</p>
+      <p className="text-muted-foreground italic text-sm">{(dir === 'rtl' ? factoryAr : factoryEn).noContent}</p>
     )
   }
 
@@ -33,7 +36,8 @@ export function MarkdownRenderer({ content, className, dir = 'ltr' }: MarkdownRe
       className={cn('markdown-body', dir === 'rtl' && 'text-right', className)}
     >
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={[remarkGfm,remarkMath]}
+        rehypePlugins={[[rehypeKatex,{trust:false,strict:'error',maxExpand:1000,maxSize:10}]]}
         components={{
           // Headings
           h1: ({ children }) => (
@@ -96,31 +100,8 @@ export function MarkdownRenderer({ content, className, dir = 'ltr' }: MarkdownRe
             <hr className="border-border/40 my-6" />
           ),
           // Inline code
-          code: ({ children, className: codeClass }) => {
-            const isBlock = codeClass?.includes('language-')
-            if (isBlock) {
-              // Extract language for display
-              const lang = codeClass?.replace('language-', '') ?? ''
-              return (
-                <div className="my-4 rounded-xl overflow-hidden border border-border/40">
-                  {lang && (
-                    <div className="bg-secondary/60 px-4 py-1.5 text-xs font-mono text-muted-foreground border-b border-border/40">
-                      {lang}
-                    </div>
-                  )}
-                  <pre dir="ltr" className="bg-secondary/40 p-4 overflow-x-auto text-left">
-                    <code className="text-sm font-mono text-foreground/90">{children}</code>
-                  </pre>
-                </div>
-              )
-            }
-            return (
-              <code dir="ltr" style={{ unicodeBidi: "isolate" }} className="rounded px-1.5 py-0.5 bg-secondary/60 text-sm font-mono text-primary/90 border border-border/30">
-                {children}
-              </code>
-            )
-          },
-          pre: ({ children }) => <>{children}</>,
+          code: ({children,className:codeClass}) => <code dir="ltr" style={{unicodeBidi:'isolate'}} className={cn('rounded px-1.5 py-0.5 bg-secondary/60 text-sm font-mono border border-border/30',codeClass)}>{children}</code>,
+          pre: ({children}) => <pre dir="ltr" className="my-4 overflow-x-auto rounded-xl border border-border/40 bg-secondary/40 p-4 text-left [&_code]:border-0 [&_code]:bg-transparent [&_code]:p-0">{children}</pre>,
           // Links
           a: ({ href, children }) => (
             <a

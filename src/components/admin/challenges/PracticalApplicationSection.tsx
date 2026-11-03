@@ -1,4 +1,6 @@
 'use client'
+import type { z } from 'zod'
+import type { practicalChallengeSchema } from '@/lib/validations/practical-challenge'
 
 import { useFormContext } from 'react-hook-form'
 import type { PracticalChallengeFormValues } from '@/lib/validations/practical-challenge'
@@ -10,7 +12,7 @@ import { getAllPracticalApps } from '@/lib/practical-challenges/registry'
 import { FlaskConical } from 'lucide-react'
 
 export function PracticalApplicationSection({ dictionary }: { dictionary: Dictionary }) {
-  const form = useFormContext<PracticalChallengeFormValues>()
+  const form = useFormContext<z.input<typeof practicalChallengeSchema>, unknown, PracticalChallengeFormValues>()
   const apps = getAllPracticalApps()
 
   return (
@@ -29,7 +31,7 @@ export function PracticalApplicationSection({ dictionary }: { dictionary: Dictio
           render={({ field }) => (
             <FormItem>
               <FormLabel>{dictionary.factory.builder.appType}</FormLabel>
-              <Select 
+              <Select
                 onValueChange={(value) => {
                   field.onChange(value)
                   // Reset config and bugs when app changes
@@ -38,7 +40,7 @@ export function PracticalApplicationSection({ dictionary }: { dictionary: Dictio
                     form.setValue('practical_app_config', app.defaultConfig)
                     form.setValue('embedded_bugs', [])
                   }
-                }} 
+                }}
                 value={field.value || ''}
               >
                 <FormControl>

@@ -1,4 +1,6 @@
 'use client'
+import type { z } from 'zod'
+import type { practicalChallengeSchema } from '@/lib/validations/practical-challenge'
 
 import { useFormContext } from 'react-hook-form'
 import type { PracticalChallengeFormValues } from '@/lib/validations/practical-challenge'
@@ -18,7 +20,7 @@ interface LearningConnectionSectionProps {
 }
 
 export function LearningConnectionSection({ dictionary, learningPathOptions, moduleOptions, lessonOptions }: LearningConnectionSectionProps) {
-  const form = useFormContext<PracticalChallengeFormValues>()
+  const form = useFormContext<z.input<typeof practicalChallengeSchema>, unknown, PracticalChallengeFormValues>()
 
   return (
     <Card>

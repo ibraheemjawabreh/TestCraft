@@ -27,14 +27,14 @@ export const challengeSchema = z.object({
   module_id: z.string().uuid('required').nullable().optional(),
   lab_template_id: z.string().uuid('required').nullable().optional(),
   challenge_type: z.enum(['bug_report', 'test_cases', 'api_testing', 'automation'], {
-    required_error: 'required',
+    error: 'required',
   }).default('bug_report'),
   lab_template: z.string().max(160, 'titleMax').optional().or(z.literal('')),
   difficulty: z.enum(['Beginner', 'Intermediate', 'Advanced'], {
-    required_error: 'required',
+    error: 'required',
   }),
   base_xp_reward: z
-    .number({ required_error: 'required', invalid_type_error: 'required' })
+    .number({ error: 'required', })
     .int()
     .min(10, 'xpMin')
     .max(10000, 'xpMax'),
@@ -54,10 +54,10 @@ export const hiddenBugSchema = z.object({
   description: z.string().max(1000, 'descriptionMax').optional().or(z.literal('')),
   bug_identifier: z.string().max(80, 'titleMax').optional().or(z.literal('')),
   actual_severity: z.enum(['Low', 'Medium', 'High', 'Critical'], {
-    required_error: 'required',
+    error: 'required',
   }),
   bonus_xp: z
-    .number({ required_error: 'required', invalid_type_error: 'required' })
+    .number({ error: 'required', })
     .int()
     .min(0, 'bonusXpMin')
     .max(1000, 'bonusXpMax'),

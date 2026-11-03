@@ -31,7 +31,7 @@ export const moduleSchema = z.object({
     .optional()
     .or(z.literal('')),
   sort_order: z
-    .number({ invalid_type_error: 'required' })
+    .number({ error: 'required' })
     .int()
     .min(0, 'sortOrderMin')
     .default(0),

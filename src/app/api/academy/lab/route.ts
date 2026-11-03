@@ -1,17 +1,17 @@
 import { z } from 'zod'
-import { apiUser,apiFailure,ApiError,checkOrigin } from '@/lib/auth/api-auth'
+import { apiUser,apiFailure,ApiError,checkOrigin , readRequestText } from '@/lib/auth/api-auth'
 import { createServiceClient } from '@/lib/supabase/service'
 import { initialState,simulate,type SimApp } from '@/lib/practical-challenges/simulator'
 import { assertDB } from '@/lib/curriculum/jobs'
 export const runtime='nodejs'
 export const dynamic='force-dynamic'
 const schema=z.object({challenge_id:z.string().uuid(),request_id:z.string().uuid(),
- action:z.object({type:z.enum(['view','reset','login','forgot','register','search','category','cart','checkout']),data:z.record(z.unknown()).optional()}).strict()}).strict()
+ action:z.object({type:z.enum(['view','reset','login','forgot','register','search','category','cart','checkout']),data:z.record(z.string(), z.unknown()).optional()}).strict()}).strict()
 export async function POST(request:Request){
  try{
  checkOrigin(request)
  const {db,user}=await apiUser()
- const raw=await request.text();if(raw.length>10000)throw new ApiError(413,'Lab action too large')
+ const raw=await readRequestText(request,10000);if(raw.length>10000)throw new ApiError(413,'Lab action too large')
  const input=schema.parse(JSON.parse(raw))
  const profile=assertDB(await db.from('profiles').select('role').eq('id',user.id).single())
  const admin=profile.role==='admin'
@@ -46,4 +46,3 @@ export async function POST(request:Request){
  return Response.json({data:committed.data})
  }catch(e){return apiFailure(e)}
 }
-

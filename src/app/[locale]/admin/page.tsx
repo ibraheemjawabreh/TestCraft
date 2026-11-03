@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import Link from 'next/link'
 import { ArrowRight, ClipboardCheck } from 'lucide-react'
 
@@ -13,15 +14,18 @@ import { getDictionary } from '@/i18n/get-dictionary'
 import { getAdminDashboardOverview } from '@/lib/admin/dashboard'
 
 interface AdminPageProps {
-  params: {
-    locale: Locale
-  }
+  params: Promise<{
+    locale: string
+  }>
 }
 
 /**
  * Admin Command Center (Dashboard Overview).
  */
-export default async function AdminOverviewPage({ params: { locale } }: AdminPageProps) {
+export default async function AdminOverviewPage({ params }: AdminPageProps) {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+
   const dictionary = await getDictionary(locale)
   const result = await getAdminDashboardOverview()
   const t = dictionary.admin.dashboard
@@ -74,10 +78,10 @@ export default async function AdminOverviewPage({ params: { locale } }: AdminPag
 
           {/* Core System Stats */}
           <AdminSystemOverview dictionary={dictionary} stats={result.data.stats} />
-          
+
           {/* Quick Actions */}
           <AdminQuickActions dictionary={dictionary} locale={locale} />
-          
+
           {/* Recent Activity */}
           <div className="space-y-4 animate-fade-in-up stagger-5">
             <h2 className="text-xl font-semibold tracking-tight">{t.recentActivity}</h2>

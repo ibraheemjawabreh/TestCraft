@@ -1,6 +1,8 @@
 'use client'
+import { resolveLocale } from '@/lib/locale'
+import type { z } from 'zod'
 
-import { useState } from 'react'
+import { use, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Mail, Loader2, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react'
@@ -29,7 +31,7 @@ function ForgotPasswordForm({ locale }: { locale: Locale }) {
   const [formState, setFormState] = useState<FormState>('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const form = useForm<ForgotPasswordFormValues>({
+  const form = useForm<z.input<typeof forgotPasswordSchema>, unknown, ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: { email: '' },
     mode: 'onBlur',
@@ -150,10 +152,13 @@ function ForgotPasswordForm({ locale }: { locale: Locale }) {
 }
 
 export default function ForgotPasswordPage({
-  params: { locale },
+  params,
 }: {
-  params: { locale: Locale }
+  params: Promise<{ locale: string }>
 }) {
+  const { locale: routeLocale } = use(params)
+  const locale = resolveLocale(routeLocale)
+
   return (
     <main className="auth-page relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-12">
       {/* Background orbs */}

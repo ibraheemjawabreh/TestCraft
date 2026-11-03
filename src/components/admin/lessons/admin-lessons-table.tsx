@@ -225,7 +225,7 @@ export function AdminLessonsTable({ lessons, paths, dictionary, locale }: AdminL
 
                     {/* Status */}
                     <td className="py-3.5 px-4 text-center">
-                      <LessonStatusBadge isPublished={lesson.is_published} size="sm" />
+                      <LessonStatusBadge locale={locale} isPublished={lesson.is_published} size="sm" />
                     </td>
 
                     {/* Actions */}
@@ -279,4 +279,3 @@ export function AdminLessonsTable({ lessons, paths, dictionary, locale }: AdminL
     </div>
   )
 }
-

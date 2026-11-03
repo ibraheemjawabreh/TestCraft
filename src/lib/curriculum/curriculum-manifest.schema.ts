@@ -84,6 +84,7 @@ export function parseManifestCSV(csv: string): CurriculumManifest {
   if (quoted) throw new Error('Unclosed CSV quote')
   if (cell || row.length) { row.push(cell.replace(/\r$/, '')); rows.push(row) }
   const headers = rows.shift()?.map(x => x.replace(/^\uFEFF/, '').trim()) || []
+  if(new Set(headers).size!==headers.length)throw new Error('Duplicate CSV column headers')
   const required = ['path_slug','path_title_en','path_title_ar','path_order','path_description_en','path_description_ar',
     'module_slug','module_title_en','module_title_ar','module_order','module_description_en','module_description_ar',
     'lesson_slug','title_en','title_ar','sort_order','objectives_en','objectives_ar']
@@ -92,6 +93,7 @@ export function parseManifestCSV(csv: string): CurriculumManifest {
   for (const values of rows.filter(r => r.some(Boolean))) {
     if (values.length !== headers.length) throw new Error('CSV column count mismatch')
     const r = Object.fromEntries(headers.map((h,i) => [h, values[i]]))
+    for(const key of ['path_order','module_order','sort_order'])if(!r[key].trim())throw new Error('Missing explicit order: '+key)
     let p = paths.find(x => x.path_slug === r.path_slug)
     const pData = { path_slug: r.path_slug, title_en:r.path_title_en, title_ar:r.path_title_ar, sort_order:Number(r.path_order),
       description_en:r.path_description_en, description_ar:r.path_description_ar }
@@ -109,4 +111,3 @@ export function parseManifestCSV(csv: string): CurriculumManifest {
   return curriculumManifestSchema.parse({version:1, source:{name:'Administrator CSV import',location:'uploaded CSV',
     canonical:false,note:'Verify this source against the approved Master Curriculum before production.'},paths})
 }
-

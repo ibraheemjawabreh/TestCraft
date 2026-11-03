@@ -193,7 +193,7 @@ export function LessonContentStudio({
     const result = await saveLessonInternal()
     setIsSaving(false)
     if (result.success) {
-      setSuccessMessage('Draft saved successfully.')
+      setSuccessMessage(factory.saved)
       setTimeout(() => setSuccessMessage(null), 3500)
     }
   }
@@ -206,7 +206,8 @@ export function LessonContentStudio({
       meta.title_en,
       meta.title_ar,
       contentEn,
-      contentAr
+      contentAr,
+      locale
     )
 
     if (!validation.canPublish) {
@@ -226,7 +227,7 @@ export function LessonContentStudio({
     setIsPublishing(false)
 
     if (result.success) {
-      setSuccessMessage('Lesson published successfully!')
+      setSuccessMessage(factory.saved)
       setTimeout(() => setSuccessMessage(null), 4000)
       router.refresh()
     }
@@ -244,7 +245,7 @@ export function LessonContentStudio({
       setErrorMessage(res.error)
     } else {
       setMeta((prev) => ({ ...prev, is_published: false }))
-      setSuccessMessage('Lesson unpublished and returned to Draft.')
+      setSuccessMessage(factory.saved)
       setTimeout(() => setSuccessMessage(null), 3500)
       router.refresh()
     }
@@ -292,13 +293,12 @@ export function LessonContentStudio({
             className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-secondary/40 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            All Lessons
-          </Link>
+            {factory.studio.all}</Link>
           <div className="flex items-center gap-2">
             <h1 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-foreground">
               {currentId ? 'Lesson Content Studio' : 'Create New Lesson'}
             </h1>
-            <LessonStatusBadge isPublished={meta.is_published} />
+            <LessonStatusBadge locale={locale} isPublished={meta.is_published} />
           </div>
         </div>
 
@@ -313,8 +313,7 @@ export function LessonContentStudio({
                 title="Duplicate lesson into a new draft"
               >
                 <Copy className="h-3.5 w-3.5" />
-                Duplicate
-              </button>
+                {factory.studio.duplicate}</button>
 
               <Link
                 href={`/${locale}/admin/lessons/${currentId}`}
@@ -323,8 +322,7 @@ export function LessonContentStudio({
                 title="Open student preview in new tab"
               >
                 <ExternalLink className="h-3.5 w-3.5" />
-                Preview Page
-              </Link>
+                {factory.studio.preview}</Link>
             </>
           )}
         </div>
@@ -348,7 +346,7 @@ export function LessonContentStudio({
       {/* Top Grid: Metadata (2/3) + Publish & Autosave Panel (1/3) */}
       <div className="grid gap-6 lg:grid-cols-3 items-start">
         <div className="lg:col-span-2">
-          <LessonMetadataForm
+          <LessonMetadataForm locale={locale}
             meta={meta}
             onChange={handleMetaChange}
             paths={paths}
@@ -358,7 +356,7 @@ export function LessonContentStudio({
         </div>
 
         <div className="lg:col-span-1">
-          <LessonPublishPanel
+          <LessonPublishPanel locale={locale}
             isPublished={meta.is_published}
             moduleId={meta.module_id}
             titleEn={meta.title_en}
@@ -382,8 +380,7 @@ export function LessonContentStudio({
           {/* Language Tabs */}
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider me-1">
-              Language:
-            </span>
+              {factory.studio.language}</span>
             <button
               type="button"
               onClick={() => setActiveLang('en')}
@@ -394,7 +391,7 @@ export function LessonContentStudio({
                   : 'bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground'
               )}
             >
-              <span>English</span>
+              <span>{factory.studio.english}</span>
               {isEnComplete && (
                 <span className="text-xs bg-green-500/20 text-green-300 rounded-full px-1.5 py-0.2">
                   ✓
@@ -434,8 +431,7 @@ export function LessonContentStudio({
               )}
             >
               <Edit3 className="h-3.5 w-3.5" />
-              Editor Only
-            </button>
+              {factory.studio.edit}</button>
 
             <button
               type="button"
@@ -448,8 +444,7 @@ export function LessonContentStudio({
               )}
             >
               <Columns2 className="h-3.5 w-3.5" />
-              Side-by-Side
-            </button>
+              {factory.studio.split}</button>
 
             <button
               type="button"
@@ -462,8 +457,7 @@ export function LessonContentStudio({
               )}
             >
               <Eye className="h-3.5 w-3.5" />
-              Preview Only
-            </button>
+              {factory.studio.previewOnly}</button>
           </div>
         </div>
 
@@ -517,4 +511,3 @@ export function LessonContentStudio({
     </div>
   )
 }
-

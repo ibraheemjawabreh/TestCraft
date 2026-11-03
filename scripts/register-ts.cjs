@@ -5,9 +5,12 @@ Module._resolveFilename=function(name,parent,...args){
  if(name==='server-only')return path.join(__dirname,'server-only-test-stub.cjs')
  return resolve.call(this,name,parent,...args)
 }
-require.extensions['.ts']=(module,file)=>{
+const compile=(module,file)=>{
  const source=fs.readFileSync(file,'utf8')
  const output=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true,jsx:ts.JsxEmit.ReactJSX}}).outputText
  module._compile(output,file)
 }
 
+
+require.extensions['.ts']=compile
+require.extensions['.tsx']=compile

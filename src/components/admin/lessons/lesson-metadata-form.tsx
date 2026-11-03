@@ -1,4 +1,5 @@
 'use client'
+import { factoryEn, factoryAr } from '@/i18n/factory'
 
 import { useEffect, useMemo } from 'react'
 import type { LearningPathWithLessonCount } from '@/lib/admin/learning-paths'
@@ -23,6 +24,7 @@ interface Module {
 }
 
 interface LessonMetadataFormProps {
+  locale?: 'en' | 'ar'
   meta: LessonMeta
   onChange: (updates: Partial<LessonMeta>) => void
   paths: LearningPathWithLessonCount[]
@@ -46,12 +48,14 @@ const inputClass =
 const labelClass = 'block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5'
 
 export function LessonMetadataForm({
+  locale = 'en',
   meta,
   onChange,
   paths,
   modules,
   disabled = false,
 }: LessonMetadataFormProps) {
+  const labels = (locale === 'ar' ? factoryAr : factoryEn).metadata
   // Filter modules by selected learning path
   const availableModules = useMemo(
     () => modules.filter((m) => m.learning_path_id === meta.learning_path_id),
@@ -78,20 +82,19 @@ export function LessonMetadataForm({
   return (
     <div className="rounded-xl border border-border/50 bg-card/60 backdrop-blur-sm p-6 space-y-5">
       <h2 className="text-sm font-semibold text-foreground/70 uppercase tracking-wider">
-        Lesson Information
-      </h2>
+        {labels.info}</h2>
 
       {/* Row 1: Path + Module */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className={labelClass}>Learning Path *</label>
+          <label className={labelClass}>{labels.path}</label>
           <select
             value={meta.learning_path_id}
             onChange={(e) => onChange({ learning_path_id: e.target.value })}
             className={inputClass}
             disabled={disabled}
           >
-            <option value="">— Select a path —</option>
+            <option value="">{labels.selectPath}</option>
             {paths.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.title_en || p.title_ar || 'Untitled Path'}
@@ -101,14 +104,14 @@ export function LessonMetadataForm({
         </div>
 
         <div>
-          <label className={labelClass}>Module *</label>
+          <label className={labelClass}>{labels.module}</label>
           <select
             value={meta.module_id}
             onChange={(e) => onChange({ module_id: e.target.value })}
             className={inputClass}
             disabled={disabled || !meta.learning_path_id}
           >
-            <option value="">— Select a module —</option>
+            <option value="">{labels.selectModule}</option>
             {availableModules.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.title_en || m.title_ar || 'Untitled Module'}
@@ -116,7 +119,7 @@ export function LessonMetadataForm({
             ))}
           </select>
           {!meta.learning_path_id && (
-            <p className="mt-1 text-xs text-muted-foreground">Select a learning path first.</p>
+            <p className="mt-1 text-xs text-muted-foreground">{labels.pathFirst}</p>
           )}
         </div>
       </div>
@@ -124,7 +127,7 @@ export function LessonMetadataForm({
       {/* Row 2: English Title + Arabic Title */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className={labelClass}>English Title *</label>
+          <label className={labelClass}>{labels.enTitle}</label>
           <input
             type="text"
             value={meta.title_en}
@@ -137,7 +140,7 @@ export function LessonMetadataForm({
         </div>
 
         <div>
-          <label className={labelClass}>Arabic Title *</label>
+          <label className={labelClass}>{labels.arTitle}</label>
           <input
             type="text"
             value={meta.title_ar}
@@ -153,7 +156,7 @@ export function LessonMetadataForm({
       {/* Row 3: Slug + Sort Order */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className={labelClass}>Slug (URL)</label>
+          <label className={labelClass}>{labels.slug}</label>
           <input
             type="text"
             value={meta.slug}
@@ -164,12 +167,11 @@ export function LessonMetadataForm({
             dir="ltr"
           />
           <p className="mt-1 text-xs text-muted-foreground">
-            Auto-generated from English title. Must be unique within the module.
-          </p>
+            {labels.slugHint}</p>
         </div>
 
         <div>
-          <label className={labelClass}>Sort Order</label>
+          <label className={labelClass}>{labels.order}</label>
           <input
             type="number"
             min={0}
@@ -185,21 +187,21 @@ export function LessonMetadataForm({
       {/* Row 4: Difficulty + Estimated Minutes */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className={labelClass}>Difficulty</label>
+          <label className={labelClass}>{labels.difficulty}</label>
           <select
             value={meta.difficulty}
             onChange={(e) => onChange({ difficulty: e.target.value as LessonMeta['difficulty'] })}
             className={inputClass}
             disabled={disabled}
           >
-            <option value="Beginner">Beginner</option>
-            <option value="Intermediate">Intermediate</option>
-            <option value="Advanced">Advanced</option>
+            <option value="Beginner">{labels.beginner}</option>
+            <option value="Intermediate">{labels.intermediate}</option>
+            <option value="Advanced">{labels.advanced}</option>
           </select>
         </div>
 
         <div>
-          <label className={labelClass}>Estimated Minutes</label>
+          <label className={labelClass}>{labels.minutes}</label>
           <input
             type="number"
             min={1}

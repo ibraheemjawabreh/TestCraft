@@ -29,8 +29,7 @@ export const bugReportSchema = z.object({
     .max(1500, 'resultMax'),
 
   reported_severity: z.enum(['Low', 'Medium', 'High', 'Critical'], {
-    required_error: 'severityRequired',
-    invalid_type_error: 'severityRequired',
+    error: 'severityRequired',
   }),
 })
 

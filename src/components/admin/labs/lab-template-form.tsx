@@ -1,4 +1,5 @@
 'use client'
+import type { z } from 'zod'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -21,7 +22,7 @@ interface LabTemplateFormProps {
 export function LabTemplateForm({ initialData, locale }: LabTemplateFormProps) {
   const router = useRouter()
   const [serverError, setServerError] = useState<string | null>(null)
-  
+
   const isEditing = !!initialData
 
   const {
@@ -30,7 +31,7 @@ export function LabTemplateForm({ initialData, locale }: LabTemplateFormProps) {
     setValue,
     watch,
     formState: { errors, isSubmitting },
-  } = useForm<LabTemplateFormValues>({
+  } = useForm<z.input<typeof labTemplateSchema>, unknown, LabTemplateFormValues>({
     resolver: zodResolver(labTemplateSchema),
     defaultValues: {
       name_en: initialData?.name_en ?? '',
@@ -47,12 +48,12 @@ export function LabTemplateForm({ initialData, locale }: LabTemplateFormProps) {
 
   const onSubmit = async (data: LabTemplateFormValues) => {
     setServerError(null)
-    
+
     try {
       const url = isEditing
         ? `/${locale}/admin/labs/api/update`
         : `/${locale}/admin/labs/api/create`
-        
+
       const payload = isEditing ? { ...data, id: initialData.id } : data
 
       const res = await fetch(url, {
@@ -114,7 +115,7 @@ export function LabTemplateForm({ initialData, locale }: LabTemplateFormProps) {
         {/* Basic Info */}
         <div className="space-y-6 rounded-2xl border border-border/50 bg-card/40 p-6 backdrop-blur-xl">
           <h2 className="font-heading text-lg font-semibold text-foreground border-b border-border/50 pb-2">Basic Info</h2>
-          
+
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-foreground">Name (English) <span className="text-red-500">*</span></label>
             <input
@@ -147,7 +148,7 @@ export function LabTemplateForm({ initialData, locale }: LabTemplateFormProps) {
         {/* Configuration */}
         <div className="space-y-6 rounded-2xl border border-border/50 bg-card/40 p-6 backdrop-blur-xl">
           <h2 className="font-heading text-lg font-semibold text-foreground border-b border-border/50 pb-2">Configuration</h2>
-          
+
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-foreground">Lab Type <span className="text-red-500">*</span></label>
             <select

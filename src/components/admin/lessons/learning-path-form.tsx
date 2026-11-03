@@ -1,4 +1,5 @@
 'use client'
+import type { z } from 'zod'
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
@@ -29,7 +30,7 @@ export function LearningPathForm({ dictionary, locale, initialData, onSuccess }:
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LearningPathFormValues>({
+  } = useForm<z.input<typeof learningPathSchema>, unknown, LearningPathFormValues>({
     resolver: zodResolver(learningPathSchema),
     defaultValues: initialData ?? {
       title_en: '',

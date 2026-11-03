@@ -1,15 +1,19 @@
+import { resolveLocale } from '@/lib/locale'
 import { getDictionary } from '@/i18n/get-dictionary'
 import { getAdminLabTemplates } from '@/lib/admin/lab-templates'
 import { LabsTable } from '@/components/admin/labs/labs-table'
 import type { Locale } from '@/i18n/config'
 
 interface AdminLabsPageProps {
-  params: {
-    locale: Locale
-  }
+  params: Promise<{
+    locale: string
+  }>
 }
 
-export default async function AdminLabsPage({ params: { locale } }: AdminLabsPageProps) {
+export default async function AdminLabsPage({ params }: AdminLabsPageProps) {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+
   const dictionary = await getDictionary(locale)
   const { data: labs } = await getAdminLabTemplates()
 

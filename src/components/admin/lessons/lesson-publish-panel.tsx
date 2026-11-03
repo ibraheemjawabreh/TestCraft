@@ -1,31 +1,9 @@
 'use client'
+import { factoryEn, factoryAr } from '@/i18n/factory'
 
 import { AlertTriangle, CheckCircle2, XCircle, Loader2, Save, Globe2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { LessonStatusBadge } from './lesson-status-badge'
-
-// ── Educational structure sections to check ────────────────────────────────
-const EXPECTED_SECTIONS = [
-  'Summary',
-  'Learning Objectives',
-  'Why This Lesson Matters',
-  'Main Explanation',
-  'Deep Explanation',
-  'Real-world Example',
-  'Common Beginner Mistakes',
-  'Mini Practice',
-  'Key Takeaways',
-  'Connection to Next Lesson',
-]
-
-/** Check which expected sections are missing from a Markdown body */
-function getMissingSections(markdown: string): string[] {
-  return EXPECTED_SECTIONS.filter((section) => {
-    // Match case-insensitively, allowing ## or ###
-    const pattern = new RegExp(`##+ .*${section}`, 'i')
-    return !pattern.test(markdown)
-  })
-}
 
 export interface PublishValidationResult {
   canPublish: boolean
@@ -34,6 +12,7 @@ export interface PublishValidationResult {
 }
 
 export interface LessonPublishPanelProps {
+  locale?: 'en' | 'ar'
   isPublished: boolean
   moduleId: string
   titleEn: string
@@ -50,52 +29,25 @@ export interface LessonPublishPanelProps {
 }
 
 /** Validate lesson before publishing */
-export function validateForPublish(
-  moduleId: string,
-  titleEn: string,
-  titleAr: string,
-  contentEn: string,
-  contentAr: string,
-): PublishValidationResult {
-  const blockingErrors: string[] = []
-  const structureWarnings: string[] = []
-
-  if (!moduleId) blockingErrors.push('A module must be selected.')
-  if (!titleEn.trim()) blockingErrors.push('English title is missing.')
-  if (!titleAr.trim()) blockingErrors.push('Arabic title is missing.')
-  if (!contentEn.trim() || contentEn.trim().length < 30)
-    blockingErrors.push('English content is missing or too short (minimum 30 characters).')
-  if (!contentAr.trim() || contentAr.trim().length < 30)
-    blockingErrors.push('Arabic content is missing or too short (minimum 30 characters).')
-
-  // Structure warnings (non-blocking) — only check if content is present
-  if (contentEn.trim().length >= 30) {
-    const missingSectionsEn = getMissingSections(contentEn)
-    missingSectionsEn.forEach((s) => {
-      structureWarnings.push(`English content is missing the "${s}" section.`)
-    })
-  }
-
-  if (contentAr.trim().length >= 30) {
-    const missingSectionsAr = getMissingSections(contentAr)
-    missingSectionsAr.forEach((s) => {
-      structureWarnings.push(`Arabic content is missing the "${s}" section.`)
-    })
-  }
-
-  return {
-    canPublish: blockingErrors.length === 0,
-    blockingErrors,
-    structureWarnings,
-  }
+export function validateForPublish(moduleId:string,titleEn:string,titleAr:string,contentEn:string,contentAr:string,locale:'en'|'ar'='en'):PublishValidationResult {
+ const t=(locale==='ar'?factoryAr:factoryEn).publishPanel
+ const blockingErrors:string[]=[],structureWarnings:string[]=[]
+ if(!moduleId)blockingErrors.push(t.moduleMissing)
+ if(!titleEn.trim())blockingErrors.push(t.enTitle)
+ if(!titleAr.trim())blockingErrors.push(t.arTitle)
+ if(contentEn.trim().length<2200)blockingErrors.push(t.enContent)
+ if(contentAr.trim().length<1800)blockingErrors.push(t.arContent)
+ if((contentEn.match(/^## /gm)||[]).length<5||(contentAr.match(/^## /gm)||[]).length<5)structureWarnings.push(t.structure)
+ return{canPublish:!blockingErrors.length,blockingErrors,structureWarnings}
 }
 
 /** Check if a language version is "complete" (title + content present) */
-function isLanguageComplete(title: string, content: string): boolean {
-  return title.trim().length >= 3 && content.trim().length >= 30
+function isLanguageComplete(title: string, content: string, minimum=1800): boolean {
+  return title.trim().length >= 3 && content.trim().length >= minimum
 }
 
 export function LessonPublishPanel({
+  locale = 'en',
   isPublished,
   moduleId,
   titleEn,
@@ -110,9 +62,10 @@ export function LessonPublishPanel({
   onPublish,
   onUnpublish,
 }: LessonPublishPanelProps) {
-  const validation = validateForPublish(moduleId, titleEn, titleAr, contentEn, contentAr)
+  const labels = (locale === 'ar' ? factoryAr : factoryEn).publishPanel
+  const validation = validateForPublish(moduleId, titleEn, titleAr, contentEn, contentAr, locale)
   const arComplete = isLanguageComplete(titleAr, contentAr)
-  const enComplete = isLanguageComplete(titleEn, contentEn)
+  const enComplete = isLanguageComplete(titleEn, contentEn,2200)
 
   const isLoading = isSaving || isPublishing
 
@@ -121,23 +74,22 @@ export function LessonPublishPanel({
       {/* Header row: Status + Autosave indicator */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</span>
-          <LessonStatusBadge isPublished={isPublished} />
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{labels.status}</span>
+          <LessonStatusBadge locale={locale} isPublished={isPublished} />
         </div>
 
         {/* Save indicator */}
         <div className="text-xs text-muted-foreground">
           {isSaving && (
             <span className="flex items-center gap-1 text-amber-400">
-              <Loader2 className="h-3 w-3 animate-spin" /> Saving...
-            </span>
+              <Loader2 className="h-3 w-3 animate-spin" /> {labels.saving}</span>
           )}
           {!isSaving && hasUnsavedChanges && (
-            <span className="text-amber-400">● Unsaved changes</span>
+            <span className="text-amber-400">{labels.unsaved}</span>
           )}
           {!isSaving && !hasUnsavedChanges && lastSavedAt && (
             <span className="text-green-400">
-              ✓ Saved {lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              {labels.saved}{lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
         </div>
@@ -154,8 +106,7 @@ export function LessonPublishPanel({
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 space-y-2">
           <p className="text-xs font-semibold text-destructive flex items-center gap-1.5">
             <XCircle className="h-3.5 w-3.5 shrink-0" />
-            Cannot publish — fix these first:
-          </p>
+            {labels.blocked}</p>
           <ul className="space-y-1">
             {validation.blockingErrors.map((err) => (
               <li key={err} className="text-xs text-destructive/90">
@@ -171,8 +122,7 @@ export function LessonPublishPanel({
         <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 space-y-2">
           <p className="text-xs font-semibold text-amber-400 flex items-center gap-1.5">
             <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-            Structure warnings (non-blocking):
-          </p>
+            {labels.warnings}</p>
           <ul className="space-y-1">
             {validation.structureWarnings.map((w) => (
               <li key={w} className="text-xs text-amber-400/90">
@@ -197,8 +147,7 @@ export function LessonPublishPanel({
           )}
         >
           {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          Save Draft
-        </button>
+          {labels.save}</button>
 
         {/* Publish / Unpublish */}
         {isPublished ? (
@@ -213,8 +162,7 @@ export function LessonPublishPanel({
             )}
           >
             {isPublishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe2 className="h-4 w-4" />}
-            Unpublish
-          </button>
+            {labels.unpublish}</button>
         ) : (
           <button
             type="button"
@@ -227,8 +175,7 @@ export function LessonPublishPanel({
             )}
           >
             {isPublishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe2 className="h-4 w-4" />}
-            Publish Lesson
-          </button>
+            {labels.publish}</button>
         )}
       </div>
     </div>

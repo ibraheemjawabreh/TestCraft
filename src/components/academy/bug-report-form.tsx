@@ -1,4 +1,5 @@
 'use client'
+import type { z } from 'zod'
 
 import { useState, useTransition } from 'react'
 import { useForm } from 'react-hook-form'
@@ -51,7 +52,7 @@ export function BugReportForm({ challengeId, dictionary, onSuccess }: BugReportF
     watch,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<BugReportFormValues>({
+  } = useForm<z.input<typeof bugReportSchema>, unknown, BugReportFormValues>({
     resolver: zodResolver(bugReportSchema),
   })
 

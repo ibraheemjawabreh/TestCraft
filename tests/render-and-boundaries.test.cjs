@@ -1,0 +1,15 @@
+require('../scripts/register-ts.cjs')
+const {test}=require('node:test'),assert=require('node:assert/strict')
+test('bounded request reader rejects oversized streams and malformed JSON gets400',async()=>{
+ const {readRequestText,apiFailure}=require('../src/lib/auth/api-auth.ts')
+ assert.equal(await readRequestText(new Request('http://localhost',{method:'POST',body:'abc'}),4),'abc')
+ await assert.rejects(()=>readRequestText(new Request('http://localhost',{method:'POST',body:'12345'}),4),e=>e.status===413)
+ assert.equal(apiFailure(new SyntaxError('bad JSON')).status,400)
+})
+test('Markdown renders safe equations, unlabeled code fences and isolated RTL code',()=>{
+ const React=require('react'),{renderToStaticMarkup}=require('react-dom/server')
+ const {MarkdownRenderer}=require('../src/components/ui/markdown-renderer.tsx')
+ const html=renderToStaticMarkup(React.createElement(MarkdownRenderer,{dir:'rtl',content:'## مثال\n\n$total = 12 \\times 3$\n\n\x60\x60\x60\nexpected: 36\nactual: 12\n\x60\x60\x60\n\n<script>alert(1)</script>'}))
+ assert.match(html,/class="katex"/);assert.match(html,/<pre dir="ltr"/);assert.match(html,/expected: 36/)
+ assert.doesNotMatch(html,/<script>/)
+})

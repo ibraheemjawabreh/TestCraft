@@ -1,4 +1,5 @@
 'use client'
+import {factoryEn,factoryAr} from '@/i18n/factory'
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
@@ -133,45 +134,27 @@ interface DeleteDialogProps {
   onClose: () => void
   onConfirm: () => void
   isDeleting: boolean
+  locale: Locale
 }
 
-function DeleteDialog({ challenge, open, onClose, onConfirm, isDeleting }: DeleteDialogProps) {
+function DeleteDialog({ challenge, open, onClose, onConfirm, isDeleting,locale }: DeleteDialogProps) {
+  const t=(locale==='ar'?factoryAr:factoryEn).lab
   if (!challenge) return null
   return (
     <AlertDialog open={open} onOpenChange={(v) => !v && onClose()}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2 text-rose-600">
-            <AlertTriangle className="h-5 w-5" />
-            Delete Challenge
-          </AlertDialogTitle>
-          <AlertDialogDescription asChild>
-            <div className="space-y-2">
-              <p>
-                Are you sure you want to permanently delete{' '}
-                <span className="font-semibold text-foreground">{challenge.title}</span>?
-              </p>
-              <div className="rounded-lg bg-rose-500/10 border border-rose-500/20 p-3 text-sm text-rose-600 dark:text-rose-400 space-y-1">
-                <p className="font-semibold">This will permanently delete:</p>
-                <ul className="list-disc list-inside space-y-0.5 text-xs">
-                  <li>The challenge record</li>
-                  <li>All hidden bugs linked to it ({challenge.hidden_bugs_count} bugs)</li>
-                </ul>
-                <p className="text-xs mt-2 font-medium">
-                  ⚠️ Attempts, reports, and XP records are preserved.
-                </p>
-              </div>
-            </div>
-          </AlertDialogDescription>
+          <AlertDialogTitle>{t.archive}</AlertDialogTitle>
+          <AlertDialogDescription>{t.confirmArchive} <strong>{challenge.title}</strong></AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isDeleting}>{locale==='ar'?factoryAr.builder.cancel:factoryEn.builder.cancel}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             disabled={isDeleting}
             className="bg-rose-600 hover:bg-rose-700 text-white"
           >
-            {isDeleting ? 'Deleting…' : 'Yes, Delete'}
+            {isDeleting ? '…' : t.archive}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -450,7 +433,7 @@ export function ChallengesTable({ challenges, dictionary, locale }: ChallengesTa
   const [search, setSearch] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<ChallengeWithBugCount | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
-  
+
   const [archiveTarget, setArchiveTarget] = useState<ChallengeWithBugCount | null>(null)
   const [isArchiving, setIsArchiving] = useState(false)
 
@@ -526,7 +509,7 @@ export function ChallengesTable({ challenges, dictionary, locale }: ChallengesTa
       />
 
       {/* Delete Confirmation Dialog */}
-      <DeleteDialog
+      <DeleteDialog locale={locale}
         challenge={deleteTarget}
         open={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}

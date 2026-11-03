@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import { AcademyLayout } from '@/components/academy/academy-layout'
 import { ActivityDashboard } from '@/components/academy/activity/activity-dashboard'
 import { getTesterActivity } from '@/lib/academy/activity'
@@ -6,10 +7,13 @@ import { type Locale } from '@/i18n/config'
 import { getDictionary } from '@/i18n/get-dictionary'
 
 export default async function AcademyActivityPage({
-  params: { locale },
+  params,
 }: {
-  params: { locale: Locale }
+  params: Promise<{ locale: string }>
 }) {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+
   const dictionary = await getDictionary(locale)
   const { user, profile } = await requireTester(locale)
   const { data: activity, error } = await getTesterActivity(user.id)

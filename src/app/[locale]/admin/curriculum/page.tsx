@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import { CurriculumFactory } from '@/components/admin/curriculum/curriculum-factory'
 import { getDictionary } from '@/i18n/get-dictionary'
@@ -6,10 +7,13 @@ import { CurriculumManager } from '@/components/admin/curriculum/CurriculumManag
 import type { Locale } from '@/i18n/config'
 
 export default async function CurriculumPage({
-  params: { locale },
+  params,
 }: {
-  params: { locale: Locale }
+  params: Promise<{ locale: string }>
 }) {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+
   await requireAdmin(locale)
   const dictionary = await getDictionary(locale)
   const { data, error } = await getCurriculumTree()

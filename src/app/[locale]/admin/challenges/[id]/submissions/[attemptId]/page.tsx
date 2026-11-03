@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import { notFound } from 'next/navigation'
 import NextLink from 'next/link'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
@@ -10,16 +11,19 @@ import { Button } from '@/components/ui/button'
 import type { Locale } from '@/i18n/config'
 
 interface ReviewPageProps {
-  params: {
-    locale: Locale
+  params: Promise<{
+    locale: string
     id: string
     attemptId: string
-  }
+  }>
 }
 
 export default async function ChallengeAttemptReviewPage({
-  params: { locale, id, attemptId },
+  params,
 }: ReviewPageProps) {
+  const { locale: routeLocale, id, attemptId } = await params
+  const locale = resolveLocale(routeLocale)
+
   await requireAdmin(locale)
 
   const dictionary = await getDictionary(locale)

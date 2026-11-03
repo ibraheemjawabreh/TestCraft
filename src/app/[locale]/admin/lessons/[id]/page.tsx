@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, Pencil, Clock, BarChart3, Globe2 } from 'lucide-react'
@@ -8,19 +9,23 @@ import { LessonStatusBadge } from '@/components/admin/lessons/lesson-status-badg
 import type { Locale } from '@/i18n/config'
 
 interface LessonPreviewPageProps {
-  params: {
-    locale: Locale
+  params: Promise<{
+    locale: string
     id: string
-  }
-  searchParams?: {
+  }>
+  searchParams?: Promise<{
     lang?: 'en' | 'ar'
-  }
+  }>
 }
 
 export default async function AdminLessonPreviewPage({
-  params: { locale, id },
+  params,
   searchParams,
 }: LessonPreviewPageProps) {
+  const { locale: routeLocale, id } = await params
+  const locale = resolveLocale(routeLocale)
+  const resolvedSearchParams = await searchParams
+
   const dictionary = await getDictionary(locale)
   const result = await getAdminLessonById(id, locale)
 
@@ -29,7 +34,7 @@ export default async function AdminLessonPreviewPage({
   }
 
   const lesson = result.data
-  const activeLang = searchParams?.lang ?? (locale === 'ar' ? 'ar' : 'en')
+  const activeLang = resolvedSearchParams?.lang ?? (locale === 'ar' ? 'ar' : 'en')
 
   const title = activeLang === 'ar' ? lesson.title_ar || lesson.title_en : lesson.title_en || lesson.title_ar
   const content = activeLang === 'ar' ? lesson.content_ar || lesson.content_en : lesson.content_en || lesson.content_ar

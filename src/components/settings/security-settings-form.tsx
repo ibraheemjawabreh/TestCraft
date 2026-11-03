@@ -1,4 +1,5 @@
 'use client'
+import type { z } from 'zod'
 
 import { useState, useTransition } from 'react'
 import { useForm } from 'react-hook-form'
@@ -26,7 +27,7 @@ export function SecuritySettingsForm({ user, dictionary }: SecuritySettingsFormP
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<UpdatePasswordValues>({
+  } = useForm<z.input<typeof updatePasswordSchema>, unknown, UpdatePasswordValues>({
     resolver: zodResolver(updatePasswordSchema),
   })
 
@@ -136,7 +137,7 @@ export function SecuritySettingsForm({ user, dictionary }: SecuritySettingsFormP
                 {serverError}
               </div>
             )}
-            
+
             {successMessage && (
               <div className="rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-400" role="status">
                 {successMessage}

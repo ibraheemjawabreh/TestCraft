@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Space_Grotesk, Plus_Jakarta_Sans } from 'next/font/google'
 
 import '../globals.css'
+import 'katex/dist/katex.min.css'
 import { notFound } from 'next/navigation'
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import { isValidLocale } from '@/lib/locale'
@@ -61,13 +62,15 @@ export const viewport: Viewport = {
 
 import { DomRemoveDebugger } from '@/components/debug/dom-remove-debugger'
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
-  params: { locale },
+  params,
 }: Readonly<{
   children: React.ReactNode
-  params: { locale: string }
+  params: Promise<{ locale: string }>
 }>) {
+  const { locale } = await params
+
   if (!isValidLocale(locale)) {
     notFound()
   }
@@ -93,4 +96,3 @@ export default function RootLayout({
     </html>
   )
 }
-

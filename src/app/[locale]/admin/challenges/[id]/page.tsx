@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import { notFound } from 'next/navigation'
 import NextLink from 'next/link'
 import { ArrowLeft, ArrowRight, Pencil, Trophy, Target, ShieldAlert, Users } from 'lucide-react'
@@ -12,10 +13,10 @@ import { Card, CardContent } from '@/components/ui/card'
 import type { Locale } from '@/i18n/config'
 
 interface ChallengeDetailsPageProps {
-  params: {
-    locale: Locale
+  params: Promise<{
+    locale: string
     id: string
-  }
+  }>
 }
 
 const difficultyColor: Record<string, string> = {
@@ -25,8 +26,11 @@ const difficultyColor: Record<string, string> = {
 }
 
 export default async function ChallengeDetailsPage({
-  params: { locale, id },
+  params,
 }: ChallengeDetailsPageProps) {
+  const { locale: routeLocale, id } = await params
+  const locale = resolveLocale(routeLocale)
+
   const dictionary = await getDictionary(locale)
   const isRtl = locale === 'ar'
 
@@ -106,7 +110,7 @@ export default async function ChallengeDetailsPage({
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="bg-card/40 backdrop-blur-xl border-border/50">
           <CardContent className="p-6 flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">

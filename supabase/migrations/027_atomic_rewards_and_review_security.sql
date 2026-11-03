@@ -99,7 +99,9 @@ begin
  select * into c from public.challenges where id=a.challenge_id;
  select coalesce(current_level,1) into previous from public.profiles where id=a.user_id for update;
  -- Serialize by profile and award each challenge once across all retries, preserving historical transactions.
- if not a.xp_awarded and not exists(select 1 from public.xp_transactions tx join public.challenge_attempts old on old.id=tx.source_id
+ if not a.xp_awarded and not exists(select 1 from public.challenge_attempts old
+   where old.user_id=a.user_id and old.challenge_id=a.challenge_id and old.id<>a.id and old.xp_awarded)
+  and not exists(select 1 from public.xp_transactions tx join public.challenge_attempts old on old.id=tx.source_id
    where tx.user_id=a.user_id and tx.reason='challenge_approved' and old.challenge_id=a.challenge_id) then
   if c.base_xp_reward>0 then
    insert into public.xp_transactions(user_id,source_type,source_id,amount,reason,metadata)

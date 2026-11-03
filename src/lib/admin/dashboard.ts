@@ -100,8 +100,8 @@ export async function getAdminDashboardOverview(): Promise<AdminDashboardResult>
     supabase.from('challenge_attempts').select('*', { count: 'exact', head: true }).in('status', ['submitted', 'reviewing']),
     supabase.from('challenge_attempts').select('*', { count: 'exact', head: true }).eq('status', 'approved'),
     supabase.from('challenge_attempts').select('*', { count: 'exact', head: true }).eq('status', 'rejected'),
-    supabase.from('bug_reports').select('*', { count: 'exact', head: true }),
-    supabase.from('bug_reports').select('*', { count: 'exact', head: true }).eq('status', 'Pending'),
+    supabase.from('bug_reports').select('id', { count: 'exact', head: true }),
+    supabase.from('bug_reports').select('id', { count: 'exact', head: true }).eq('status', 'Pending'),
     supabase
       .from('bug_reports')
       .select('id, title, status, reported_severity, created_at, user_id, challenge_id')

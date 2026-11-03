@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import { AcademyLayout } from '@/components/academy/academy-layout'
 import { ModuleView } from '@/components/academy/home/module-view'
 import { getLearningPathWithProgress, getAllLearningPaths } from '@/lib/academy/services/ModuleService'
@@ -6,10 +7,13 @@ import { getDictionary } from '@/i18n/get-dictionary'
 import { type Locale } from '@/i18n/config'
 
 export default async function AcademyPage({
-  params: { locale },
+  params,
 }: {
-  params: { locale: Locale }
+  params: Promise<{ locale: string }>
 }) {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+
   const dictionary = await getDictionary(locale)
   const { user, profile } = await requireTester(locale)
 

@@ -1,12 +1,16 @@
+import { resolveLocale } from '@/lib/locale'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import { LabTemplateForm } from '@/components/admin/labs/lab-template-form'
 import type { Locale } from '@/i18n/config'
 
 export default async function NewLabTemplatePage({
-  params: { locale },
+  params,
 }: {
-  params: { locale: Locale }
+  params: Promise<{ locale: string }>
 }) {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+
   await requireAdmin(locale)
 
   return (

@@ -91,7 +91,7 @@ export async function getTesterReportsForAttempt(
 
     const { data, error } = await supabase
       .from('bug_reports')
-      .select('*')
+      .select('id,user_id,challenge_id,lab_template_id,attempt_id,title,steps_to_reproduce,expected_result,actual_result,reported_severity,status,created_at,admin_feedback,admin_score,reviewed_at,reviewed_by,environment,evidence_url')
       .eq('attempt_id', attemptId)
       .order('created_at', { ascending: false })
 
@@ -117,7 +117,7 @@ export async function getTesterReportsForChallenge(
 
     const { data, error } = await supabase
       .from('bug_reports')
-      .select('*')
+      .select('id,user_id,challenge_id,lab_template_id,attempt_id,title,steps_to_reproduce,expected_result,actual_result,reported_severity,status,created_at,admin_feedback,admin_score,reviewed_at,reviewed_by,environment,evidence_url')
       .eq('user_id', userId)
       .eq('challenge_id', challengeId)
       .order('created_at', { ascending: false })

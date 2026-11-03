@@ -53,7 +53,7 @@ export async function getLessonWithModuleGate(
 
     // Check module access
     if (lesson.module_id) {
-      const { data: allowed, error: gateError } = await supabase.rpc('curriculum_can_read_module', { p_module: lesson.module_id })
+      const { data: allowed, error: gateError } = await supabase.rpc('curriculum_can_read_lesson', { p_lesson: lesson.id })
       if (gateError || !allowed) {
         return { data: null, error: 'module_locked' }
       }
@@ -85,7 +85,7 @@ export async function getLessonWithModuleGate(
     let challengeId = null
     if (isLastInModule) {
       let query = supabase.from('challenges').select('id').eq('is_active', true)
-      
+
       if (lesson.module_id) {
         query = query.eq('module_id', lesson.module_id)
       } else {
@@ -209,4 +209,3 @@ export async function getNextLessonForUser(
     return { data: null, error: 'Failed to get next lesson.' }
   }
 }
-

@@ -1,13 +1,15 @@
+import {factoryEn,factoryAr} from '@/i18n/factory'
 import { CheckCircle2, Clock3 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface LessonStatusBadgeProps {
+  locale?:'en'|'ar'
   isPublished: boolean
   className?: string
   size?: 'sm' | 'md'
 }
 
-export function LessonStatusBadge({ isPublished, className, size = 'sm' }: LessonStatusBadgeProps) {
+export function LessonStatusBadge({ locale='en', isPublished, className, size = 'sm' }: LessonStatusBadgeProps) {
   const textSize = size === 'sm' ? 'text-xs' : 'text-sm'
   const iconSize = size === 'sm' ? 'h-3 w-3' : 'h-4 w-4'
 
@@ -21,7 +23,7 @@ export function LessonStatusBadge({ isPublished, className, size = 'sm' }: Lesso
         )}
       >
         <CheckCircle2 className={iconSize} aria-hidden="true" />
-        Published
+{(locale==='ar'?factoryAr:factoryEn).status.published}
       </span>
     )
   }
@@ -35,7 +37,7 @@ export function LessonStatusBadge({ isPublished, className, size = 'sm' }: Lesso
       )}
     >
       <Clock3 className={iconSize} aria-hidden="true" />
-      Draft
+{(locale==='ar'?factoryAr:factoryEn).status.applied}
     </span>
   )
 }

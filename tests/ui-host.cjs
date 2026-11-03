@@ -97,7 +97,7 @@ async function dispatch(req,res){
  if(url.pathname==='/__fixture/seed-labs'){await actor(ADMIN);await seedLabs();json({ok:true});return}
  if(url.pathname==='/__fixture/state'){
   await actor(ADMIN)
-  json({lessons:await q('select id,slug,is_published from lessons'),attempts:await q('select * from challenge_attempts'),reports:await q('select * from bug_reports'),xp:await q('select * from xp_transactions'),jobs:await q('select * from curriculum_jobs')});return
+  json({lessons:await q('select id,slug,is_published from lessons'),attempts:await q('select * from challenge_attempts'),reports:await q('select id,title,status,environment from bug_reports'),xp:await q('select id,user_id,amount,reason from xp_transactions'),jobs:await q('select * from curriculum_jobs')});return
  }
  if(url.pathname==='/api/admin/curriculum'){
   if(role!=='admin'){json({error:'Forbidden'},403);return}
@@ -156,12 +156,12 @@ async function dispatch(req,res){
   const attempt=(await q('select * from challenge_attempts order by created_at desc limit1'.replace('limit1','limit 1')))[0]
   const challenge=(await q('select * from challenges where id=$1',[attempt.challenge_id]))[0]
   fixture.review={attempt,challenge:{...challenge,title:'Controlled QA challenge'},tester:{username:'Fixture tester',total_xp:0,current_level:1},
-   reports:await q('select * from bug_reports where attempt_id=$1',[attempt.id]),hiddenBugs:await q('select * from hidden_bugs where challenge_id=$1',[attempt.challenge_id])}
+   reports:(await rpc('curriculum_admin_review_details',{p_attempt:attempt.id})).reports,hiddenBugs:await q('select * from hidden_bugs where challenge_id=$1',[attempt.challenge_id])}
  }
  res.setHeader('Set-Cookie','fixture-role='+role+'; Path=/; SameSite=Strict')
  res.setHeader('Content-Type','text/html; charset=utf-8')
  const data=JSON.stringify(fixture).replaceAll('<','\\u003c')
- res.end('<!doctype html><html lang="'+locale+'"><head><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/ui.css"></head><body><div id="root"></div><script>window.__FIXTURE__='+data+'</script><script src="/ui.js"></script></body></html>')
+ res.end('<!doctype html><html lang="'+locale+'"><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>:root{--font-plus-jakarta:Arial;--font-syne:Arial}</style><link rel="stylesheet" href="/ui.css"></head><body><div id="root"></div><script>window.__FIXTURE__='+data+'</script><script src="/ui.js"></script></body></html>')
  }catch(e){json({error:e.message},400)}
 }
 async function main(){

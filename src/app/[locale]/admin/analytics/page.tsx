@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import { getAdminAnalytics } from '@/lib/admin/analytics'
 import { getDictionary } from '@/i18n/get-dictionary'
 import { type Locale } from '@/i18n/config'
@@ -21,12 +22,15 @@ import {
 } from 'lucide-react'
 
 interface AdminAnalyticsPageProps {
-  params: {
-    locale: Locale
-  }
+  params: Promise<{
+    locale: string
+  }>
 }
 
-export default async function AdminAnalyticsPage({ params: { locale } }: AdminAnalyticsPageProps) {
+export default async function AdminAnalyticsPage({ params }: AdminAnalyticsPageProps) {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+
   const dictionary = await getDictionary(locale)
   const result = await getAdminAnalytics()
   const t = dictionary.admin.analytics

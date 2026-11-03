@@ -1,6 +1,8 @@
 require('../scripts/register-ts.cjs')
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs')
 const bundle=JSON.parse(fs.readFileSync('content/pilot-bundle.json','utf8'))
+// Fixture-only explicit prerequisite: SDLC requires the preceding QA/QC lesson.
+bundle.manifest.paths[0].modules[0].lessons[2].prerequisites=[bundle.lessons[1].key]
 const ADMIN='00000000-0000-4000-8000-000000000001',TESTER='00000000-0000-4000-8000-000000000002',OTHER='00000000-0000-4000-8000-000000000003'
 test('isolated PostgreSQL migration, RLS, import, review, publication, attempts and budgets',async(t)=>{
  const {PGlite}=await import('@electric-sql/pglite')
@@ -9,7 +11,7 @@ test('isolated PostgreSQL migration, RLS, import, review, publication, attempts 
  const actor=async(id,role='authenticated')=>db.exec("reset role;set role "+role+";set request.jwt.claim.sub='"+id+"'")
  try{
  await db.exec(fs.readFileSync('tests/fixtures/database.sql','utf8'))
- for(const migration of ['020_practical_challenge_security.sql','021_curriculum_factory.sql','022_curriculum_jobs.sql','023_practical_lab_sessions.sql','024_curriculum_backup_and_bug_history.sql','025_bug_report_context.sql','026_curriculum_assessment_review.sql','027_atomic_rewards_and_review_security.sql','028_report_review_security.sql','029_complete_module_progression.sql','030_admin_reward_inspection.sql'])
+ for(const migration of ['020_practical_challenge_security.sql','021_curriculum_factory.sql','022_curriculum_jobs.sql','023_practical_lab_sessions.sql','024_curriculum_backup_and_bug_history.sql','025_bug_report_context.sql','026_curriculum_assessment_review.sql','027_atomic_rewards_and_review_security.sql','028_report_review_security.sql','029_complete_module_progression.sql','030_admin_reward_inspection.sql','031_manifest_prerequisites.sql','032_private_review_metadata.sql'])
   await db.exec(fs.readFileSync('supabase/migrations/'+migration,'utf8').replace(/^\uFEFF/,''))
  await actor(ADMIN)
  const load=async()=> (await q('select curriculum_import($1::jsonb,$2,$3::jsonb,$4::jsonb) result',
@@ -50,6 +52,8 @@ test('isolated PostgreSQL migration, RLS, import, review, publication, attempts 
  let publicActivities
  await t.test('public DTO contains no keys/rubrics/explanations; objective grading is idempotent and retakes preserve history',async()=>{
   publicActivities=(await q('select curriculum_get_activities($1) result',[firstLesson.id]))[0].result
+  const totals=(await q('select curriculum_module_completion($1) result',[firstLesson.module_id]))[0].result
+  assert.equal(totals.total,3);assert.equal(totals.published,1);assert.equal(totals.ready,false)
   assert.equal(publicActivities.length,3, 'No early checkpoint while later module lessons remain drafts')
   const own=publicActivities.filter(a=>!a.module_assessment)
   assert.equal(own.length,3)
@@ -128,7 +132,19 @@ test('isolated PostgreSQL migration, RLS, import, review, publication, attempts 
   assert.equal((await q('select curriculum_award_challenge($1,$2::uuid[]) result',[attempt,found]))[0].result.totalXpAwarded,0)
   const retry=(await q("insert into challenge_attempts(user_id,challenge_id,status,is_passed) values($1,$2,'approved',true) returning id",[TESTER,cid]))[0].id
   assert.equal((await q('select curriculum_award_challenge($1,$2::uuid[]) result',[retry,found]))[0].result.totalXpAwarded,0)
+  // A zero-base challenge has no challenge_approved transaction to act as its guard.
+  const zero=(await q("insert into challenges(slug,module_id,learning_path_id,is_active,is_required,status,base_xp_reward) values('zero-base',$1,$2,false,false,'draft',0) returning id",[firstLesson.module_id,firstLesson.learning_path_id]))[0].id
+  const zeroBug=(await q("insert into hidden_bugs(challenge_id,bug_key,is_active,bonus_xp) values($1,'zero-base-bug',true,25) returning id",[zero]))[0].id
+  const zeroAttempt=async()=>(await q("insert into challenge_attempts(user_id,challenge_id,status,is_passed) values($1,$2,'approved',true) returning id",[TESTER,zero]))[0].id
+  assert.equal((await q('select curriculum_award_challenge($1,$2::uuid[]) result',[await zeroAttempt(),[zeroBug]]))[0].result.totalXpAwarded,50)
+  assert.equal((await q('select curriculum_award_challenge($1,$2::uuid[]) result',[await zeroAttempt(),[zeroBug]]))[0].result.totalXpAwarded,0)
+  assert.deepEqual((await q('select curriculum_admin_review_details($1) result',[attempt]))[0].result.awarded_bug_ids,[bug])
   await actor(TESTER)
+  await assert.rejects(()=>q('select metadata from xp_transactions'),/permission denied/)
+  await assert.rejects(()=>q('select matched_hidden_bug_id from bug_reports'),/permission denied/)
+  await assert.rejects(()=>q('select matched_hidden_bug_id from ai_evaluations'),/permission denied/)
+  await assert.rejects(()=>q('select curriculum_admin_review_details($1)',[attempt]),/Administrator/)
+  assert.ok((await q('select amount,reason from xp_transactions')).length>0)
   await assert.rejects(()=>q('select curriculum_award_challenge($1,$2::uuid[])',[attempt,found]),/Administrator/)
   await assert.rejects(()=>q("insert into challenge_attempts(user_id,challenge_id,status,is_passed) values($1,$2,'approved',true)",[TESTER,cid]),/admin-only/)
   const started=(await q("insert into challenge_attempts(user_id,challenge_id,status,is_passed) values($1,$2,'started',false) returning id",[TESTER,cid]))[0].id
@@ -147,8 +163,12 @@ test('isolated PostgreSQL migration, RLS, import, review, publication, attempts 
   for(const l of rows)await q('select curriculum_publish($1,true)',[l.id])
   await actor(TESTER)
   assert.equal((await q('select curriculum_can_enter_lab($1) allowed',[cid]))[0].allowed,false)
+  assert.equal((await q('select curriculum_can_read_lesson($1) allowed',[rows.at(-1).id]))[0].allowed,false)
+  await assert.rejects(()=>q('select curriculum_get_activities($1)',[rows.at(-1).id]),/unavailable/)
   for(const l of rows)await q('insert into lesson_progress(user_id,lesson_id,completed_at) values($1,$2,now()) on conflict do nothing',[TESTER,l.id])
   assert.equal((await q('select curriculum_can_enter_lab($1) allowed',[cid]))[0].allowed,true)
+  assert.equal((await q('select curriculum_module_completion($1) result',[firstLesson.module_id]))[0].result.ready,true)
+  assert.equal((await q('select curriculum_can_read_lesson($1) allowed',[rows.at(-1).id]))[0].allowed,true)
   const first=(await q('select curriculum_get_activities($1) result',[rows[0].id]))[0].result
   const last=(await q('select curriculum_get_activities($1) result',[rows.at(-1).id]))[0].result
   assert.equal(first.filter(x=>x.module_assessment).length,0)
@@ -161,7 +181,7 @@ test('isolated PostgreSQL migration, RLS, import, review, publication, attempts 
   const restored=new PGlite()
   try{
    await restored.exec(fs.readFileSync('tests/fixtures/database.sql','utf8'))
-   for(const m of ['020_practical_challenge_security.sql','021_curriculum_factory.sql','022_curriculum_jobs.sql','023_practical_lab_sessions.sql','024_curriculum_backup_and_bug_history.sql','025_bug_report_context.sql','026_curriculum_assessment_review.sql','027_atomic_rewards_and_review_security.sql','028_report_review_security.sql','029_complete_module_progression.sql','030_admin_reward_inspection.sql'])
+   for(const m of ['020_practical_challenge_security.sql','021_curriculum_factory.sql','022_curriculum_jobs.sql','023_practical_lab_sessions.sql','024_curriculum_backup_and_bug_history.sql','025_bug_report_context.sql','026_curriculum_assessment_review.sql','027_atomic_rewards_and_review_security.sql','028_report_review_security.sql','029_complete_module_progression.sql','030_admin_reward_inspection.sql','031_manifest_prerequisites.sql','032_private_review_metadata.sql'])
     await restored.exec(fs.readFileSync('supabase/migrations/'+m,'utf8').replace(/^\uFEFF/,''))
    await restored.exec("set role authenticated;set request.jwt.claim.sub='"+ADMIN+"'")
    const restore=()=>restored.query('select curriculum_restore_test_backup($1::jsonb,$2) result',[JSON.stringify(payload),'RESTORE_EMPTY_TEST_DATABASE'])
@@ -173,12 +193,10 @@ test('isolated PostgreSQL migration, RLS, import, review, publication, attempts 
    assert.deepEqual((await restored.query('select id,title_ar,content_ar from lessons order by id')).rows,original)
    const a=await q('select id,body,lesson_id,module_id from lesson_activities order by id')
    assert.deepEqual((await restored.query('select id,body,lesson_id,module_id from lesson_activities order by id')).rows,a)
-   assert.equal((await restored.query('select count(*)::int n from challenges')).rows[0].n,1)
+   assert.equal((await restored.query('select count(*)::int n from challenges')).rows[0].n,payload.challenges.length)
+   assert.equal((await restored.query('select count(*)::int n from lesson_prerequisites')).rows[0].n,1)
    await assert.rejects(()=>restore(),/empty curriculum/)
   }finally{await restored.close()}
  })
  }finally{await db.close()}
 })
-
-
-

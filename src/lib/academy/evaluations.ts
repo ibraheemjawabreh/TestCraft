@@ -30,7 +30,6 @@ export async function getTesterAiEvaluations(
       .select(`
         id,
         report_id,
-        matched_hidden_bug_id,
         ai_score,
         quality_feedback,
         earned_xp,

@@ -12,21 +12,20 @@ Implemented sequentially by Codex in the same checkout after backend checkpoint 
 - Reports contain environment, optional evidence URL, idempotency request IDs and awaited attempt submission. Review supports individual classifications/feedback, manual decisions and existing bug checklist.
 - Removed destructive delete/reinsert behavior for hidden bugs; archival retains records, attempts and XP references.
 
-New UI strings are in src/i18n/factory.ts and exposed through the existing EN/AR dictionary modules. Some legacy studio/review strings are being completed in final integration.
+New UI strings are in src/i18n/factory.ts and exposed through the existing EN/AR dictionary modules. Factory, studio metadata/publication, challenge configuration/review and learner difficulty labels use bilingual strings. Older screens outside this workflow may retain legacy English labels.
 
 ## Contract changes found during integration
 
-Migration025 adds report context;026 versions edited module checkpoints and validates challenge links;027 makes XP atomic and prevents learner modification of review/reward fields;028 protects report review fields;029 enforces complete module progression;030 gives administrators read access to reward history. Apply020–030 sequentially after the existing schema.
+Migration025 adds report context;026 versions edited module checkpoints and validates challenge links;027 makes XP atomic and prevents learner modification of review/reward fields;028 protects report review fields;029 enforces complete module progression;030 gives administrators read access to reward history;031 resolves imported prerequisites;032 protects legacy review/reward metadata through column privileges and an admin-only RPC. Apply020–032 sequentially after reconciling the existing schema through019.
 
 Private labs require server-only SUPABASE_SERVICE_ROLE_KEY. A missing key produces an honest unavailable state. A complete published module and its lesson completions are prerequisites for lab entry; partial publication cannot surface a checkpoint early.
 
 ## Actual verification checkpoint
 
-Production build passed on Next14.2.35 before a current dependency audit found newer critical advisories. Final integration will upgrade the maintained line and re-run all checks.
+Final clean install, TypeScript and production build passed on Next15.5.28/React19.3.1/Zod4.6.7 after current security advisories required the framework upgrade. All asynchronous route/form contracts were migrated. The production dependency audit reports0 advisories; development-tool advisories remain separately recorded in RELEASE_AUDIT.md.
 
-Unit/database/simulation tests passed at this checkpoint (21 including nested cases). Playwright executed the real Next login/guest redirects in both locales, factory import/edit/apply/publish/pause/resume/budget stop, bilingual lesson checks, human rubric review, and login defect/report submission. Admin reward-inspection RLS exposed a remaining test issue, repaired by030; complete browser rerun is pending. Do not describe this as live Supabase acceptance.
+Final automated tests:23 passed,0 failed. Seven Chromium scenarios passed: real Next login/guest redirects in both locales, factory import/edit/apply/publish/pause/resume/budget stop, bilingual lesson checks/mobile RTL, human rubric review, login defect/report submission/history, admin report review with exactly-once XP, and registration/storefront/reset/checkout. The browser-discovered checkpoint and admin reward-inspection gaps were repaired. Do not describe this as live Supabase acceptance.
 
 Browser fixtures use actual React components and production PostgreSQL RPCs in an isolated PGlite database, with deterministic authored provider output and test-only router/auth substitutions. Fixture prerequisite lesson completions are seeded before lab smoke tests. No production authentication bypass was added.
 
 Screenshots, when present in .test-output, come from this actual fixture runtime. Final results and remaining blockers belong in RELEASE_AUDIT.md.
-

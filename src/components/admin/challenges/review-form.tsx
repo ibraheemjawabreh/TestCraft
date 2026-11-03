@@ -59,6 +59,7 @@ const attemptStatusLabels: Record<string, string> = {
 export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps) {
   const router = useRouter()
   const dict = dictionary.admin.challenges
+  const attemptStatusLabels:Record<string,string>={started:dictionary.factory.status.running,submitted:dictionary.factory.reviewUI.submitted,reviewing:dictionary.factory.reviewUI.reviewing,approved:dictionary.factory.status.approved,rejected:dictionary.factory.reject}
   const { attempt, tester, challenge, reports, hiddenBugs } = attemptData
 
   const isTerminal = attempt.status === 'approved' || attempt.status === 'rejected'
@@ -75,7 +76,7 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
     if (attemptData.awardedBugIds && attemptData.awardedBugIds.length > 0) {
       return new Set(attemptData.awardedBugIds)
     }
-    
+
     // Fallback to legacy matched reports if no XP tx found
     const preChecked = new Set<string>()
     reports.forEach((r) => {
@@ -182,19 +183,17 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
       <div className="flex items-center gap-3 rounded-xl border border-border/50 bg-card/40 backdrop-blur-xl px-5 py-4">
         <Clock className="h-5 w-5 text-muted-foreground shrink-0" />
         <div className="flex items-center gap-3 flex-wrap">
-          <span className="text-sm font-medium text-muted-foreground">Attempt Status:</span>
+          <span className="text-sm font-medium text-muted-foreground">{dictionary.factory.reviewUI.attemptStatus}</span>
           <Badge variant="outline" className={attemptStatusColors[attempt.status] ?? ''}>
             {attemptStatusLabels[attempt.status] ?? attempt.status}
           </Badge>
           {isTerminal && (
             <span className="text-xs text-muted-foreground">
-              · This attempt has been reviewed. You can re-review to update the decision.
-            </span>
+              {dictionary.factory.reviewUI.reviewedHint}</span>
           )}
           {attempt.time_spent_seconds != null && (
             <span className="text-xs text-muted-foreground">
-              · Time spent: {Math.round(attempt.time_spent_seconds / 60)} min
-            </span>
+              {dictionary.factory.reviewUI.time}{Math.round(attempt.time_spent_seconds / 60)} {dictionary.factory.reviewUI.minutes}</span>
           )}
         </div>
       </div>
@@ -207,7 +206,7 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
           </CardHeader>
           <CardContent className="space-y-1">
             <p className="font-semibold">{tester.username}</p>
-            <p className="text-sm text-muted-foreground">Level {tester.current_level ?? 1} · {tester.total_xp ?? 0} XP</p>
+            <p className="text-sm text-muted-foreground">{dictionary.factory.reviewUI.level}{tester.current_level ?? 1} · {tester.total_xp ?? 0} {dictionary.factory.reviewUI.xp}</p>
           </CardContent>
         </Card>
 
@@ -217,7 +216,7 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
           </CardHeader>
           <CardContent className="space-y-1">
             <p className="font-semibold">{challenge.title}</p>
-            <p className="text-sm text-muted-foreground">Base XP: {challenge.base_xp_reward}</p>
+            <p className="text-sm text-muted-foreground">{dictionary.factory.reviewUI.baseXp}{challenge.base_xp_reward}</p>
           </CardContent>
         </Card>
       </div>
@@ -229,17 +228,14 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
             <div className="flex items-center gap-2">
               <Bug className="h-5 w-5 text-primary" />
               <CardTitle className="text-base">
-                Intentional Bugs Checklist
-                <span className="ml-2 text-sm font-normal text-muted-foreground">
-                  — Check each bug that was found by the tester
-                </span>
+                {dictionary.factory.reviewUI.checklist}<span className="ml-2 text-sm font-normal text-muted-foreground">
+                  {dictionary.factory.reviewUI.checkHint}</span>
               </CardTitle>
             </div>
             {attempt.xp_awarded && (
               <p className="text-xs text-amber-500 font-medium flex items-center gap-1 mt-1">
                 <AlertTriangle className="h-3 w-3" />
-                XP has already been awarded for this attempt. Bug selections cannot be modified.
-              </p>
+                {dictionary.factory.reviewUI.alreadyAwarded}</p>
             )}
           </CardHeader>
           <CardContent>
@@ -279,8 +275,7 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
                           {bug.actual_severity}
                         </Badge>
                         <span className={`text-xs font-semibold ${isChecked ? 'text-emerald-500' : 'text-muted-foreground'}`}>
-                          +{bug.bonus_xp ?? 0} XP
-                        </span>
+                          +{bug.bonus_xp ?? 0} {dictionary.factory.reviewUI.xp}</span>
                       </div>
                     </button>
                   </li>
@@ -291,11 +286,10 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
             {/* Progress summary */}
             <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground border-t border-border/50 pt-4">
               <span className="font-medium text-foreground">{checkedBugIds.size}</span>
-              <span>/ {hiddenBugs.length} bugs found</span>
+              <span>/ {hiddenBugs.length} {dictionary.factory.reviewUI.bugsFound}</span>
               {checkedBugIds.size === hiddenBugs.length && hiddenBugs.length > 0 && (
                 <Badge variant="outline" className="ml-2 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
-                  🎯 Perfect!
-                </Badge>
+                  {dictionary.factory.reviewUI.perfect}</Badge>
               )}
             </div>
           </CardContent>
@@ -310,8 +304,7 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
             {dictionary.admin.dashboard.recentBugReports}
           </h2>
           <Badge variant="outline" className="text-xs">
-            {reports.length} reports
-          </Badge>
+            {reports.length} {dictionary.factory.reviewUI.reports}</Badge>
         </div>
 
         {reports.length === 0 ? (
@@ -334,11 +327,11 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <label className="text-sm">{locale === 'ar' ? 'تصنيف البلاغ' : 'Report classification'}
+                  <label className="text-sm">{dictionary.factory.reviewUI.classification}
                     <select aria-label={locale === 'ar' ? 'تصنيف البلاغ' : 'Report classification'} className="w-full rounded-lg border bg-background p-2"
                       value={reportUpdates[report.id]?.adminClassification || 'not_a_bug'}
                       onChange={e => setReportUpdates(prev => ({...prev,[report.id]:{...prev[report.id],adminClassification:e.target.value as ReportClassificationUpdate['adminClassification']}}))}>
-                      {['valid_bug','duplicate','not_a_bug','needs_improvement'].map(k => <option key={k} value={k}>{({valid_bug:locale==='ar'?'عيب مؤكد':'Valid bug',duplicate:locale==='ar'?'مكرر':'Duplicate',not_a_bug:locale==='ar'?'ليس عيبًا':'Not a bug',needs_improvement:locale==='ar'?'يحتاج إلى تحسين':'Needs improvement'})[k]}</option>)}
+                      {['valid_bug','duplicate','not_a_bug','needs_improvement'].map(k => <option key={k} value={k}>{({valid_bug:dictionary.factory.reviewUI.valid,duplicate:dictionary.factory.reviewUI.duplicate,not_a_bug:dictionary.factory.reviewUI.notBug,needs_improvement:dictionary.factory.reviewUI.improve})[k]}</option>)}
                     </select>
                   </label>
                   <label className="text-sm">{dictionary.factory.reviewFeedback}
@@ -350,15 +343,15 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
                 {/* Report Content */}
                 <div className="grid gap-3 sm:grid-cols-3 text-sm border-y border-border/50 py-3">
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-1">Steps to Reproduce</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">{dictionary.factory.reviewUI.steps}</p>
                     <p className="whitespace-pre-wrap leading-relaxed text-xs">{report.steps_to_reproduce}</p>
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-1">Expected Result</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">{dictionary.factory.reviewUI.expected}</p>
                     <p className="whitespace-pre-wrap leading-relaxed text-xs">{report.expected_result}</p>
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-1">Actual Result</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">{dictionary.factory.reviewUI.actual}</p>
                     <p className="whitespace-pre-wrap leading-relaxed text-xs">{report.actual_result}</p>
                   </div>
                 </div>
@@ -378,7 +371,7 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
             <div className="space-y-6">
               {/* Decision buttons */}
               <div className="space-y-3">
-                <Label>Decision</Label>
+                <Label>{dictionary.factory.reviewUI.decision}</Label>
                 <div className="flex flex-wrap gap-2">
                   <Button
                     variant={decision === 'approved' ? 'default' : 'outline'}
@@ -411,14 +404,12 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
                   className="h-4 w-4 rounded border-border accent-primary"
                 />
                 <Label htmlFor="is-passed" className="cursor-pointer">
-                  Mark as Passed (unlocks next lesson)
-                </Label>
+                  {dictionary.factory.reviewUI.passed}</Label>
               </div>
               {decision === 'approved' && !isPassed && (
                 <p className="flex items-center gap-1.5 text-xs text-amber-500 font-medium">
                   <AlertTriangle className="h-4 w-4" />
-                  Approved but not passed — no unlock
-                </p>
+                  {dictionary.factory.reviewUI.notPassed}</p>
               )}
             </div>
 
@@ -426,39 +417,35 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
             <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-4">
               <div className="flex items-center gap-2 border-b border-primary/10 pb-3">
                 <Calculator className="h-5 w-5 text-primary" />
-                <h3 className="font-semibold text-primary">XP Calculation Preview</h3>
+                <h3 className="font-semibold text-primary">{dictionary.factory.reviewUI.preview}</h3>
               </div>
 
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Base Challenge XP:</span>
+                  <span className="text-muted-foreground">{dictionary.factory.reviewUI.base}</span>
                   <span className="font-medium">+{xpPreview.baseXp}</span>
                 </div>
 
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">
-                    Bug Bonus ({xpPreview.matchedCount}/{hiddenBugs.length} bugs found):
-                  </span>
+                    {dictionary.factory.reviewUI.bugBonus}{xpPreview.matchedCount}/{hiddenBugs.length} {dictionary.factory.reviewUI.bugsSuffix}</span>
                   <span className="font-medium text-emerald-500">+{xpPreview.bugBonusXp}</span>
                 </div>
 
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Perfect Bonus (All bugs found):</span>
+                  <span className="text-muted-foreground">{dictionary.factory.reviewUI.perfectBonus}</span>
                   <span className="font-medium text-emerald-500">+{xpPreview.perfectBonus}</span>
                 </div>
               </div>
 
               <div className="border-t border-primary/10 pt-3 flex justify-between items-center">
-                <span className="font-semibold text-foreground">Total XP to Award:</span>
+                <span className="font-semibold text-foreground">{dictionary.factory.reviewUI.total}</span>
                 <span className="text-xl font-bold text-primary">
-                  {decision === 'approved' ? xpPreview.totalXp : 0} XP
-                </span>
+                  {decision === 'approved' ? xpPreview.totalXp : 0} {dictionary.factory.reviewUI.xp}</span>
               </div>
 
               <p className="text-xs text-muted-foreground italic">
-                XP is calculated automatically based on the bugs found above.
-                Re-reviewing will not grant XP twice.
-              </p>
+                {dictionary.factory.reviewUI.rewardHint}</p>
             </div>
           </div>
 
@@ -470,7 +457,7 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
               rows={5}
               value={adminFeedback}
               onChange={(e) => setAdminFeedback(e.target.value)}
-              placeholder="Provide detailed feedback for the tester..."
+              placeholder={dictionary.factory.reviewUI.feedbackPlaceholder}
               className="resize-none"
             />
           </div>

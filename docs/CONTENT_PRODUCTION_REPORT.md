@@ -28,6 +28,8 @@ Counts come from content/production-counts.json, rebuilt by scripts/build-pilot.
 
 Exact EN titles, scoped slugs and ordering were extracted from src/lib/admin/seeder.ts at baseline100a4fc. This is verified demo inventory, not the missing original approved Master Curriculum. A typo in the Arabic SDLC title was explicitly corrected; new objectives and all substantive bilingual bodies/checks were authored for this run.
 
+The source tree, requirements attachment and pre-existing archive filename index were checked; no separate approved Master Curriculum was found. The archive itself was not changed.
+
 Each lesson has three measurable objectives, substantive bilingual Markdown with realistic simulated QA examples, misconceptions, actionable practice and actual module-local neighbor connections. Each lesson has two objective checks and one rubric-reviewed response. Each module has two objective checkpoint questions and one structured response. Questions are answerable from the module material. No open response is automatically graded.
 
 The authored pilot was built and validated through the repository's real content bundle pipeline, not filled with placeholder strings. OPENAI_API_KEY is absent, so paid bulk provider generation did not run. A server adapter and resumable budgeted jobs are implemented for continuation.
@@ -40,7 +42,7 @@ No live Supabase migration, backup, draft insertion, seed or publication has bee
 
 ## Continue production
 
-1. Apply the documented additive migrations to a test database and sign in as admin.
+1. Reconcile the existing base schema, apply the documented additive migrations020–032 to a test database, and sign in as admin. Follow TESTCRAFT_GO_LIVE.md; the old base migration history is incomplete in this checkout.
 2. Open /en/admin/curriculum or /ar/admin/curriculum, load the authored pilot, validate, dry run, then import drafts.
 3. Existing lesson UUIDs and manual content are retained; review staged versions and explicitly apply to unpublished lessons.
 4. Import the original approved master manifest when available. Exact missing input is described in CURRICULUM_SOURCE_MISSING.md.
@@ -49,4 +51,3 @@ No live Supabase migration, backup, draft insertion, seed or publication has bee
 7. Review both languages and all keys/rubrics, publish deliberately, and link only persisted suitable practical challenges.
 
 No346-lesson coverage is claimed. No fabricated live DB insertion, automatic evaluation or publication is reported.
-

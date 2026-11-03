@@ -1,4 +1,5 @@
 'use client'
+import type { z } from 'zod'
 
 import { useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
@@ -166,7 +167,7 @@ export function RegisterForm({ dictionary, locale }: { dictionary: any; locale: 
   const [status, setStatus]           = useState<FormStatus>('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const form = useForm<RegisterFormValues>({
+  const form = useForm<z.input<typeof registerSchema>, unknown, RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       username: '',

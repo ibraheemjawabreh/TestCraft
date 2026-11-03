@@ -1,4 +1,5 @@
 'use client'
+import type { z } from 'zod'
 
 import { useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
@@ -67,7 +68,7 @@ export function LoginForm({ dictionary, locale }: { dictionary: any; locale: str
   const [showPassword, setShowPassword] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
 
-  const form = useForm<LoginFormValues>({
+  const form = useForm<z.input<typeof loginSchema>, unknown, LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',

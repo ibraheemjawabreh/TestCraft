@@ -1,4 +1,4 @@
-import {test,expect} from '@playwright/test'
+import {test,expect,type Response} from '@playwright/test'
 import {en} from '../../src/i18n/dictionaries/en'
 import {ar} from '../../src/i18n/dictionaries/ar'
 test.describe.configure({mode:'serial'})
@@ -71,8 +71,9 @@ test('administrator reviews a real open answer using the saved rubric',async({pa
 })
 test('login lab reproduces a configured bug and saves a complete report with no hidden flags',async({page,request})=>{
  await request.get('/__fixture/seed-labs')
- const leaked:string[]=[]
- page.on('response',async r=>{if(r.url().includes('/api/academy/lab'))leaked.push(await r.text())})
+ const captured:Promise<string>[]=[]
+ const capture=(r:Response)=>{if(r.url().includes('/api/academy/lab'))captured.push(r.text())}
+ page.on('response',capture)
  await page.goto('/?view=lab&role=tester&app=login_form')
  await page.getByLabel(en.factory.lab.email,{exact:true}).fill('invalid-format')
  await page.getByLabel(en.factory.lab.password,{exact:true}).fill('Goodpass1')
@@ -89,6 +90,8 @@ test('login lab reproduces a configured bug and saves a complete report with no 
  await expect(page.getByLabel(en.academy.medium,{exact:true})).toBeChecked()
  await page.getByRole('button',{name:en.challengeLab.submitReport,exact:true}).click()
  await expect(page.getByText(en.challengeLab.reportSubmitted,{exact:true})).toBeVisible()
+ const leaked=await Promise.all(captured)
+ page.off('response',capture)
  await page.reload()
  await expect(page.getByText('Login checks credentials before rejecting malformed email',{exact:true})).toBeVisible()
  expect(leaked.join('')).not.toMatch(/invalid_email_validation_missing|private_bugs|activeBugs|hidden_bugs/)
@@ -97,6 +100,7 @@ test('existing admin review interface approves the report and repeated review aw
  await page.goto('/?view=review&role=admin')
  await page.getByRole('button',{name:/Controlled login_form defect/}).click()
  await page.getByRole('button',{name:en.admin.challenges.approve,exact:true}).click()
+ await page.getByLabel(en.factory.reviewUI.classification,{exact:true}).selectOption('valid_bug')
  await page.getByLabel(en.admin.challenges.adminFeedback,{exact:true}).fill('Reproduced with the stated data; valid missing validation, clear expected and actual results.')
  await page.getByRole('button',{name:en.admin.challenges.saveReview,exact:true}).click()
  await expect(page.getByText(en.admin.challenges.reviewSaved,{exact:true})).toBeVisible()

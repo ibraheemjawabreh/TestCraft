@@ -141,7 +141,7 @@ Object.assign(lessonData,{
  ]},
  'exploratory-testing':{
  minutes:10,summary:pair('Plan a focused exploratory session with a charter, timebox and reproducible notes. Adapt the next test to observed cart behavior and distinguish observations from hypotheses.',
- 'خطط لاستكشاف ذي غرض وزمن وملاحظات قابلة للتكرار. كيف الفحص التالي وفق سلوك السلة، وميز الملاحظة عن فرضية السبب.'),
+ 'خطط لاستكشاف ذي غرض وزمن وملاحظات قابلة للتكرار. وجّه الفحص التالي وفق سلوك السلة، وميز الملاحظة عن فرضية السبب.'),
  objectives:[['Write a charter naming scope, resources and risk.','اكتب ميثاقًا يحدد النطاق والموارد والخطر.'],
  ['Choose a follow-up based on an observation.','اختر فحص متابعة بناء على ملاحظة.'],
  ['Summarize examined conditions and open questions.','لخص الظروف المفحوصة والأسئلة المتبقية.']],
@@ -307,4 +307,3 @@ const assessments={
  ]
 }
 module.exports={lessonData,assessments}
-

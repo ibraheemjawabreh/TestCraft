@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { apiUser, apiFailure, checkOrigin, ApiError } from '@/lib/auth/api-auth'
+import { apiUser, apiFailure, checkOrigin, ApiError , readRequestText } from '@/lib/auth/api-auth'
 import { curriculumManifestSchema, flattenManifest, parseManifestCSV } from '@/lib/curriculum/curriculum-manifest.schema'
 import { contentBundleSchema, lessonDraftSchema, activitySchema } from '@/lib/curriculum/content.schema'
 import { startJob, processJob, assertDB, fingerprint } from '@/lib/curriculum/jobs'
@@ -32,8 +32,8 @@ export async function GET(request:Request){
  const {db}=await apiUser(true)
  const query=new URL(request.url).searchParams
  if(query.get('pilot')==='true')return Response.json({data:pilot})
- if(query.get('version')){
-  const v=assertDB(await db.from('curriculum_versions').select('*,lessons(*)').eq('id',uuid.parse(query.get('version'))).single())
+ if(query.get('version')||query.get('lesson')){
+  const v=assertDB(await db.from('curriculum_versions').select('*,lessons(*)').eq(query.get('version')?'id':'lesson_id',uuid.parse(query.get('version')||query.get('lesson'))).order('created_at',{ascending:false}).limit(1).single())
   const activities=assertDB(await db.from('lesson_activities').select('*').eq('module_id',v.lessons.module_id).order('version',{ascending:false}))
   return Response.json({data:{version:v,activities}})
  }
@@ -43,22 +43,40 @@ export async function GET(request:Request){
   const items=assertDB(await db.from('curriculum_job_items').select('id,lesson_key,status,attempts,error,next_attempt_at').eq('job_id',id).order('lesson_key'))
   return Response.json({data:{job,items}})
  }
+ const offset=z.coerce.number().int().min(0).max(1000000).parse(query.get('offset')||0)
  const [sources,jobs,versions,attempts]=await Promise.all([
  db.from('curriculum_sources').select('id,manifest,created_at').order('created_at',{ascending:false}).limit(30),
  db.from('curriculum_jobs').select('*').order('created_at',{ascending:false}).limit(30),
- db.from('curriculum_versions').select('id,lesson_id,status,created_at,lessons(title_en,title_ar,is_published,updated_at)').order('created_at',{ascending:false}).limit(100),
+ db.from('curriculum_versions').select('id,lesson_id,status,created_at,lessons(title_en,title_ar,is_published,updated_at)').order('created_at',{ascending:false}).range(offset,offset+99),
  db.from('activity_attempts').select('id,user_id,response,status,activity_id,created_at,lesson_activities(body)').eq('status','needs_review').order('created_at').limit(50)
  ])
- return Response.json({data:{sources:assertDB(sources),jobs:assertDB(jobs),versions:assertDB(versions),attempts:assertDB(attempts)}})
+ return Response.json({data:{sources:assertDB(sources),jobs:assertDB(jobs),versions:assertDB(versions),attempts:assertDB(attempts),has_more:versions.data?.length===100}})
  }catch(e){return apiFailure(e)}
 }
 export async function POST(request:Request){
  try{
  checkOrigin(request)
  const {db,user}=await apiUser(true)
- const raw=await request.text()
- if(Buffer.byteLength(raw)>5_000_000)throw new ApiError(413,'Maximum import size is 5 MB')
+ const raw=await readRequestText(request,25000000)
+ if(Buffer.byteLength(raw)>25_000_000)throw new ApiError(413,'Maximum import size is 25 MB')
  const input=inputSchema.parse(JSON.parse(raw))
+ let backup:any=null
+ if(typeof input.payload==='string'){try{const parsed=JSON.parse(input.payload);if(parsed.format==='testcraft-master-backup-v1')backup=parsed}catch{}}
+ else if(input.payload&&typeof input.payload==='object'&&'format' in input.payload)backup=input.payload
+ if(backup&&['validate','dry_run','import','start'].includes(input.action)){
+  const rows=z.array(z.record(z.string(),z.unknown())).max(20000)
+  backup=z.object({format:z.literal('testcraft-master-backup-v1'),learning_paths:rows,learning_modules:rows,lessons:rows,activities:rows,sources:rows,versions:rows,challenges:rows,hidden_bugs:rows,prerequisites:rows.optional().default([])}).passthrough().parse(backup)
+  if(input.action==='validate')return Response.json({data:{valid:true,backup:true,paths:backup.learning_paths.length,modules:backup.learning_modules.length,lessons:backup.lessons.length,activities:backup.activities.length}})
+  if(input.action==='dry_run'){
+   const existing=assertDB(await db.from('learning_paths').select('id').limit(1))
+   return Response.json({data:{backup:true,insert:{paths:backup.learning_paths.length,lessons:backup.lessons.length},publish:0,conflicts:existing.length?['Backup restore requires an empty, explicitly enabled TEST database']:[]}})
+  }
+  if(input.action==='import'){
+   if(!input.acknowledged)throw new ApiError(400,'Explicit test-restore approval required')
+   return Response.json({data:assertDB(await db.rpc('curriculum_restore_test_backup',{p_payload:backup,p_confirmation:'RESTORE_EMPTY_TEST_DATABASE'}))})
+  }
+  throw new ApiError(400,'Use a verified source manifest to generate, or validate/import this backup into an empty test database')
+ }
  if(['validate','dry_run','import','start'].includes(input.action)){
   const {manifest,bundle}=parsePayload(input.payload)
   const entries=flattenManifest(manifest)
@@ -133,8 +151,7 @@ export async function POST(request:Request){
   return Response.json({data:result})
  }
  const bid=assertDB(await db.rpc('curriculum_backup'))
- const backup=assertDB(await db.from('curriculum_backups').select('payload').eq('id',bid).single())
- return Response.json({data:backup.payload})
+ const exportedBackup=assertDB(await db.from('curriculum_backups').select('payload').eq('id',bid).single())
+ return Response.json({data:exportedBackup.payload})
  }catch(e){return apiFailure(e)}
 }
-

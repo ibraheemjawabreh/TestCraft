@@ -1,4 +1,6 @@
 'use client'
+import type { z } from 'zod'
+import type { practicalChallengeSchema } from '@/lib/validations/practical-challenge'
 
 import { useFormContext } from 'react-hook-form'
 import type { PracticalChallengeFormValues } from '@/lib/validations/practical-challenge'
@@ -9,16 +11,16 @@ import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
 import { Loader2, Save } from 'lucide-react'
 
-export function ChallengePublishSection({ 
-  dictionary, 
+export function ChallengePublishSection({
+  dictionary,
   isSubmitting,
   isEditMode
-}: { 
+}: {
   dictionary: Dictionary
   isSubmitting: boolean
   isEditMode: boolean
 }) {
-  const form = useFormContext<PracticalChallengeFormValues>()
+  const form = useFormContext<z.input<typeof practicalChallengeSchema>, unknown, PracticalChallengeFormValues>()
 
   return (
     <Card>
@@ -31,8 +33,8 @@ export function ChallengePublishSection({
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex flex-wrap justify-end gap-4 pt-4 border-t">
-          <Button 
-            type="button" 
+          <Button
+            type="button"
             variant="outline"
             disabled={isSubmitting}
             className="w-full sm:w-auto"
@@ -41,8 +43,8 @@ export function ChallengePublishSection({
 
           {!isEditMode ? (
             <>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 variant="secondary"
                 disabled={isSubmitting}
                 className="w-full sm:w-auto"
@@ -51,9 +53,9 @@ export function ChallengePublishSection({
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {dictionary.factory.builder.saveDraft}
               </Button>
-              <Button 
-                type="submit" 
-                size="lg" 
+              <Button
+                type="submit"
+                size="lg"
                 disabled={isSubmitting}
                 className="w-full sm:w-auto"
                 onClick={() => form.setValue('is_active', true, { shouldDirty: true })}
@@ -64,8 +66,8 @@ export function ChallengePublishSection({
             </>
           ) : (
             <>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 variant="secondary"
                 disabled={isSubmitting}
                 className="w-full sm:w-auto"
@@ -74,9 +76,9 @@ export function ChallengePublishSection({
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {dictionary.factory.builder.unpublish}
               </Button>
-              <Button 
-                type="submit" 
-                size="lg" 
+              <Button
+                type="submit"
+                size="lg"
                 disabled={isSubmitting}
                 className="w-full sm:w-auto"
                 onClick={() => form.setValue('is_active', true, { shouldDirty: true })}

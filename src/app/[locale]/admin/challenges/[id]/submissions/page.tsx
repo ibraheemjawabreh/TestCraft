@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import { notFound } from 'next/navigation'
 import NextLink from 'next/link'
 import { ArrowLeft, ArrowRight, Users, Clock, CheckCircle2 } from 'lucide-react'
@@ -21,10 +22,10 @@ import {
 import type { Locale } from '@/i18n/config'
 
 interface SubmissionsPageProps {
-  params: {
-    locale: Locale
+  params: Promise<{
+    locale: string
     id: string
-  }
+  }>
 }
 
 const statusColors: Record<string, string> = {
@@ -44,8 +45,11 @@ const statusLabels: Record<string, string> = {
 }
 
 export default async function ChallengeSubmissionsPage({
-  params: { locale, id },
+  params,
 }: SubmissionsPageProps) {
+  const { locale: routeLocale, id } = await params
+  const locale = resolveLocale(routeLocale)
+
   await requireAdmin(locale)
 
   const dictionary = await getDictionary(locale)

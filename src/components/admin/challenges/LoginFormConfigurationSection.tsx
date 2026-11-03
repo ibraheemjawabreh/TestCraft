@@ -1,4 +1,6 @@
 'use client'
+import type { z } from 'zod'
+import type { practicalChallengeSchema } from '@/lib/validations/practical-challenge'
 
 import { useFormContext } from 'react-hook-form'
 import type { PracticalChallengeFormValues } from '@/lib/validations/practical-challenge'
@@ -9,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Settings2 } from 'lucide-react'
 
 export function LoginFormConfigurationSection({ dictionary }: { dictionary: Dictionary }) {
-  const form = useFormContext<PracticalChallengeFormValues>()
+  const form = useFormContext<z.input<typeof practicalChallengeSchema>, unknown, PracticalChallengeFormValues>()
   const appKey = form.watch('practical_app_key')
 
   if (appKey !== 'login_form') return null
@@ -31,9 +33,9 @@ export function LoginFormConfigurationSection({ dictionary }: { dictionary: Dict
             <FormItem>
               <FormLabel>{dictionary.factory.builder.minPassword}</FormLabel>
               <FormControl>
-                <Input 
-                  type="number" 
-                  {...field} 
+                <Input
+                  type="number"
+                  {...field}
                   value={field.value as number || 8}
                   onChange={e => field.onChange(parseInt(e.target.value, 10))}
                 />
@@ -49,9 +51,9 @@ export function LoginFormConfigurationSection({ dictionary }: { dictionary: Dict
             <FormItem>
               <FormLabel>{dictionary.factory.builder.email}</FormLabel>
               <FormControl>
-                <Input 
-                  type="email" 
-                  {...field} 
+                <Input
+                  type="email"
+                  {...field}
                   value={(field.value as string) || 'qa.tester@testcraft.dev'}
                   onChange={e => field.onChange(e.target.value)}
                 />
@@ -68,9 +70,9 @@ export function LoginFormConfigurationSection({ dictionary }: { dictionary: Dict
             <FormItem>
               <FormLabel>{dictionary.factory.builder.password}</FormLabel>
               <FormControl>
-                <Input 
-                  type="text" 
-                  {...field} 
+                <Input
+                  type="text"
+                  {...field}
                   value={(field.value as string) || 'Test@12345'}
                   onChange={e => field.onChange(e.target.value)}
                 />

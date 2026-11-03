@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import { notFound } from 'next/navigation'
 import NextLink from 'next/link'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
@@ -10,13 +11,16 @@ import { Button } from '@/components/ui/button'
 import type { Locale } from '@/i18n/config'
 
 interface EditChallengePageProps {
-  params: {
-    locale: Locale
+  params: Promise<{
+    locale: string
     id: string
-  }
+  }>
 }
 
-export default async function EditChallengePage({ params: { locale, id } }: EditChallengePageProps) {
+export default async function EditChallengePage({ params }: EditChallengePageProps) {
+  const { locale: routeLocale, id } = await params
+  const locale = resolveLocale(routeLocale)
+
   const dictionary = await getDictionary(locale)
   const isRtl = locale === 'ar'
 
@@ -31,7 +35,7 @@ export default async function EditChallengePage({ params: { locale, id } }: Edit
     .from('hidden_bugs')
     .select('*')
     .eq('challenge_id', id)
-    
+
   // Fetch learning paths
   const { data: learningPaths } = await supabase
     .from('learning_paths')

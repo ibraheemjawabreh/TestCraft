@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import type { Metadata } from 'next'
 
 import { LegalPageLayout } from '@/components/legal/legal-page-layout'
@@ -7,10 +8,13 @@ import { type Locale } from '@/i18n/config'
 import { getDictionary } from '@/i18n/get-dictionary'
 
 export async function generateMetadata({
-  params: { locale },
+  params,
 }: {
-  params: { locale: Locale }
+  params: Promise<{ locale: string }>
 }): Promise<Metadata> {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+
   const dictionary = await getDictionary(locale)
 
   return {
@@ -21,10 +25,13 @@ export async function generateMetadata({
 }
 
 export default async function TermsPage({
-  params: { locale },
+  params,
 }: {
-  params: { locale: Locale }
+  params: Promise<{ locale: string }>
 }) {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+
   const dictionary = await getDictionary(locale)
 
   return (

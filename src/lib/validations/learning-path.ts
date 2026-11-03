@@ -30,7 +30,7 @@ export const learningPathSchema = z.object({
   is_active: z.boolean().default(true),
   // sort_order is auto-assigned server-side — optional here
   sort_order: z
-    .number({ invalid_type_error: 'required' })
+    .number({ error: 'required' })
     .int()
     .min(0)
     .default(0)

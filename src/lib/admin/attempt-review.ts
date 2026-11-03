@@ -71,11 +71,8 @@ export async function getAdminAttemptReview(
       return { data: null, error: 'Attempt not found.' }
     }
 
-    const { data: reports, error: reportsError } = await supabase
-      .from('bug_reports')
-      .select('*')
-      .eq('attempt_id', attemptId)
-      .order('created_at', { ascending: true })
+    const { data: details, error: reportsError } = await supabase.rpc('curriculum_admin_review_details', { p_attempt: attemptId })
+    const reports = (details?.reports || []) as BugReport[]
 
     if (reportsError) {
       return { data: null, error: 'Failed to fetch bug reports.' }
@@ -91,19 +88,7 @@ export async function getAdminAttemptReview(
       return { data: null, error: 'Failed to fetch hidden bugs.' }
     }
 
-    // Fetch awarded bugs from xp_transactions if this attempt was already reviewed
-    let awardedBugIds: string[] = []
-    if ((attempt as any).xp_awarded) {
-      const { data: xpTx } = await supabase
-        .from('xp_transactions')
-        .select('metadata')
-        .eq('source_id', attemptId)
-        .eq('reason', 'bug_bonus')
-      
-      if (xpTx) {
-        awardedBugIds = xpTx.map(tx => (tx.metadata as any)?.hiddenBugId).filter(Boolean) as string[]
-      }
-    }
+    const awardedBugIds = (details?.awarded_bug_ids || []) as string[]
 
     return {
       data: {
@@ -264,8 +249,9 @@ export async function saveAdminAttemptReview(input: SaveReviewInput): Promise<Da
     }
 
     // 4. If approved and passed: unlock next module (pass 0 since XP was handled above)
-    if (input.status === 'approved' && input.isPassed && attempt.status !== 'approved') {
-      await completeChallengeAndUnlockNext(attempt.user_id, input.challengeId, 0)
+    if (input.status === 'approved' && input.isPassed) {
+      const progress = await completeChallengeAndUnlockNext(attempt.user_id, input.challengeId, 0)
+      if (progress.error) return { data: null, error: progress.error }
     }
 
     return { data: true, error: null }

@@ -1,5 +1,9 @@
 # Codex backend and content handoff — 2026-11-03
 
+Final integration note: the checkpoint below records backend work as originally saved. The finished implementation uses migrations020–032, Next15.5.28/React19.3.1/Zod4.6.7,23 passing automated tests and seven passing browser scenarios. `RELEASE_AUDIT.md` and `TESTCRAFT_GO_LIVE.md` supersede the checkpoint's limited migration/test list. No live migration, import, provider call or publication was performed. All nine authored drafts/36 activities remain for editorial approval.
+
+Added contracts after the checkpoint: revision pagination (`?offset=`), latest revision by `?lesson=UUID`, module assessment editing, guarded empty-test masterbackup import, draft challenge duplication, private admin review details RPC, complete-module/lesson prerequisite gates and atomic rewards.032 restricts direct private legacy-column SELECT; admin review uses `curriculum_admin_review_details`. See the runbook before adapting external queries.
+
 Sequential checkpoint in the original repository. No Antigravity agent was launched. Continue UI work here.
 
 ## Real authored data
@@ -33,4 +37,3 @@ Browser ticks require an open tab. For unattended continuation: node scripts/cur
 npm ci succeeded after workspace-cache/network retry. TypeScript passed. Isolated PostgreSQL:9 tests passed (import/idempotency/revision/RLS/grading/budget/history/backup). Pure/provider/API:7 tests passed (bilingual schema/CSV/neighbors/keys/provider401/timeout/malformed output/admin401/403). No live migration/import/login/review/publication: credentials/session are unavailable.
 
 Final UI/build/integration evidence belongs in RELEASE_AUDIT.md. Read CURRICULUM_IMPLEMENTATION_AUDIT.md and CURRICULUM_SOURCE_MISSING.md before continuing.
-

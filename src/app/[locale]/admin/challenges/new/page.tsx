@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import NextLink from 'next/link'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 
@@ -8,10 +9,13 @@ import type { Locale } from '@/i18n/config'
 import { createClient } from '@/lib/supabase/server'
 
 interface NewChallengePageProps {
-  params: { locale: Locale }
+  params: Promise<{ locale: string }>
 }
 
-export default async function NewChallengePage({ params: { locale } }: NewChallengePageProps) {
+export default async function NewChallengePage({ params }: NewChallengePageProps) {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+
   const dictionary = await getDictionary(locale)
   const isRtl = locale === 'ar'
   const supabase = await createClient()

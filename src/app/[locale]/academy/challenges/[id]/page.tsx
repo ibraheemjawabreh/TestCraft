@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, BookOpen, Zap, FileText } from 'lucide-react'
@@ -9,19 +10,18 @@ import { getTesterChallengeLab } from '@/lib/academy/challenge-lab'
 import { getDictionary } from '@/i18n/get-dictionary'
 import { type Locale } from '@/i18n/config'
 
-import dynamic from 'next/dynamic'
+import { BugReportForm } from '@/components/academy/bug-report-form'
 import { ChallengeLabPage } from '@/components/academy/challenges/challenge-lab-page'
 
-const BugReportForm = dynamic(
-  () => import('@/components/academy/bug-report-form').then(mod => mod.BugReportForm),
-  { ssr: false }
-)
 
 export default async function ChallengeDetailsPage({
-  params: { locale, id },
+  params,
 }: {
-  params: { locale: Locale; id: string }
+  params: Promise<{ locale: string; id: string }>
 }) {
+  const { locale: routeLocale, id } = await params
+  const locale = resolveLocale(routeLocale)
+
   const dictionary = await getDictionary(locale)
   const { user, profile } = await requireTester(locale)
 
@@ -43,13 +43,13 @@ export default async function ChallengeDetailsPage({
 
   // If this challenge has a lab_template OR is a practical challenge, delegate entirely to ChallengeLabPage
   if (
-    challenge.lab_template_id || 
-    challenge.lab_template || 
-    challenge.workflow_type === 'practical' || 
+    challenge.lab_template_id ||
+    challenge.lab_template ||
+    challenge.workflow_type === 'practical' ||
     challenge.practical_app_key
   ) {
     const { data: labData, error: labError } = await getTesterChallengeLab(challenge.id, user.id, locale)
-    
+
     if (labError || !labData) {
       return (
         <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -69,7 +69,7 @@ export default async function ChallengeDetailsPage({
   }
 
   // --- LEGACY LAYOUT for challenges without lab_template ---
-  
+
   const { data: previousReports, error: reportsError } = await getTesterReportsForChallenge(
     user.id,
     id,
@@ -139,9 +139,9 @@ export default async function ChallengeDetailsPage({
                 {dictionary.academy.submitBugReport}
               </h2>
             </div>
-            
-            <BugReportForm 
-              challengeId={challenge.id} 
+
+            <BugReportForm
+              challengeId={challenge.id}
               dictionary={dictionary}
             />
           </div>

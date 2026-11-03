@@ -1,4 +1,5 @@
 'use client'
+import type { z } from 'zod'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -117,7 +118,7 @@ export function ChallengeForm({
   const router = useRouter()
   const [serverMessage, setServerMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
-  const form = useForm<ChallengeFormValues>({
+  const form = useForm<z.input<typeof challengeSchema>, unknown, ChallengeFormValues>({
     resolver: zodResolver(challengeSchema),
     defaultValues: {
       title_en: challengeField(challenge, 'title_en') ?? challenge?.title ?? '',

@@ -10,11 +10,14 @@ interface LessonViewerProps {
 }
 
 export function LessonViewer({ lesson, dictionary, locale }: LessonViewerProps) {
+  const difficultyLabels = dictionary.factory.metadata
+  const difficultyLabel = lesson.difficulty === 'Beginner' ? difficultyLabels.beginner
+    : lesson.difficulty === 'Intermediate' ? difficultyLabels.intermediate : difficultyLabels.advanced
   const difficultyColor = (d: string) => {
     switch (d) {
-      case 'Beginner': return 'text-green-400 bg-green-500/10 border-green-500/20'
-      case 'Intermediate': return 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20'
-      case 'Advanced': return 'text-red-400 bg-red-500/10 border-red-500/20'
+      case 'Beginner': return 'text-green-700 dark:text-green-400 bg-green-500/10 border-green-500/20'
+      case 'Intermediate': return 'text-yellow-700 dark:text-yellow-400 bg-yellow-500/10 border-yellow-500/20'
+      case 'Advanced': return 'text-red-700 dark:text-red-400 bg-red-500/10 border-red-500/20'
       default: return 'text-muted-foreground'
     }
   }
@@ -28,12 +31,12 @@ export function LessonViewer({ lesson, dictionary, locale }: LessonViewerProps) 
       <div className="space-y-3">
         <div className="flex flex-wrap items-center gap-3">
           {lesson.is_completed && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-green-500/20 bg-green-500/10 px-2.5 py-0.5 text-xs font-medium text-green-400">
+            <span className="inline-flex items-center gap-1 rounded-full border border-green-500/20 bg-green-500/10 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
               <CheckCircle2 className="h-3 w-3" /> {dictionary.learning.completed}
             </span>
           )}
           <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium ${difficultyColor(lesson.difficulty)}`}>
-            {lesson.difficulty}
+            {difficultyLabel}
           </span>
         </div>
         <h1 className="font-heading text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
@@ -52,7 +55,7 @@ export function LessonViewer({ lesson, dictionary, locale }: LessonViewerProps) 
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <BarChart3 className="h-4 w-4 text-primary" aria-hidden="true" />
-          {lesson.difficulty}
+          {difficultyLabel}
         </div>
       </div>
 

@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import { requireTester } from '@/lib/auth/require-tester'
 import { getTesterReports } from '@/lib/academy/reports'
 import { getDictionary } from '@/i18n/get-dictionary'
@@ -8,10 +9,13 @@ import { ReportsTable } from '@/components/academy/reports-table'
 import { FileText } from 'lucide-react'
 
 export default async function AcademyReportsPage({
-  params: { locale },
+  params,
 }: {
-  params: { locale: Locale }
+  params: Promise<{ locale: string }>
 }) {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+
   const dictionary = await getDictionary(locale)
   const { user, profile } = await requireTester(locale)
 

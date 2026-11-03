@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import { AcademyLayout } from '@/components/academy/academy-layout'
 import { ProgressDashboard } from '@/components/academy/progress/progress-dashboard'
 import { getTesterProgress } from '@/lib/academy/progress'
@@ -6,10 +7,13 @@ import { type Locale } from '@/i18n/config'
 import { getDictionary } from '@/i18n/get-dictionary'
 
 export default async function AcademyProgressPage({
-  params: { locale },
+  params,
 }: {
-  params: { locale: Locale }
+  params: Promise<{ locale: string }>
 }) {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+
   const dictionary = await getDictionary(locale)
   const { user, profile } = await requireTester(locale)
   const { data: progress, error } = await getTesterProgress(user.id, profile)

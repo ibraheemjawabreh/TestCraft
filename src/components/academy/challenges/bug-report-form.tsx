@@ -1,4 +1,5 @@
 'use client'
+import type { z } from 'zod'
 
 import { useState, useTransition, useRef } from 'react'
 import { useRouter } from 'next/navigation'
@@ -54,7 +55,7 @@ export function BugReportForm({ challengeId, labTemplateId, dictionary }: BugRep
     watch,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<BugReportFormValues>({
+  } = useForm<z.input<typeof bugReportSchema>, unknown, BugReportFormValues>({
     resolver: zodResolver(bugReportSchema),
   })
 

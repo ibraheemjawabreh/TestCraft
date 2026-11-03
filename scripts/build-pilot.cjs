@@ -23,12 +23,12 @@ const manifest=curriculumManifestSchema.parse({
  description_en:m.description,description_ar:m.description_ar,practical_challenge_slug:null,
  lessons:m.lessons.map(l=>{const d=lessonData[l.slug];if(!d)throw Error('Authored content missing: '+l.slug)
  return{lesson_slug:l.slug,title_en:l.title,title_ar:l.slug==='sdlc-and-qa'?'دورة حياة تطوير البرمجيات وضمان الجودة':l.title_ar,
- sort_order:l.sort_order,objectives_en:d.objectives.map(o=>o[0]),objectives_ar:d.objectives.map(o=>o[1]),
+ sort_order:l.sort_order,objectives_en:d.objectives.map(o=>o[0]),objectives_ar:d.objectives.map(o=>ar(o[1])),
  prerequisites:[],difficulty:mi===1?'Intermediate':'Beginner'}})}))}]
 })
 const lessons=flattenManifest(manifest).map(spec=>{
  const d=lessonData[spec.lesson_slug]
- return {key:spec.key,title_en:spec.title_en,title_ar:spec.title_ar,summary_en:d.summary.en,summary_ar:d.summary.ar,
+ return {key:spec.key,title_en:spec.title_en,title_ar:spec.title_ar,summary_en:d.summary.en,summary_ar:ar(d.summary.ar),
  objectives_en:spec.objectives_en,objectives_ar:spec.objectives_ar,
  content_en:clean(fs.readFileSync(path.join(root,'content/lessons',spec.lesson_slug+'.en.md'),'utf8')).trim(),
  content_ar:clean(fs.readFileSync(path.join(root,'content/lessons',spec.lesson_slug+'.ar.md'),'utf8')).trim(),
@@ -57,4 +57,3 @@ const counts={paths:manifest.paths.length,modules:inventory.length,lessons:lesso
  linked_challenges:0,published:0,provider_requests:0,spend_usd:0}
 fs.writeFileSync(path.join(root,'content/production-counts.json'),JSON.stringify(counts,null,2)+'\n')
 console.log(JSON.stringify(counts))
-

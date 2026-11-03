@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import { getDictionary } from '@/i18n/get-dictionary'
 import { getAdminLessons } from '@/lib/admin/lessons'
 import { getAdminLearningPaths } from '@/lib/admin/learning-paths'
@@ -5,10 +6,13 @@ import { AdminLessonsTable } from '@/components/admin/lessons/admin-lessons-tabl
 import type { Locale } from '@/i18n/config'
 
 export default async function AdminLessonsPage({
-  params: { locale },
+  params,
 }: {
-  params: { locale: Locale }
+  params: Promise<{ locale: string }>
 }) {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+
   const dictionary = await getDictionary(locale)
   const [lessonsRes, pathsRes] = await Promise.all([
     getAdminLessons(locale),

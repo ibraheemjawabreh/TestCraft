@@ -1,4 +1,6 @@
 'use client'
+import type { z } from 'zod'
+import type { practicalChallengeSchema } from '@/lib/validations/practical-challenge'
 
 import { useEffect } from 'react'
 
@@ -13,8 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { BookOpen } from 'lucide-react'
 
 export function ChallengeInformationSection({ dictionary }: { dictionary: Dictionary }) {
-  const form = useFormContext<PracticalChallengeFormValues>()
-  
+  const form = useFormContext<z.input<typeof practicalChallengeSchema>, unknown, PracticalChallengeFormValues>()
+
   const titleEn = form.watch('title_en')
   const isSlugDirty = form.getFieldState('slug').isDirty
 
@@ -25,7 +27,7 @@ export function ChallengeInformationSection({ dictionary }: { dictionary: Dictio
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)+/g, '')
-      
+
       if (form.getValues('slug') !== generatedSlug) {
         form.setValue('slug', generatedSlug, { shouldValidate: true })
       }
@@ -201,14 +203,14 @@ export function ChallengeInformationSection({ dictionary }: { dictionary: Dictio
               <FormItem>
                 <FormLabel>{dictionary.factory.builder.xp}</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
-                    {...field} 
+                  <Input
+                    type="number"
+                    {...field}
                     value={field.value ?? ''}
                     onChange={e => {
                       const val = e.target.value;
                       field.onChange(val === '' ? '' : parseInt(val, 10));
-                    }} 
+                    }}
                   />
                 </FormControl>
                 <FormMessage />

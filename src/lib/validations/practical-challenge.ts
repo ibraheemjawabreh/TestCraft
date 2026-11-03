@@ -10,11 +10,11 @@ export const practicalChallengeSchema = z.object({
   scenario_ar: z.string().max(5000).optional().or(z.literal('')),
   instructions_en: z.string().max(5000).optional().or(z.literal('')),
   instructions_ar: z.string().max(5000).optional().or(z.literal('')),
-  
+
   learning_path_id: z.string().uuid().nullable().optional(),
   lesson_id: z.string().uuid().nullable().optional(),
   module_id: z.string().uuid().nullable().optional(),
-  
+
   challenge_type: z.enum(['bug_report', 'test_cases', 'api_testing', 'automation']).default('bug_report'),
   difficulty: z.enum(['Beginner', 'Intermediate', 'Advanced']),
   base_xp_reward: z.number().int().min(10).max(10000),
@@ -24,7 +24,7 @@ export const practicalChallengeSchema = z.object({
 
   // Practical Application system
   practical_app_key: z.string().nullable().optional(),
-  practical_app_config: z.record(z.unknown()).default({}),
+  practical_app_config: z.record(z.string(), z.unknown()).default({}),
 
   // Embedded bugs for this challenge (sent as JSON payload)
   embedded_bugs: z.array(

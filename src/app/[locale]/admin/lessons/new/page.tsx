@@ -1,22 +1,27 @@
+import { resolveLocale } from '@/lib/locale'
 import { getAdminLearningPaths } from '@/lib/admin/learning-paths'
 import { getAdminModules } from '@/lib/admin/modules'
 import { LessonContentStudio } from '@/components/admin/lessons/lesson-content-studio'
 import type { Locale } from '@/i18n/config'
 
 interface NewLessonPageProps {
-  params: {
-    locale: Locale
-  }
-  searchParams?: {
+  params: Promise<{
+    locale: string
+  }>
+  searchParams?: Promise<{
     pathId?: string
     moduleId?: string
-  }
+  }>
 }
 
 export default async function NewLessonPage({
-  params: { locale },
+  params,
   searchParams,
 }: NewLessonPageProps) {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+  const resolvedSearchParams = await searchParams
+
   const [pathsRes, modulesRes] = await Promise.all([
     getAdminLearningPaths(),
     getAdminModules(),
@@ -35,8 +40,8 @@ export default async function NewLessonPage({
       paths={paths}
       modules={modules}
       locale={locale}
-      defaultPathId={searchParams?.pathId}
-      defaultModuleId={searchParams?.moduleId}
+      defaultPathId={resolvedSearchParams?.pathId}
+      defaultModuleId={resolvedSearchParams?.moduleId}
     />
   )
 }

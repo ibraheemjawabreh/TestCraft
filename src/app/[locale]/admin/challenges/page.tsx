@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import NextLink from 'next/link'
 import { Plus, Trophy, Target, LayoutDashboard, Bug, Zap, Layers } from 'lucide-react'
 
@@ -9,10 +10,13 @@ import { Button } from '@/components/ui/button'
 import type { Locale } from '@/i18n/config'
 
 interface ChallengesPageProps {
-  params: { locale: Locale }
+  params: Promise<{ locale: string }>
 }
 
-export default async function ChallengesPage({ params: { locale } }: ChallengesPageProps) {
+export default async function ChallengesPage({ params }: ChallengesPageProps) {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+
   const dictionary = await getDictionary(locale)
   const { data: challenges, error } = await getAdminChallenges()
 

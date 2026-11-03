@@ -26,6 +26,7 @@ export function CurriculumFactory({dictionary,locale}:{dictionary:Dictionary;loc
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[details,setDetails]=useState<any>(null)
  const [validated,setValidated]=useState(false),[previewed,setPreviewed]=useState(false)
  const [jobId,setJobId]=useState(''),[jobState,setJobState]=useState<any>(null),[auto,setAuto]=useState(false)
+ const [offset,setOffset]=useState(0)
  const [filter,setFilter]=useState('all'),[version,setVersion]=useState<any>(null),[draft,setDraft]=useState<LessonDraft|null>(null)
  const [checkpoint,setCheckpoint]=useState<Activity[]>([])
  const [lang,setLang]=useState<'en'|'ar'>(locale),[dirty,setDirty]=useState(false),[reviewText,setReviewText]=useState<Record<string,string>>({})
@@ -39,11 +40,11 @@ export function CurriculumFactory({dictionary,locale}:{dictionary:Dictionary;loc
  },[text])
  const entries=useMemo(()=>manifest?flattenManifest(manifest):[],[manifest])
  const load=useCallback(async()=>{
-  const state=await api();setData(state)
+  const state=await api(undefined,'?offset='+offset);setData(state)
   const lesson=new URL(window.location.href).searchParams.get('lesson')
-  if(lesson&&!autoOpened.current){autoOpened.current=true;const v=state.versions.find((v:any)=>v.lesson_id===lesson);if(v)await openVersion(v.id)}
+  if(lesson&&!autoOpened.current){autoOpened.current=true;await openVersion(lesson,true)}
  // eslint-disable-next-line react-hooks/exhaustive-deps
- },[])
+ },[offset])
  const loadJob=useCallback(async(id:string)=>{
   const state=await api(undefined,'?job='+encodeURIComponent(id));setJobState(state)
   if(!['queued','running'].includes(state.job.status))setAuto(false)
@@ -79,9 +80,9 @@ export function CurriculumFactory({dictionary,locale}:{dictionary:Dictionary;loc
   }catch(e){setError((e as Error).message);return null}
   finally{setBusy(false)}
  }
- async function openVersion(id:string){
+ async function openVersion(id:string,byLesson=false){
   setError('')
-  try{const result=await api(undefined,'?version='+id);setVersion(result.version);setDraft(result.version.body);setDirty(false)
+  try{const result=await api(undefined,(byLesson?'?lesson=':'?version=')+id);setVersion(result.version);setDraft(result.version.body);setDirty(false)
    const latest=new Map<string,any>()
    for(const a of result.activities.filter((a:any)=>!a.lesson_id))if(!latest.has(a.slug))latest.set(a.slug,a)
    setCheckpoint([...latest.values()].map(a=>a.body).sort((a,b)=>a.sort_order-b.sort_order))}
@@ -105,7 +106,7 @@ export function CurriculumFactory({dictionary,locale}:{dictionary:Dictionary;loc
   {error&&<div role="alert" className="rounded-lg border border-destructive/40 p-3"><p>{t.failed}</p><pre dir="ltr" className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap text-xs">{error}</pre></div>}
   {notice&&<p role="status" className="text-sm text-emerald-500">{notice}</p>}
   <div className="grid gap-3 sm:grid-cols-2">
-   <label className="space-y-1 text-sm">{t.file}<input className={inputClass} type="file" accept=".json,.csv" onChange={async e=>{const file=e.target.files?.[0];if(file){if(file.size>5_000_000){setError('5 MB');return}changeText(await file.text())}}}/></label>
+   <label className="space-y-1 text-sm">{t.file}<input className={inputClass} type="file" accept=".json,.csv" onChange={async e=>{const file=e.target.files?.[0];if(file){if(file.size>25_000_000){setError('25 MB');return}changeText(await file.text())}}}/></label>
    <label className="space-y-1 text-sm">{t.source}<select className={inputClass} value="" onChange={e=>{const src=data.sources.find((s:any)=>s.id===e.target.value);if(src)changeText(JSON.stringify(src.manifest,null,2))}}><option value="">{t.selection}</option>{data.sources.map((s:any)=><option key={s.id} value={s.id}>{s.manifest.source.name}</option>)}</select></label>
   </div>
   <button className={button} disabled={busy} onClick={async()=>{try{changeText(JSON.stringify(await api(undefined,'?pilot=true'),null,2))}catch(e){setError((e as Error).message)}}}><BookOpen className="h-4 w-4"/>{t.loadPilot}</button>
@@ -113,7 +114,7 @@ export function CurriculumFactory({dictionary,locale}:{dictionary:Dictionary;loc
   <div className="flex flex-wrap gap-2">
    <button className={button} disabled={busy||!text} onClick={()=>act('validate')}><ShieldCheck className="h-4 w-4"/>{t.validate}</button>
    <button className={button} disabled={busy||!validated} onClick={()=>act('dry_run')}>{t.dryRun}</button>
-   <button className={button+' border-primary/50 text-primary'} disabled={busy||!validated||!previewed} onClick={()=>act('import')}><Upload className="h-4 w-4"/>{t.importDrafts}</button>
+   <button className={button+' border-primary/50 text-primary'} disabled={busy||!validated||!previewed} onClick={()=>{let backup=false;try{backup=JSON.parse(text).format==='testcraft-master-backup-v1'}catch{}if(!backup||window.confirm(t.confirmRestore))act('import',backup?{acknowledged:true}:{})}}><Upload className="h-4 w-4"/>{t.importDrafts}</button>
   </div>
   {details&&<details className="rounded-lg border p-3" open><summary className="cursor-pointer text-sm">{t.details}</summary><pre dir="ltr" className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap text-xs">{JSON.stringify(details,null,2)}</pre></details>}
   {manifest&&<div className="space-y-3">
@@ -153,6 +154,7 @@ export function CurriculumFactory({dictionary,locale}:{dictionary:Dictionary;loc
    <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold">{t.review}</h3><select aria-label={t.filter} className="rounded-lg border bg-background p-2 text-sm" value={filter} onChange={e=>setFilter(e.target.value)}>{['all','needs_review','applied','published'].map(s=><option key={s} value={s}>{s==='all'?t.all:status(s)}</option>)}</select></div>
    <div className="max-h-56 space-y-2 overflow-auto">{visibleVersions.length?visibleVersions.map((v:any)=><button key={v.id} className={button+' w-full justify-between text-start'} onClick={()=>openVersion(v.id)}><span>{v.lessons?.[locale==='ar'?'title_ar':'title_en']}</span><span className="text-xs text-muted-foreground">{status(v.lessons?.is_published?'published':v.status)}</span></button>):<p className="text-sm text-muted-foreground">{t.emptyVersions}</p>}</div>
   </div>
+  <div className="flex gap-2"><button className={button} disabled={offset===0||busy} onClick={()=>setOffset(Math.max(0,offset-100))}>{t.previousVersions}</button><button className={button} disabled={!data.has_more||busy} onClick={()=>setOffset(offset+100)}>{t.nextVersions}</button></div>
   {draft&&version&&<div className="space-y-4 rounded-xl border border-primary/30 p-4">
    <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold">{draft[lang==='en'?'title_en':'title_ar']}</h3><select aria-label={t.language} className="rounded border bg-background p-2" value={lang} onChange={e=>setLang(e.target.value as 'en'|'ar')}><option value="en">English</option><option value="ar">العربية</option></select></div>
    <label className="block text-sm">{t.summary}<textarea className={inputClass} dir={lang==='ar'?'rtl':'ltr'} value={draft[lang==='en'?'summary_en':'summary_ar']} onChange={e=>updateDraft(lang==='en'?'summary_en':'summary_ar',e.target.value)}/></label>
@@ -186,4 +188,3 @@ export function CurriculumFactory({dictionary,locale}:{dictionary:Dictionary;loc
   </div>
  </section>
 }
-

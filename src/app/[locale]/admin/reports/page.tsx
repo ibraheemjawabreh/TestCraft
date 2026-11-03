@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import { Badge } from '@/components/ui/badge'
 import {
   Table,
@@ -29,10 +30,13 @@ function uniqueStrings(values: Array<string | null>): string[] {
 }
 
 export default async function AdminReportsReviewPage({
-  params: { locale },
+  params,
 }: {
-  params: { locale: Locale }
+  params: Promise<{ locale: string }>
 }) {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+
   const dictionary = await getDictionary(locale)
   const supabase = await createClient()
 

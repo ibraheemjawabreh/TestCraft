@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import { getAdminSettingsProfile } from '@/lib/admin/settings'
 import { getDictionary } from '@/i18n/get-dictionary'
 import { type Locale } from '@/i18n/config'
@@ -8,12 +9,15 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 
 interface AdminSettingsPageProps {
-  params: {
-    locale: Locale
-  }
+  params: Promise<{
+    locale: string
+  }>
 }
 
-export default async function AdminSettingsPage({ params: { locale } }: AdminSettingsPageProps) {
+export default async function AdminSettingsPage({ params }: AdminSettingsPageProps) {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+
   const dictionary = await getDictionary(locale)
   const result = await getAdminSettingsProfile()
   const t = dictionary.admin.settings
@@ -36,7 +40,7 @@ export default async function AdminSettingsPage({ params: { locale } }: AdminSet
         </div>
       ) : (
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          
+
           <div className="md:col-span-2 space-y-8">
             <Card>
               <CardHeader>
@@ -50,10 +54,10 @@ export default async function AdminSettingsPage({ params: { locale } }: AdminSet
                 <div className="flex items-center gap-4 border-b pb-6">
                   {result.data.avatarUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img 
-                      src={result.data.avatarUrl} 
-                      alt={result.data.username} 
-                      className="w-16 h-16 rounded-full border bg-muted" 
+                    <img
+                      src={result.data.avatarUrl}
+                      alt={result.data.username}
+                      className="w-16 h-16 rounded-full border bg-muted"
                     />
                   ) : (
                     <div className="w-16 h-16 rounded-full border bg-muted flex items-center justify-center">

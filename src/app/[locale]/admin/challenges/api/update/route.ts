@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 export const runtime = 'nodejs';
 import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
@@ -7,8 +8,11 @@ import type { Locale } from '@/i18n/config'
 
 export async function POST(
   request: Request,
-  { params: { locale } }: { params: { locale: Locale } }
+  { params }: { params: Promise<{ locale: string }> }
 ) {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+
   try {
     await requireAdmin(locale)
 
@@ -18,7 +22,7 @@ export async function POST(
     if (!id || typeof id !== 'string') {
       return NextResponse.json({ error: 'Invalid ID' }, { status: 400 })
     }
-    
+
     const parsed = practicalChallengeSchema.safeParse(input)
     if (!parsed.success) {
       return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 })

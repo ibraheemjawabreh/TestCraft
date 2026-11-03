@@ -1,4 +1,5 @@
 'use client'
+import type { z } from 'zod'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -44,7 +45,7 @@ export function PracticalChallengeBuilder({ dictionary, locale, initialData, cha
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const methods = useForm<PracticalChallengeFormValues>({
+  const methods = useForm<z.input<typeof practicalChallengeSchema>, unknown, PracticalChallengeFormValues>({
     resolver: zodResolver(practicalChallengeSchema),
     defaultValues: {
       slug: initialData?.slug || '',
@@ -75,8 +76,8 @@ export function PracticalChallengeBuilder({ dictionary, locale, initialData, cha
     if (data.is_active && !window.confirm(dictionary.factory.confirmPublish)) return
     setIsSubmitting(true)
     try {
-      const endpoint = challengeId 
-        ? `/api/admin/challenges/update` 
+      const endpoint = challengeId
+        ? `/api/admin/challenges/update`
         : `/api/admin/challenges/create`
 
       const payload = challengeId ? { id: challengeId, ...data } : data
@@ -91,7 +92,7 @@ export function PracticalChallengeBuilder({ dictionary, locale, initialData, cha
         const errorData = await response.json().catch(() => null)
         throw new Error(errorData?.error || 'Failed to save challenge')
       }
-      
+
       router.push('/'+locale+'/admin/challenges')
       router.refresh()
     } catch (error: any) {
@@ -104,25 +105,36 @@ export function PracticalChallengeBuilder({ dictionary, locale, initialData, cha
 
   return (
     <FormProvider {...methods}>
+      {challengeId&&<button type="button" disabled={isSubmitting} className="mb-4 rounded-lg border px-4 py-2 text-sm" onClick={async()=>{
+        setIsSubmitting(true)
+        try{
+          const r=await fetch('/api/admin/challenges/duplicate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:challengeId,request_id:crypto.randomUUID()})})
+          const json=await r.json();if(!r.ok)throw new Error(json.error||dictionary.factory.failed)
+          router.push('/'+locale+'/admin/challenges/'+json.data.id+'/edit')
+        }catch(e){alert(dictionary.factory.failed+' '+(e as Error).message)}finally{setIsSubmitting(false)}
+      }}>{dictionary.factory.studio.duplicate}</button>}
       <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-8 max-w-5xl mx-auto pb-24">
+        <label className="block text-sm">{dictionary.factory.metadata.order}
+          <input type="number" min={1} className="mt-1 w-full rounded-lg border bg-background p-2" {...methods.register('sort_order',{valueAsNumber:true})}/>
+        </label>
         <ChallengeInformationSection dictionary={dictionary} />
-        <LearningConnectionSection 
-          dictionary={dictionary} 
+        <LearningConnectionSection
+          dictionary={dictionary}
           learningPathOptions={learningPathOptions}
-          moduleOptions={moduleOptions} 
-          lessonOptions={lessonOptions} 
+          moduleOptions={moduleOptions}
+          lessonOptions={lessonOptions}
         />
         <PracticalApplicationSection dictionary={dictionary} />
-        
+
         {/* Conditional Sections based on selected App */}
         <LoginFormConfigurationSection dictionary={dictionary} />
-        
+
         <IntentionalBugsSection locale={locale} />
 
-        
-        <ChallengePublishSection 
-          dictionary={dictionary} 
-          isSubmitting={isSubmitting} 
+
+        <ChallengePublishSection
+          dictionary={dictionary}
+          isSubmitting={isSubmitting}
           isEditMode={!!challengeId}
         />
       </form>

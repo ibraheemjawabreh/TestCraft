@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/locale'
 import { getAdminUsers } from '@/lib/admin/users'
 import { getDictionary } from '@/i18n/get-dictionary'
 import { type Locale } from '@/i18n/config'
@@ -14,12 +15,15 @@ import { Badge } from '@/components/ui/badge'
 import { FormattedDate } from '@/components/ui/formatted-date'
 
 interface AdminUsersPageProps {
-  params: {
-    locale: Locale
-  }
+  params: Promise<{
+    locale: string
+  }>
 }
 
-export default async function AdminUsersPage({ params: { locale } }: AdminUsersPageProps) {
+export default async function AdminUsersPage({ params }: AdminUsersPageProps) {
+  const { locale: routeLocale } = await params
+  const locale = resolveLocale(routeLocale)
+
   const dictionary = await getDictionary(locale)
   const result = await getAdminUsers()
   const t = dictionary.admin.users
@@ -67,10 +71,10 @@ export default async function AdminUsersPage({ params: { locale } }: AdminUsersP
                       <div className="flex items-center gap-3">
                         {user.avatarUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img 
-                            src={user.avatarUrl} 
-                            alt={user.username} 
-                            className="w-8 h-8 rounded-full border bg-muted" 
+                          <img
+                            src={user.avatarUrl}
+                            alt={user.username}
+                            className="w-8 h-8 rounded-full border bg-muted"
                           />
                         ) : (
                           <div className="w-8 h-8 rounded-full border bg-muted/50 flex items-center justify-center">
