@@ -1,53 +1,57 @@
 # Content production report — 2026-11-03
 
-## Exact versioned output
+## Verified output
 
-| Item | Count |
-| --- | ---: |
-| Verified repository paths | 1 |
-| Modules | 3 |
-| Manifest lesson entries | 9 |
-| Complete English + Arabic lesson drafts | 9 |
-| Markdown lesson files | 18 |
-| Lesson activities | 27 |
-| Module assessments | 3 |
-| Questions within module assessments | 9 |
-| Total questions / reviewed practice tasks | 36 |
-| Verified live practical challenge links | 0 |
-| Advanced lessons available in source | 0 |
-| Structurally failed authored drafts | 0 |
-| Lessons awaiting editorial approval | 9 |
-| Activities awaiting editorial approval | 36 |
-| New live publication operations | 0 |
-| Paid provider requests | 0 |
-| Model API spend | $0 |
+All counts below come from `content/pilot-bundle.json`, `content/production-counts.json`, `content/lessons/`, and `content/verified-manifest.json`. They describe versioned files, not live Supabase rows.
 
-Counts come from content/production-counts.json, rebuilt by scripts/build-pilot.cjs and checked by scripts/validate-content.cjs. No live insertion is claimed. Existing database row/publication counts are unknown.
+| Item | Count | State |
+| --- | ---: | --- |
+| Verified repository paths | 1 | QA Foundations |
+| Modules | 3 | Complete pilot module inventories |
+| Manifest lessons | 9 | Exact verified demo titles/order |
+| Complete EN + AR lesson drafts | 9 | 18 Markdown files |
+| Estimated effort | 8–12 minutes | Per lesson |
+| Lesson activities | 27 | 18 objective checks, 9 rubric-reviewed responses |
+| Module assessments | 3 | One per module |
+| Module assessment activities | 9 | 6 objective checks, 3 rubric-reviewed responses |
+| Total editable questions/practice tasks | 36 | Objective keys and open-response rubrics stored privately |
+| Verified practical challenge links | 0 | No link was invented |
+| Advanced lessons in available source | 0 | The most advanced available lessons are Intermediate |
+| Draft lessons needing editorial review | 9 | All unpublished |
+| Activities needing editorial review | 36 | Open responses are not auto-graded |
+| Content/schema validation failures | 0 | Local validation passed |
+| Provider items failed / skipped | 0 / 0 | No provider job was started |
+| Provider requests / actual spend | 0 / $0 | No generation call was made |
+| Configured request or USD budget | Not configured | Model, key and verified token prices are absent |
+| Publications in versioned output | 0 | Live database publication count is unknown |
 
-## Source and production method
+The available source is **not** the approved Master Curriculum. Its exact provenance is `src/lib/admin/seeder.ts` at baseline commit `100a4fc`; the source contains one demo path, three modules and nine lesson titles/slugs/order. `content/verified-manifest.json` records this source with `canonical: false`. The supplied prompt and repository did not contain the original approved path/module/lesson manifest. Planning estimates such as 9 Core paths and roughly 346 lessons were not used as a substitute, and no missing entries were invented. The existing untracked `TestCeaft.rar` archive was left untouched.
 
-Exact EN titles, scoped slugs and ordering were extracted from src/lib/admin/seeder.ts at baseline100a4fc. This is verified demo inventory, not the missing original approved Master Curriculum. A typo in the Arabic SDLC title was explicitly corrected; new objectives and all substantive bilingual bodies/checks were authored for this run.
+## Files the admin can import
 
-The source tree, requirements attachment and pre-existing archive filename index were checked; no separate approved Master Curriculum was found. The archive itself was not changed.
+- `content/pilot-bundle.json` contains the verified manifest, all nine complete bilingual drafts, lesson activities and module assessments. It is the authored data bundle for Curriculum Factory import.
+- `content/verified-manifest.json` and `content/verified-manifest.csv` contain the verified structure and bilingual objectives. They do not contain lesson bodies; use the bundle when importing completed draft content.
+- `content/lessons/*.en.md` and `content/lessons/*.ar.md` are the editable lesson bodies used to build the bundle.
+- `content/production-counts.json` records the exact file counts above.
 
-Each lesson has three measurable objectives, substantive bilingual Markdown with realistic simulated QA examples, misconceptions, actionable practice and actual module-local neighbor connections. Each lesson has two objective checks and one rubric-reviewed response. Each module has two objective checkpoint questions and one structured response. Questions are answerable from the module material. No open response is automatically graded.
+Every lesson includes substantive EN/AR summaries and objectives, Markdown instruction, safe simulated QA examples, misconceptions, a practice prompt, takeaways and actual within-module neighbor links. Each has three lesson activities. Objective questions carry answer options and rationales; structured responses have explicit rubrics and no automatic answer key. Learner-facing grading contracts omit keys/rubrics/explanations before submission. All content remains unpublished.
 
-The authored pilot was built and validated through the repository's real content bundle pipeline, not filled with placeholder strings. OPENAI_API_KEY is absent, so paid bulk provider generation did not run. A server adapter and resumable budgeted jobs are implemented for continuation.
+## Generation and persistence status
 
-## Sampling and publication
+Before considering live writes, I inspected the local generator-log locations, validated the manifest/bundle and checked database configuration. No local generator log was present in the repository root, `content/` or `scripts/`. `OPENAI_API_KEY`, `CURRICULUM_MODEL`, and verified input/output prices are not configured, so no paid request or generation job ran. No provider request budget was reserved; the per-request and total USD limits must be explicitly set when generation is configured.
 
-Read all18 authored Markdown files during authorship; validate every bundle item automatically. Representative beginner: Software Testing Fundamentals; intermediate: Equivalence Partitioning & Boundary Value Analysis; complete module: Introduction to Quality Assurance in EN/AR. No advanced source exists to sample. All drafts still require a human curriculum/editorial decision before real publication.
+Public Supabase URL/anon settings exist in `.env.local`, but no admin session or service-role key is available. A read-only REST connectivity probe could not complete in this sandbox (`network_error`). The database connection and live row counts therefore remain unverified. No migration, import, seed, draft insertion or publication was attempted. Counts and draft status in this report are file-backed only.
 
-No live Supabase migration, backup, draft insertion, seed or publication has been performed. Local settings contain public credentials only; no admin session/service key is available. Initial network probe was blocked in the sandbox. Tests use isolated databases, never production.
+To continue, an administrator can import `content/pilot-bundle.json` through Curriculum Factory, validate and dry-run it, then import drafts into a migrated test database. The import route supports JSON bundles and CSV/JSON manifests; manifest-only input creates structure without lesson bodies. For the remaining curriculum, first obtain and import the original approved manifest, then generate small resumable batches with explicit request and cost caps. Existing items and publication status remain subject to the app's review/import safeguards.
 
-## Continue production
+## Validation and content sampling performed
 
-1. Reconcile the existing base schema, apply the documented additive migrations020–032 to a test database, and sign in as admin. Follow TESTCRAFT_GO_LIVE.md; the old base migration history is incomplete in this checkout.
-2. Open /en/admin/curriculum or /ar/admin/curriculum, load the authored pilot, validate, dry run, then import drafts.
-3. Existing lesson UUIDs and manual content are retained; review staged versions and explicitly apply to unpublished lessons.
-4. Import the original approved master manifest when available. Exact missing input is described in CURRICULUM_SOURCE_MISSING.md.
-5. Configure server model/key and verified token prices, choose scope, set hard request/USD limits, dry run, then generate.
-6. Keep the tab open or use the documented local worker. Failed/budgeted runs retain checkpoints; new runs skip completed content unless regeneration is explicitly selected.
-7. Review both languages and all keys/rubrics, publish deliberately, and link only persisted suitable practical challenges.
+- `npm ci` — **PASS in a clean temporary Git-archive copy**: 677 packages installed from the workspace cache. The in-place `npm ci` attempt hit Windows `EPERM` on a Next SWC binary held by a running Node process; `npm install` then restored the workspace dependency tree.
+- `node scripts/validate-content.cjs` — **PASS** in both the clean copy and workspace: 9 bilingual lessons, 27 lesson activities, 3 module assessments; no publication. The validator now normalizes CRLF/LF before comparing Markdown files with the JSON bundle, so it passes after a clean Git checkout.
+- `node --test tests/*.test.cjs` — **PASS**: 24 passed, 0 failed, 0 skipped. Coverage includes CSV/JSON manifest validation, Markdown/bundle parity across line endings, import idempotency, UUID/manual edit preservation, private answer handling, grading, budgets and isolated PostgreSQL migrations.
+- `npm run type-check` — **PASS**: `tsc --noEmit` exited 0 in the clean copy and workspace.
+- `npm run build` — **BLOCKED by network policy**: Next.js could not fetch Google Fonts (`Plus Jakarta Sans` and `Space Grotesk`; `connect EACCES` to HTTPS).
+- Content sample read in English and Arabic: beginner **Software Testing Fundamentals**; available intermediate **Equivalence Partitioning & Boundary Value Analysis**; and all three lessons in **Introduction to Quality Assurance** as a complete module. No Advanced lesson exists in the available source.
+- `node node_modules/playwright/cli.js test` — **BLOCKED before browser scenarios**: the UI fixture's esbuild startup attempted to inspect `C:\Users\barho` above the writable workspace and reported access denied while resolving `tests/ui-entry.tsx`. The browser scenarios did not run in this sandbox. The importer has passing schema/CSV and isolated database import tests; this run does not claim fresh browser or live Supabase acceptance.
 
-No346-lesson coverage is claimed. No fabricated live DB insertion, automatic evaluation or publication is reported.
+The original Master Curriculum is still required for complete Core/Advanced coverage. No 273/73/346 lesson coverage is claimed.

@@ -2,6 +2,10 @@
 
 Repository implementation and isolated acceptance are complete. **Production release remains gated** on the original curriculum, deployed-schema reconciliation, credentials and real-auth acceptance. No live database write, paid provider request or publication was performed.
 
+## Current sandbox revalidation — 2026-11-03
+
+The follow-up clean-checkout run normalized Markdown line endings in the content validator and added a parity regression test. Current checks: clean-copy `npm ci` installed 677 packages; content validation passed; type-check passed; automated tests passed 24/24. The current production build could not fetch Google Fonts because outbound HTTPS is blocked (`connect EACCES`). The current Playwright rerun stopped before browser scenarios because esbuild could not inspect the parent directory above the writable workspace. The seven Chromium scenarios below were completed in the earlier integration run and were not reproduced in this restricted rerun.
+
 ## Actual curriculum output
 
 Source: `src/lib/admin/seeder.ts` at baseline `100a4fc`, extracted through `scripts/build-pilot.cjs`. The source tree, supplied requirements attachment and existing archive filename index did not provide the original approved Master Curriculum. These are verified repository demo titles/slugs/order, not canonical approval.
@@ -30,10 +34,11 @@ PASS means the stated local/isolated check was executed. NONVERIFIED identifies 
 | --- | --- | --- |
 | Verified inventory and authored bilingual material | PASS | Reproducible bundle, Markdown, CSV/JSON and exact counts; `content:validate` passes |
 | Full approved Core/Advanced curriculum | NONVERIFIED | Original approved manifest absent; see `CURRICULUM_SOURCE_MISSING.md` |
-| Clean dependency install | PASS | Final `npm ci --cache .npm-cache` completed,677 packages |
-| TypeScript and production build | PASS | `tsc --noEmit`; Next15.5.28 build including lint/type checks and route generation exited0 |
-| Automated schema/provider/API/SQL/simulation/rendering tests | PASS | `node --test tests/*.test.cjs`:23 passed,0 failed,0 skipped, including nested database cases |
-| Chromium acceptance | PASS | Seven scenarios against actual components/isolated PostgreSQL and built Next login/guest routes; boundaries below |
+| Clean dependency install | PASS (clean copy) | `npm ci` installed 677 packages in a temporary Git-archive checkout. The in-place attempt hit `EPERM` on a locked Next SWC binary; workspace dependencies were restored with `npm install`. |
+| TypeScript | PASS | Current `npm run type-check`; `tsc --noEmit` exited 0 |
+| Production build | BLOCKED (environment) | Current Next15.5.28 build could not fetch Plus Jakarta Sans or Space Grotesk because outbound HTTPS returned `connect EACCES`. |
+| Automated schema/provider/API/SQL/simulation/rendering tests | PASS | `npm test`: 24 passed, 0 failed, 0 skipped, including clean-checkout Markdown/bundle parity and nested database cases |
+| Chromium acceptance | PASS (earlier run); current rerun blocked | Seven earlier scenarios against actual components/isolated PostgreSQL and built Next login/guest routes; current sandbox rerun stopped before scenarios at esbuild startup. |
 | Import idempotency / manual edits / IDs | PASS | Import same real bundle twice, no new lessons/questions; preserve UUIDs/manual body; optimistic revision apply; no silent published overwrite |
 | Draft/publication controls | PASS | Imported content unpublished; explicit authenticated apply/publish; complete module checkpoint gates tested |
 | Objective and rubric activities | PASS | Exact-set server grading; invalid options rejected; retakes retained; open answer pending until saved human decision |

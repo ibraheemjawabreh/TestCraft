@@ -10,6 +10,14 @@ test('authored bilingual pilot passes quality gates with exact counts',()=>{
  assert.equal(b.module_assessments.reduce((n,m)=>n+m.activities.length,0),9)
  for(const l of b.lessons){assert.equal(l.is_published,false);assert.ok(l.content_ar.includes('##'));assert.ok(l.content_en.length>2200)}
 })
+test('Markdown and bundle content stay in sync across Git line-ending conversion',()=>{
+ for(const l of bundle.lessons)for(const lang of ['en','ar']){
+  const file=fs.readFileSync('content/lessons/'+l.key.split('/').pop()+'.'+lang+'.md','utf8')
+   .replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n').trim()
+  const bundled=l['content_'+lang].replace(/\r\n?/g,'\n').trim()
+  assert.equal(file,bundled,l.key+'/'+lang)
+ }
+})
 test('reject duplicate scoped slugs/order and unknown or future prerequisites',()=>{
  for(const change of [
  m=>m.paths.push(copy(m.paths[0])),
