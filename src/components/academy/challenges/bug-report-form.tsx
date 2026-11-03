@@ -192,7 +192,7 @@ export function BugReportForm({ challengeId, labTemplateId, dictionary }: BugRep
           rows={3}
           disabled={isLoading}
           className="block w-full rounded-lg border border-border/60 bg-background/60 px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50 transition-colors resize-none"
-          placeholder="Nothing happens when the button is clicked."
+          placeholder={dictionary.challengeLab.actualExample}
           {...register('actual_result')}
         />
         {errors.actual_result && (

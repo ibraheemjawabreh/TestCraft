@@ -1,18 +1,24 @@
 # Codex backend and content handoff — 2026-11-03
 
-Final integration note: the checkpoint below records backend work as originally saved. The finished implementation uses migrations 020–032, Next 15.5.28/React 19.3.1/Zod 4.6.7, 23 passing automated tests and seven passing browser scenarios at that earlier checkpoint. The Prompt 1 revalidation below records the latest test count and environment limits. `RELEASE_AUDIT.md` and `TESTCRAFT_GO_LIVE.md` supersede the checkpoint's limited migration/test list. No live migration, import, provider call or publication was performed. All nine authored drafts/36 activities remain for editorial approval.
+Final integration note: the checkpoint below records backend work as originally saved. The implementation uses migrations 020–033, Next 15.5.28/React 19.3.1/Zod 4.6.7. Earlier integration recorded 23 passing automated tests and seven browser scenarios; current Prompt 1/2 verification and environment limits are in `RELEASE_AUDIT.md`. `TESTCRAFT_GO_LIVE.md` is the migration runbook. No live migration, import, provider call or publication was performed. All nine authored drafts/36 activities remain for editorial approval.
 
 ## Prompt 1 revalidation — 2026-11-03
 
 A clean Git-archive checkout exposed a Windows line-ending mismatch between the Markdown lesson files and the JSON bundle. `scripts/validate-content.cjs` now normalizes CRLF/LF before comparing, and `tests/curriculum.test.cjs` has a regression test for clean-checkout parity. No lesson or manifest content changed.
 
-Latest verification: clean-copy `npm ci` installed 677 packages; `content:validate` passed; `npm run type-check` passed; `npm test` passed 24/24. An in-place `npm ci` hit `EPERM` because a running Node process held the Next SWC binary; `npm install` restored the workspace dependencies. `npm run build` could not fetch Google Fonts under the sandbox network policy. The current Playwright rerun stopped before browser scenarios because the fixture's esbuild process could not inspect `C:\Users\barho` above the writable workspace. Earlier seven-scenario browser evidence remains documented in `RELEASE_AUDIT.md`; this rerun does not reproduce it.
+Prompt 1 verification at that checkpoint: clean-copy `npm ci` installed 677 packages; content validation passed; `tsc --noEmit` and the 24-test suite passed. The in-place `npm ci` had hit `EPERM` on a Next SWC binary held by a running Node process; the workspace dependencies were restored. The Prompt 1 build/browser environment limits were recorded then; Prompt 2 recheck below updates them.
 
 Files changed in this continuation: `scripts/validate-content.cjs`, `tests/curriculum.test.cjs`, `docs/CONTENT_PRODUCTION_REPORT.md`, `docs/CODEX_HANDOFF.md`, and `docs/RELEASE_AUDIT.md`. The canonical Master Curriculum, live Supabase credentials/admin session, and provider key/model/prices remain unavailable. No live data write, provider request or publication occurred.
 
-Added contracts after the checkpoint: revision pagination (`?offset=`), latest revision by `?lesson=UUID`, module assessment editing, guarded empty-test masterbackup import, draft challenge duplication, private admin review details RPC, complete-module/lesson prerequisite gates and atomic rewards.032 restricts direct private legacy-column SELECT; admin review uses `curriculum_admin_review_details`. See the runbook before adapting external queries.
+Added contracts after the checkpoint: revision pagination (`?offset=`), latest revision by `?lesson=UUID`, module assessment editing, guarded empty-test masterbackup import, draft challenge duplication, private admin review details RPC, complete-module/lesson prerequisite gates, atomic rewards and explicit curriculum revision approval before application.032 restricts direct private legacy-column SELECT; admin review uses `curriculum_admin_review_details`. See the runbook before adapting external queries.
 
 Sequential checkpoint in the original repository. No Antigravity agent was launched. Continue UI work here.
+
+## Prompt 2 continuation — 2026-11-03
+
+Added an explicit admin approval transition before a curriculum version can replace an unpublished draft, with a database guard, authenticated API action, separate draft/ready filters and a browser scenario. The learner's open-answer activity can be collapsed under a localized “Try it” summary. Localized review queue states and the bug report actual-result example in EN/AR.
+
+Current verification: 24 automated tests, content validation, TypeScript, production build and all seven Chromium scenarios passed. Playwright required broader local filesystem access because the default sandbox blocked esbuild's parent-directory lookup. This is isolated-fixture acceptance, not a live Supabase migration or data acceptance.
 
 ## Real authored data
 

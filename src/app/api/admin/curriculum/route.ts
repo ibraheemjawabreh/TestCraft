@@ -10,7 +10,7 @@ export const dynamic='force-dynamic'
 export const maxDuration=120
 const uuid=z.string().uuid()
 const inputSchema=z.object({
- action:z.enum(['validate','dry_run','import','start','tick','pause','resume','apply','publish','export','edit_revision','review_attempt','edit_assessment']),
+ action:z.enum(['validate','dry_run','import','start','tick','pause','resume','approve','apply','publish','export','edit_revision','review_attempt','edit_assessment']),
  payload:z.unknown().optional(),job_id:uuid.optional(),version_id:uuid.optional(),lesson_id:uuid.optional(),
  expected_updated:z.string().datetime({offset:true}).optional(),acknowledged:z.boolean().optional(),
  selection:z.array(z.string()).max(2000).default([]),max_requests:z.number().int().min(1).max(10000).optional(),
@@ -121,9 +121,18 @@ export async function POST(request:Request){
  }
  if(input.action==='apply'){
   if(!input.acknowledged)throw new ApiError(400,'Explicit approval to replace the draft is required')
-  const version=assertDB(await db.from('curriculum_versions').select('body').eq('id',uuid.parse(input.version_id)).single())
+  const version=assertDB(await db.from('curriculum_versions').select('body,status').eq('id',uuid.parse(input.version_id)).single())
+  if(version.status!=='approved')throw new ApiError(409,'Approve this revision before applying it')
   lessonDraftSchema.parse(version.body)
   return Response.json({data:assertDB(await db.rpc('curriculum_apply_version',{p_version:input.version_id,p_expected_updated:input.expected_updated}))})
+ }
+ if(input.action==='approve'){
+  const version=assertDB(await db.from('curriculum_versions').select('body,status,lessons(is_published)').eq('id',uuid.parse(input.version_id)).single())
+  if(version.status!=='needs_review')throw new ApiError(409,'Only a revision awaiting review can be approved')
+  const lesson=Array.isArray(version.lessons)?version.lessons[0]:version.lessons
+  if(lesson?.is_published)throw new ApiError(409,'Published lessons cannot receive an approved draft revision')
+  lessonDraftSchema.parse(version.body)
+  return Response.json({data:{id:assertDB(await db.rpc('curriculum_approve_version',{p_version:uuid.parse(input.version_id)}))}})
  }
  if(input.action==='publish'){
   if(!input.acknowledged)throw new ApiError(400,'Explicit publication approval required')

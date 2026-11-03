@@ -4,7 +4,7 @@ Repository implementation and isolated acceptance are complete. **Production rel
 
 ## Current sandbox revalidation — 2026-11-03
 
-The follow-up clean-checkout run normalized Markdown line endings in the content validator and added a parity regression test. Current checks: clean-copy `npm ci` installed 677 packages; content validation passed; type-check passed; automated tests passed 24/24. The current production build could not fetch Google Fonts because outbound HTTPS is blocked (`connect EACCES`). The current Playwright rerun stopped before browser scenarios because esbuild could not inspect the parent directory above the writable workspace. The seven Chromium scenarios below were completed in the earlier integration run and were not reproduced in this restricted rerun.
+The follow-up clean-checkout run normalized Markdown line endings in the content validator and added a parity regression test. Current checks: clean-copy `npm ci` installed 677 packages; content validation passed; type-check passed; automated tests passed 24/24. In the Prompt 2 recheck, the optimized production build passed, as did all seven Chromium scenarios after running Playwright with broader local filesystem access because default sandbox access blocked esbuild's parent-directory lookup. The isolated fixture is not live Supabase acceptance.
 
 ## Actual curriculum output
 
@@ -77,8 +77,10 @@ Actual fixture screenshots are `.test-output/admin-factory.png`, `.test-output/l
 - Preserved studio objectives/summaries and existing lesson/challenge/bug IDs. Destructive UI actions archive/unpublish; generator imports are transactional and insert-only with private backups.
 - Added authoritative module/lesson prerequisite gates, no early checkpoint from a partially published module, and no lab access until all module lessons are completed.
 - Made rewards atomic, protected review/reward fields, gave admins reward-history inspection, blocked repeated rewards across retries, and retained historical hidden-bug associations behind column privileges/admin RPC032.
+- Added migration033 to require explicit admin approval before applying a curriculum revision to an unpublished draft; the separate apply action still checks the lesson's optimistic timestamp. The UI also exposes distinct draft/ready filters and a collapsible learner “Try it” open-answer activity.
 - Awaited completion writes, corrected path-scoped progress totals, and reused the SQL module gate in the progress service. Re-review can finish a prior incomplete unlock without a second reward.
 - Added bounded request streams, safe malformed-JSON responses, manifest duplicate/CSV validation, optimistic edits, paginated revision review, guarded backup import and draft challenge duplication.
+- Added a distinct administrator approval step before applying a curriculum revision, plus localized review statuses, a bilingual actual-result example and a collapsible learner “Try it” activity.
 - Updated framework to Next15.5.28 / React19.3.1 and Zod4.6.7, migrated asynchronous route parameters and transformed form types, and used native JSON-schema output. Added safe code/math/RTL rendering with a patched transitive KaTeX override.
 
 The framework change was required after the old line still produced current critical production advisories. Maintainer references: [Next security advisory and patched version](https://github.com/vercel/next.js/security/advisories/GHSA-2464-fhr4-w9xw), [Next15 upgrade contracts](https://nextjs.org/docs/app/guides/upgrading/version-15). Rendering patch: [KaTeX maintainer advisory](https://github.com/KaTeX/KaTeX/security/advisories/GHSA-238p-pmpm-9mq7). Provider contract: [OpenAI Responses structured outputs](https://developers.openai.com/api/docs/guides/structured-outputs?api-mode=responses).
@@ -86,7 +88,7 @@ The framework change was required after the old line still produced current crit
 ## Remaining release gates and maintenance
 
 1. Obtain/import the exact approved Master Curriculum; preserve its actual scope and sequence. The pilot is usable draft content now.
-2. Reconcile the deployed base schema/migration history and apply020–032 to a separate test Supabase project. No claim of compatibility with an uninspected live schema is made.
+2. Reconcile the deployed base schema/migration history and apply020–033 to a separate test Supabase project. No claim of compatibility with an uninspected live schema is made.
 3. Supply server service/provider configuration and real admin/tester sessions. Run a single paid item within an explicit budget, then execute real-auth acceptance before production changes.
 4. Have a curriculum editor approve all nine lessons/36 tasks in both languages and verify persisted lab associations before publication. Published count remains0 in the versioned dataset.
 5. P2: maintain development dependencies flagged by the full audit (brace-expansion, browserslist, js-yaml, minimatch, postcss-selector-parser and baseline-browser-mapping dependency chains). Do not treat the clean production audit as an all-dependencies audit. Recheck after upgrades.

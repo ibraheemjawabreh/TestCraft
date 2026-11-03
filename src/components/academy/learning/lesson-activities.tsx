@@ -38,7 +38,7 @@ function KnowledgeCheck({question:q,attempts,dictionary,locale,onSubmitted}:{que
    const a={...json.data,activity_id:q.id};setResult(a);onSubmitted(a)
   }catch(e){setError((e as Error).message)}finally{setBusy(false)}
  }
- return <div className="space-y-3 rounded-xl border border-border/60 bg-card/50 p-5">
+ const check=<>
   {q.module_assessment&&<p className="text-xs font-medium text-primary">{t.moduleAssessment}</p>}
   <form onSubmit={submit} className="space-y-3">
    <fieldset disabled={busy||!!result} className="space-y-3">
@@ -63,6 +63,12 @@ function KnowledgeCheck({question:q,attempts,dictionary,locale,onSubmitted}:{que
   {!!attempts.length&&<details className="text-xs text-muted-foreground"><summary className="cursor-pointer">{t.history} ({attempts.length})</summary>
    <ul className="mt-2 space-y-1">{attempts.slice(0,10).map(a=><li key={a.id}>{(t.status as Record<string,string>)[a.status]||a.status}{a.score!==null?' · '+a.score+'/1':''}{a.created_at?' · '+new Date(a.created_at).toLocaleString(locale):''}</li>)}</ul>
   </details>}
- </div>
+ </>
+ return short
+  ? <details open={!!result} className="rounded-xl border border-border/60 bg-card/50">
+    <summary className="cursor-pointer px-5 py-4 font-semibold">{t.tryIt}</summary>
+    <div className="space-y-3 border-t border-border/60 p-5">{check}</div>
+   </details>
+  : <div className="space-y-3 rounded-xl border border-border/60 bg-card/50 p-5">{check}</div>
 }
 

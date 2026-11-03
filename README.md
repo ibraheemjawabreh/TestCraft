@@ -9,7 +9,7 @@ Actual authored output: **1 path,3 modules,9 English/Arabic lesson drafts and36 
 - [Exact content production report](docs/CONTENT_PRODUCTION_REPORT.md)
 - [Missing curriculum source](docs/CURRICULUM_SOURCE_MISSING.md)
 
-Use `npm ci`, `npm run content:validate`, `npm run type-check`, `npm test`, `npm run build` and `npm run test:ui`. Browser tests need `npx playwright install chromium`. The verified runtime is Next15.5.28 / React19 with Node24. Apply new migrations020–032 only after reconciling the existing database through019; historical base migrations002/003 are absent, so this checkout does not verify a fresh production bootstrap. Never replay the old attempt-rebuild migration on existing student data.
+Use `npm ci`, `npm run content:validate`, `npm run type-check`, `npm test`, `npm run build` and `npm run test:ui`. Browser tests need `npx playwright install chromium`. The verified runtime is Next15.5.28 / React19 with Node24. Apply new migrations020–033 only after reconciling the existing database through019; historical base migrations002/003 are absent, so this checkout does not verify a fresh production bootstrap. Never replay the old attempt-rebuild migration on existing student data. Migration033 adds a separate admin approval step before a curriculum revision can replace an unpublished draft.
 
 ![TestCraft Platform](public/screenshots/hero-banner.png)
 

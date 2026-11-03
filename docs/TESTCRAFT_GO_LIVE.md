@@ -23,8 +23,9 @@ After verifying the existing schema through019, apply these new files once, in t
 11. `030_admin_reward_inspection.sql`
 12. `031_manifest_prerequisites.sql`
 13. `032_private_review_metadata.sql`
+14. `033_curriculum_revision_approval.sql`
 
-The files live in `supabase/migrations`. Use the project's established migration tool or SQL editor against the verified target; do not blindly push all historical files. Inspect successful commits and the refreshed PostgREST schema. These migrations add tables, functions, guards and policies while retaining existing curriculum/student UUIDs and histories.032 restricts direct reads of private legacy columns; admin review reads them through an authenticated admin-only RPC. Custom integrations must select explicit public columns rather than `*` from reports, evaluations or reward transactions.
+The files live in `supabase/migrations`. Use the project's established migration tool or SQL editor against the verified target; do not blindly push all historical files. Inspect successful commits and the refreshed PostgREST schema. These migrations add tables, functions, guards and policies while retaining existing curriculum/student UUIDs and histories.032 restricts direct reads of private legacy columns; admin review reads them through an authenticated admin-only RPC.033 adds a distinct approval step for curriculum revisions: approve a version in `needs_review`, apply it to an unpublished draft with the existing optimistic timestamp, then publish only after editorial review. Custom integrations must select explicit public columns rather than `*` from reports, evaluations or reward transactions.
 
 ## 2. Server configuration and local verification
 

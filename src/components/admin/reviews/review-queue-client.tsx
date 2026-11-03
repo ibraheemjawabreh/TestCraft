@@ -73,11 +73,11 @@ export function ReviewQueueClient({ items, dictionary, locale }: ReviewQueueClie
                           : 'bg-zinc-500/15 text-zinc-500 border-zinc-500/30'
                       }
                     >
-                      {item.status === 'started' ? 'In Progress'
-                        : item.status === 'submitted' ? 'Submitted'
-                        : item.status === 'reviewing' ? 'Under Review'
-                        : item.status === 'approved' ? 'Approved'
-                        : item.status === 'rejected' ? 'Rejected'
+                      {item.status === 'started' ? t.started
+                        : item.status === 'submitted' ? t.submitted
+                        : item.status === 'reviewing' ? t.reviewing
+                        : item.status === 'approved' ? t.approved
+                        : item.status === 'rejected' ? t.rejected
                         : item.status}
                     </Badge>
                   </TableCell>

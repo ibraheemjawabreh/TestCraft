@@ -96,7 +96,15 @@ export function CurriculumFactory({dictionary,locale}:{dictionary:Dictionary;loc
  const counts=jobState?.items.reduce((a:Record<string,number>,i:any)=>({...a,[i.status]:(a[i.status]||0)+1}),{})||{}
  const complete=(counts.completed||0)+(counts.skipped||0)+(counts.needs_review||0)
  const updateDraft=(field:keyof LessonDraft,value:any)=>{setDraft(d=>d?{...d,[field]:value}:d);setDirty(true)}
- const visibleVersions=data.versions.filter((v:any)=>filter==='all'||(filter==='published'?v.lessons?.is_published:v.status===filter))
+ const visibleVersions=data.versions.filter((v:any)=>{
+  const published=!!v.lessons?.is_published
+  if(filter==='all')return true
+  if(filter==='published')return published
+  if(published)return false
+  if(filter==='draft')return v.status==='applied'
+  if(filter==='ready')return v.status==='approved'
+  return v.status===filter
+ })
  return <section className="space-y-6 rounded-2xl border border-primary/25 bg-card/60 p-4 sm:p-6" dir={locale==='ar'?'rtl':'ltr'}>
   <div className="flex flex-wrap items-start justify-between gap-3">
    <div><h2 className="flex items-center gap-2 text-xl font-bold"><Sparkles className="h-5 w-5 text-primary"/>{t.title}</h2><p className="mt-1 text-sm text-muted-foreground">{t.subtitle}</p></div>
@@ -151,8 +159,8 @@ export function CurriculumFactory({dictionary,locale}:{dictionary:Dictionary;loc
    </div>}
   </div>
   <div className="space-y-3 border-t pt-5">
-   <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold">{t.review}</h3><select aria-label={t.filter} className="rounded-lg border bg-background p-2 text-sm" value={filter} onChange={e=>setFilter(e.target.value)}>{['all','needs_review','applied','published'].map(s=><option key={s} value={s}>{s==='all'?t.all:status(s)}</option>)}</select></div>
-   <div className="max-h-56 space-y-2 overflow-auto">{visibleVersions.length?visibleVersions.map((v:any)=><button key={v.id} className={button+' w-full justify-between text-start'} onClick={()=>openVersion(v.id)}><span>{v.lessons?.[locale==='ar'?'title_ar':'title_en']}</span><span className="text-xs text-muted-foreground">{status(v.lessons?.is_published?'published':v.status)}</span></button>):<p className="text-sm text-muted-foreground">{t.emptyVersions}</p>}</div>
+   <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold">{t.review}</h3><select aria-label={t.filter} className="rounded-lg border bg-background p-2 text-sm" value={filter} onChange={e=>setFilter(e.target.value)}>{['all','needs_review','draft','ready','published'].map(s=><option key={s} value={s}>{s==='all'?t.all:status(s)}</option>)}</select></div>
+   <div className="max-h-56 space-y-2 overflow-auto">{visibleVersions.length?visibleVersions.map((v:any)=><button key={v.id} className={button+' w-full justify-between text-start'} onClick={()=>openVersion(v.id)}><span>{v.lessons?.[locale==='ar'?'title_ar':'title_en']}</span><span className="text-xs text-muted-foreground">{status(v.lessons?.is_published?'published':v.status==='approved'?'ready':v.status==='applied'?'draft':v.status)}</span></button>):<p className="text-sm text-muted-foreground">{t.emptyVersions}</p>}</div>
   </div>
   <div className="flex gap-2"><button className={button} disabled={offset===0||busy} onClick={()=>setOffset(Math.max(0,offset-100))}>{t.previousVersions}</button><button className={button} disabled={!data.has_more||busy} onClick={()=>setOffset(offset+100)}>{t.nextVersions}</button></div>
   {draft&&version&&<div className="space-y-4 rounded-xl border border-primary/30 p-4">
@@ -172,7 +180,8 @@ export function CurriculumFactory({dictionary,locale}:{dictionary:Dictionary;loc
    </details>}
    <div className="flex flex-wrap gap-2">
     <button className={button} disabled={busy||!dirty} onClick={async()=>{const r=await act('edit_revision',{version_id:version.id,payload:draft});if(r?.id)await openVersion(r.id)}}>{t.saveRevision}</button>
-    <button className={button} disabled={busy||dirty||version.status==='applied'||version.lessons?.is_published} onClick={async()=>{if(window.confirm(t.confirmApply)){const r=await act('apply',{version_id:version.id,expected_updated:version.base_updated_at,acknowledged:true});if(r)await openVersion(version.id)}}}>{t.apply}</button>
+    <button className={button} disabled={busy||dirty||version.status!=='needs_review'||version.lessons?.is_published} onClick={async()=>{if(window.confirm(t.confirmApprove)){const r=await act('approve',{version_id:version.id});if(r)await openVersion(version.id)}}}>{t.approve}</button>
+    <button className={button} disabled={busy||dirty||version.status!=='approved'||version.lessons?.is_published} onClick={async()=>{if(window.confirm(t.confirmApply)){const r=await act('apply',{version_id:version.id,expected_updated:version.base_updated_at,acknowledged:true});if(r)await openVersion(version.id)}}}>{t.apply}</button>
     <button className={button+' border-primary/50 text-primary'} disabled={busy||dirty||version.status!=='applied'||version.lessons?.is_published} onClick={async()=>{if(window.confirm(t.confirmPublish)){await act('publish',{lesson_id:version.lesson_id,acknowledged:true});await openVersion(version.id)}}}>{t.publish}</button>
     <Link className={button} href={'/'+locale+'/admin/lessons/'+version.lesson_id+'/edit'}>{t.editStudio}</Link>
    </div>

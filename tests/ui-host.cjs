@@ -55,6 +55,7 @@ async function adminAPI(url,body){
   }return{processed:!!claim}
  }
  if(['pause','resume'].includes(body.action)){await q('update curriculum_jobs set status=$1 where id=$2',[body.action==='pause'?'paused':'queued',body.job_id]);return{status:body.action==='pause'?'paused':'queued'}}
+ if(body.action==='approve')return{id:await rpc('curriculum_approve_version',{p_version:body.version_id})}
  if(body.action==='apply')return rpc('curriculum_apply_version',{p_version:body.version_id,p_expected_updated:body.expected_updated})
  if(body.action==='publish')return rpc('curriculum_publish',{p_lesson:body.lesson_id,p_acknowledged:body.acknowledged})
  if(body.action==='export'){const id=await rpc('curriculum_backup',{});return(await q('select payload from curriculum_backups where id=$1',[id]))[0].payload}
@@ -166,8 +167,14 @@ async function dispatch(req,res){
 }
 async function main(){
  fs.mkdirSync('.test-output',{recursive:true})
- await build({entryPoints:['tests/ui-entry.tsx'],bundle:true,outfile:'.test-output/ui.js',platform:'browser',jsx:'automatic',define:{'process.env.NODE_ENV':'"production"'},
- plugins:[{name:'test-only-next-router',setup(b){
+ const entrySource=fs.readFileSync(path.resolve('tests/ui-entry.tsx'),'utf8')
+ await build({absWorkingDir:process.cwd(),nodePaths:[path.resolve('node_modules')],stdin:{contents:entrySource,resolveDir:path.resolve('tests'),sourcefile:'ui-entry.tsx',loader:'tsx'},bundle:true,outfile:path.resolve('.test-output/ui.js'),platform:'browser',jsx:'automatic',
+ tsconfigRaw:{compilerOptions:{jsx:'react-jsx'}},define:{'process.env.NODE_ENV':'"production"'},
+ plugins:[{name:'test-only-src-alias',setup(b){b.onResolve({filter:/^@\//},args=>{
+  const base=path.resolve('src',args.path.slice(2)),candidates=[base,...['.tsx','.ts','.jsx','.js','.json'].map(ext=>base+ext),...['index.tsx','index.ts','index.jsx','index.js'].map(file=>path.join(base,file))]
+  const resolved=candidates.find(fs.existsSync);return resolved?{path:resolved}:{errors:[{text:'Unable to resolve source alias '+args.path}]}
+ })}},
+ {name:'test-only-next-router',setup(b){
   b.onResolve({filter:/^next\/(link|navigation)$/},args=>({path:args.path,namespace:'fixture-next'}))
   b.onLoad({filter:/.*/,namespace:'fixture-next'},args=>({loader:'js',resolveDir:process.cwd(),contents:args.path==='next/link'?
    "import React from 'react';export default function Link(p){return React.createElement('a',p,p.children)}":

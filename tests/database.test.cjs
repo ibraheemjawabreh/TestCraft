@@ -11,7 +11,7 @@ test('isolated PostgreSQL migration, RLS, import, review, publication, attempts 
  const actor=async(id,role='authenticated')=>db.exec("reset role;set role "+role+";set request.jwt.claim.sub='"+id+"'")
  try{
  await db.exec(fs.readFileSync('tests/fixtures/database.sql','utf8'))
- for(const migration of ['020_practical_challenge_security.sql','021_curriculum_factory.sql','022_curriculum_jobs.sql','023_practical_lab_sessions.sql','024_curriculum_backup_and_bug_history.sql','025_bug_report_context.sql','026_curriculum_assessment_review.sql','027_atomic_rewards_and_review_security.sql','028_report_review_security.sql','029_complete_module_progression.sql','030_admin_reward_inspection.sql','031_manifest_prerequisites.sql','032_private_review_metadata.sql'])
+ for(const migration of ['020_practical_challenge_security.sql','021_curriculum_factory.sql','022_curriculum_jobs.sql','023_practical_lab_sessions.sql','024_curriculum_backup_and_bug_history.sql','025_bug_report_context.sql','026_curriculum_assessment_review.sql','027_atomic_rewards_and_review_security.sql','028_report_review_security.sql','029_complete_module_progression.sql','030_admin_reward_inspection.sql','031_manifest_prerequisites.sql','032_private_review_metadata.sql','033_curriculum_revision_approval.sql'])
   await db.exec(fs.readFileSync('supabase/migrations/'+migration,'utf8').replace(/^\uFEFF/,''))
  await actor(ADMIN)
  const load=async()=> (await q('select curriculum_import($1::jsonb,$2,$3::jsonb,$4::jsonb) result',
@@ -34,6 +34,8 @@ test('isolated PostgreSQL migration, RLS, import, review, publication, attempts 
   await q("insert into curriculum_versions(lesson_id,fingerprint,body,base_updated_at,created_by) select id,'fresh-review',$2::jsonb,updated_at,$3 from lessons where id=$1",
    [firstLesson.id,JSON.stringify(revision),ADMIN])
   const v=(await q("select * from curriculum_versions where fingerprint='fresh-review'"))[0]
+  await assert.rejects(()=>q('select curriculum_apply_version($1,$2)',[v.id,v.base_updated_at]),/approved first/)
+  await q('select curriculum_approve_version($1)',[v.id])
   await assert.rejects(()=>q('select curriculum_apply_version($1,$2)',[v.id,firstLesson.updated_at]),/changed/)
   await q('select curriculum_apply_version($1,$2)',[v.id,v.base_updated_at])
   assert.equal((await q('select summary_en from lessons where id=$1',[firstLesson.id]))[0].summary_en,revision.summary_en)
