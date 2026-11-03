@@ -30,6 +30,7 @@ export function LessonActions({
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [completed, setCompleted] = useState(isCompleted)
+  const [error,setError] = useState<string | null>(null)
 
   // Prefetch next destinations so navigation is instant
   useEffect(() => {
@@ -42,11 +43,12 @@ export function LessonActions({
   }, [relatedChallengeId, nextLessonId, locale, router])
 
   const handleMarkComplete = () => {
-    // Optimistic UI: show completed state immediately
-    setCompleted(true)
+    setError(null)
 
     startTransition(async () => {
-      await actionCompleteLesson(userId, lessonId, locale)
+      const result = await actionCompleteLesson(userId, lessonId, locale)
+      if (result.error) { setError(dictionary.factory.failed); return }
+      setCompleted(true)
       // Refresh in background so academy page is up-to-date when user navigates back
       router.refresh()
     })
@@ -54,6 +56,7 @@ export function LessonActions({
 
   return (
     <div className="space-y-4">
+      {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
       <div className="flex flex-col gap-3 sm:flex-row">
         {!completed ? (
           <button

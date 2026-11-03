@@ -29,7 +29,7 @@ export async function markLessonInProgress(
       },
       {
         onConflict: 'user_id,lesson_id',
-        ignoreDuplicates: false,
+        ignoreDuplicates: true,
       }
     )
 
@@ -60,6 +60,14 @@ export async function completeLessonAndSync(
     const supabase = await createClient()
     const now = new Date().toISOString()
 
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user || user.id !== userId) return { data: null, error: 'Unauthorized' }
+    const { data: accessible, error: accessError } = await supabase.from('lessons').select('id,module_id').eq('id',lessonId).eq('is_published',true).single()
+    if (accessError || !accessible) return { data: null, error: 'Lesson unavailable' }
+    if (accessible.module_id) {
+      const { data: allowed, error: gateError } = await supabase.rpc('curriculum_can_read_module', { p_module:accessible.module_id })
+      if (gateError || !allowed) return { data: null, error: 'Module locked' }
+    }
     // 1. Mark lesson as completed — the one critical write
     const { error: lessonErr } = await supabase.from('lesson_progress').upsert(
       {
@@ -77,9 +85,7 @@ export async function completeLessonAndSync(
     }
 
     // 1b. Award Lesson XP (10 XP, idempotent) & check badges in background
-    void awardLessonXp(userId, lessonId).catch((err) =>
-      console.error('Failed to award lesson XP:', err)
-    )
+    await awardLessonXp(userId, lessonId)
 
     // 2. Fire all reads in parallel
     const [lessonResult, moduleLessonsResult, moduleChallengeResult] = await Promise.all([
@@ -93,13 +99,13 @@ export async function completeLessonAndSync(
     const lesson = lessonResult.data
     if (!lesson?.module_id) {
       // No module — return immediately, sync in background
-      void syncLearningPathProgress(userId, lesson?.learning_path_id ?? '')
+      await syncLearningPathProgress(userId, lesson?.learning_path_id ?? '')
       return { data: { moduleCompleted: false, challengeUnlocked: false }, error: null }
     }
 
     // 3. Parallel: get all module lessons + completed count + challenge
     const [allModuleLessons, completedLessonsResult, moduleChallenge] = await Promise.all([
-      supabase.from('lessons').select('id').eq('module_id', lesson.module_id).eq('is_published', true),
+      supabase.from('lessons').select('id,is_published').eq('module_id', lesson.module_id),
       supabase.from('lesson_progress').select('lesson_id')
         .eq('user_id', userId)
         .eq('status', 'completed')
@@ -119,7 +125,7 @@ export async function completeLessonAndSync(
       .in('lesson_id', lessonIds)
 
     const completedCount = completedRows?.length ?? 0
-    const allCompleted = completedCount === totalCount
+    const allCompleted = totalCount > 0 && completedCount === totalCount && (allModuleLessons.data ?? []).every(l => l.is_published)
     const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
     const challenge = moduleChallenge.data
     const challengeUnlocked = allCompleted && !!challenge
@@ -147,7 +153,7 @@ export async function completeLessonAndSync(
     if (allCompleted) {
       await moduleProgressWrite
     } else {
-      void moduleProgressWrite
+      await moduleProgressWrite
     }
 
     // 6. Sync learning path progress in background — user doesn't need to wait
@@ -231,21 +237,7 @@ export async function completeChallengeAndUnlockNext(
       )
     }
 
-    // 4. Award XP to user profile
-    if (earnedXp > 0) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('total_xp')
-        .eq('id', userId)
-        .single()
-
-      if (profile) {
-        await supabase
-          .from('profiles')
-          .update({ total_xp: (profile.total_xp ?? 0) + earnedXp })
-          .eq('id', userId)
-      }
-    }
+    // Reward totals are updated atomically by the review RPC, never by progress counters.
 
     // 5. Sync path progress
     await syncLearningPathProgress(userId, mod.learning_path_id)

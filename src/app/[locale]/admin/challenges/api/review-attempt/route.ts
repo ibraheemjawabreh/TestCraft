@@ -15,6 +15,7 @@ const reviewSchema = z.object({
   reportUpdates: z.array(
     z.object({
       id: z.string().uuid(),
+      feedback:z.string().max(3000).optional(),
       status: z.enum(['Pending', 'Reviewed', 'Rejected']),
       adminClassification: z.enum(['valid_bug', 'duplicate', 'not_a_bug', 'needs_improvement']).optional(),
       matchedHiddenBugId: z.string().uuid().nullable().optional(),

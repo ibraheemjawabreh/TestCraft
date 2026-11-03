@@ -1,3 +1,4 @@
+import { LessonActivities } from '@/components/academy/learning/lesson-activities'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
@@ -79,6 +80,8 @@ export default async function TesterLessonPage({
 
       {/* Lesson Content */}
       <LessonViewer lesson={lesson} dictionary={dictionary} locale={locale} />
+
+      <LessonActivities lessonId={lesson.id} locale={locale} dictionary={dictionary} />
 
       {/* Actions */}
       <LessonActions

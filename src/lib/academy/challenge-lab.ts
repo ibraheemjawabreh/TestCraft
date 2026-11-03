@@ -25,7 +25,7 @@ export interface ChallengeLabData {
 export interface ChallengeLabResult {
   challenge: ChallengeLabData
   previousReports: BugReport[]
-  activeBugs: string[]
+
 }
 
 type Result<T> =
@@ -105,7 +105,7 @@ export async function getTesterChallengeLab(
       base_xp_reward: challenge.base_xp_reward,
       challenge_type: challenge.challenge_type,
       practical_app_key: challenge.practical_app_key,
-      practical_app_config: { validEmail: challenge.practical_app_config?.validEmail || 'qa.tester@testcraft.dev', validPassword: challenge.practical_app_config?.validPassword || 'Test@12345' },
+      practical_app_config: { passwordMinLength: challenge.practical_app_config?.passwordMinLength || 8, validEmail: challenge.practical_app_config?.validEmail || 'qa.tester@testcraft.dev', validPassword: challenge.practical_app_config?.validPassword || 'Test@12345' },
       scenario: localizedString(challengeRow, locale, 'scenario', 'scenario') || null,
       instructions: localizedString(challengeRow, locale, 'instructions', 'instructions') || null,
       is_active: challenge.is_active,
@@ -114,13 +114,13 @@ export async function getTesterChallengeLab(
     // Fetch tester's own reports for this challenge
     const { data: reports } = await supabase
       .from('bug_reports')
-      .select('id,user_id,challenge_id,lab_template_id,attempt_id,title,steps_to_reproduce,expected_result,actual_result,reported_severity,status,created_at,admin_feedback,admin_score,reviewed_at,reviewed_by')
+      .select('id,user_id,challenge_id,lab_template_id,attempt_id,title,steps_to_reproduce,expected_result,actual_result,reported_severity,status,created_at,admin_feedback,admin_score,reviewed_at,reviewed_by,environment,evidence_url')
       .eq('user_id', userId)
       .eq('challenge_id', challenge.id)
       .order('created_at', { ascending: false })
 
     // Hidden behavior is evaluated only by the authenticated server simulation.
-    const activeBugs: string[] = []
+
 
     // Ensure an active attempt exists and upsert challenge_progress (non-blocking)
     await ensureActiveAttemptAndProgress(supabase, challenge.id, userId)
@@ -129,7 +129,7 @@ export async function getTesterChallengeLab(
       data: {
         challenge: localizedChallenge,
         previousReports: reports ?? [],
-        activeBugs,
+
       },
       error: null,
     }

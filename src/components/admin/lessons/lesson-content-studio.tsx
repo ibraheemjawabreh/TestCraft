@@ -1,4 +1,5 @@
 'use client'
+import { factoryEn, factoryAr } from '@/i18n/factory'
 
 import { useState, useEffect, useRef, useCallback, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
@@ -58,6 +59,11 @@ export function LessonContentStudio({
   defaultModuleId,
 }: LessonContentStudioProps) {
   const router = useRouter()
+  const factory = locale === 'ar' ? factoryAr : factoryEn
+  const [summaryEn,setSummaryEn] = useState(initialLesson?.summary_en || '')
+  const [summaryAr,setSummaryAr] = useState(initialLesson?.summary_ar || '')
+  const [objectivesEn,setObjectivesEn] = useState(initialLesson?.objectives_en || [])
+  const [objectivesAr,setObjectivesAr] = useState(initialLesson?.objectives_ar || [])
   const [isPending, startTransition] = useTransition()
 
   // Current working lesson ID (if editing or after initial save)
@@ -133,12 +139,12 @@ export function LessonContentStudio({
         title_en: meta.title_en,
         title_ar: meta.title_ar,
         slug: meta.slug,
-        summary_en: '',
-        summary_ar: '',
+        summary_en: summaryEn,
+        summary_ar: summaryAr,
         content_en: contentEn,
         content_ar: contentAr,
-        objectives_en: [],
-        objectives_ar: [],
+        objectives_en: objectivesEn,
+        objectives_ar: objectivesAr,
         estimated_minutes: meta.estimated_minutes,
         difficulty: meta.difficulty,
         sort_order: meta.sort_order,
@@ -177,7 +183,7 @@ export function LessonContentStudio({
         return { success: false }
       }
     },
-    [currentId, meta, contentEn, contentAr, locale]
+    [currentId, meta, contentEn, contentAr, locale, summaryEn, summaryAr, objectivesEn, objectivesAr]
   )
 
   // ── Save Draft Handler ───────────────────────────────────────────────────────
@@ -210,7 +216,13 @@ export function LessonContentStudio({
 
     setIsPublishing(true)
     setSuccessMessage(null)
-    const result = await saveLessonInternal(true)
+    if (!window.confirm(factory.confirmPublish)) { setIsPublishing(false); return }
+    const result = await saveLessonInternal(false)
+    if (result.success && result.lessonId) {
+      const published = await toggleLessonPublished(result.lessonId, true)
+      if (published.error) { setErrorMessage(published.error); setIsPublishing(false); return }
+      setMeta(prev => ({...prev,is_published:true}))
+    }
     setIsPublishing(false)
 
     if (result.success) {
@@ -455,6 +467,17 @@ export function LessonContentStudio({
           </div>
         </div>
 
+        <div className="grid gap-4 md:grid-cols-2">
+          <label className="text-sm">{factory.summary}
+            <textarea className="w-full rounded-lg border bg-background p-3" dir={activeLang === 'ar' ? 'rtl' : 'ltr'} value={activeLang === 'en' ? summaryEn : summaryAr}
+              onChange={e => { (activeLang === 'en' ? setSummaryEn : setSummaryAr)(e.target.value); setHasUnsavedChanges(true) }} />
+          </label>
+          <label className="text-sm">{factory.objectives}
+            <textarea className="w-full rounded-lg border bg-background p-3" dir={activeLang === 'ar' ? 'rtl' : 'ltr'} value={(activeLang === 'en' ? objectivesEn : objectivesAr).join('\n')}
+              onChange={e => { (activeLang === 'en' ? setObjectivesEn : setObjectivesAr)(e.target.value.split('\n')); setHasUnsavedChanges(true) }} />
+          </label>
+        </div>
+        {currentId && <Link className="text-sm text-primary underline" href={'/'+locale+'/admin/curriculum?lesson='+currentId}>{factory.reviewQuestions}</Link>}
         {/* Studio Content Grid */}
         <div
           className={cn(
@@ -494,3 +517,4 @@ export function LessonContentStudio({
     </div>
   )
 }
+

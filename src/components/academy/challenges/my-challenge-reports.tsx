@@ -32,6 +32,9 @@ export function MyChallengeReports({ dictionary, reports, locale }: MyChallengeR
               <p className="text-sm font-medium text-foreground truncate" title={report.title}>
                 {report.title}
               </p>
+              {(report as any).environment && <p className="mt-2 text-xs text-muted-foreground">{dictionary.factory.lab.environment}: {(report as any).environment}</p>}
+              {(report as any).evidence_url && /^https?:\/\//.test((report as any).evidence_url) && <a className="text-xs text-primary underline" href={(report as any).evidence_url} target="_blank" rel="noopener noreferrer">{dictionary.factory.lab.evidence}</a>}
+              {report.admin_feedback && <p className="mt-2 text-sm">{report.admin_feedback}</p>}
               <div className="mt-2 flex items-center justify-between text-xs">
                 <span 
                   className={`px-2 py-0.5 rounded-full font-medium ${

@@ -108,14 +108,14 @@ export function MarkdownRenderer({ content, className, dir = 'ltr' }: MarkdownRe
                       {lang}
                     </div>
                   )}
-                  <pre className="bg-secondary/40 p-4 overflow-x-auto">
+                  <pre dir="ltr" className="bg-secondary/40 p-4 overflow-x-auto text-left">
                     <code className="text-sm font-mono text-foreground/90">{children}</code>
                   </pre>
                 </div>
               )
             }
             return (
-              <code className="rounded px-1.5 py-0.5 bg-secondary/60 text-sm font-mono text-primary/90 border border-border/30">
+              <code dir="ltr" style={{ unicodeBidi: "isolate" }} className="rounded px-1.5 py-0.5 bg-secondary/60 text-sm font-mono text-primary/90 border border-border/30">
                 {children}
               </code>
             )

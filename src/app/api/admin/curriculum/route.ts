@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { apiUser, apiFailure, checkOrigin, ApiError } from '@/lib/auth/api-auth'
 import { curriculumManifestSchema, flattenManifest, parseManifestCSV } from '@/lib/curriculum/curriculum-manifest.schema'
-import { contentBundleSchema, lessonDraftSchema } from '@/lib/curriculum/content.schema'
+import { contentBundleSchema, lessonDraftSchema, activitySchema } from '@/lib/curriculum/content.schema'
 import { startJob, processJob, assertDB, fingerprint } from '@/lib/curriculum/jobs'
 import { providerConfig } from '@/lib/curriculum/provider'
 import pilot from '../../../../../content/pilot-bundle.json'
@@ -10,12 +10,12 @@ export const dynamic='force-dynamic'
 export const maxDuration=120
 const uuid=z.string().uuid()
 const inputSchema=z.object({
- action:z.enum(['validate','dry_run','import','start','tick','pause','resume','apply','publish','export','edit_revision','review_attempt']),
+ action:z.enum(['validate','dry_run','import','start','tick','pause','resume','apply','publish','export','edit_revision','review_attempt','edit_assessment']),
  payload:z.unknown().optional(),job_id:uuid.optional(),version_id:uuid.optional(),lesson_id:uuid.optional(),
  expected_updated:z.string().datetime({offset:true}).optional(),acknowledged:z.boolean().optional(),
  selection:z.array(z.string()).max(2000).default([]),max_requests:z.number().int().min(1).max(10000).optional(),
  max_cost_usd:z.number().positive().max(10000).optional(),regenerate:z.boolean().default(false),
- attempt_id:uuid.optional(),score:z.number().int().min(0).max(1).optional(),feedback:z.string().min(10).max(3000).optional()
+ module_id:uuid.optional(),attempt_id:uuid.optional(),score:z.number().int().min(0).max(1).optional(),feedback:z.string().min(10).max(3000).optional()
 }).strict()
 function parsePayload(value:unknown){
  let input=value
@@ -116,9 +116,15 @@ export async function POST(request:Request){
   const v=assertDB(await db.from('curriculum_versions').select('*,lessons(updated_at)').eq('id',uuid.parse(input.version_id)).single())
   if(v.body.key!==draft.key)throw new ApiError(400,'Revision identity cannot change')
   // Save a new version; old versions/attempts remain intact.
-  const data=assertDB(await db.from('curriculum_versions').upsert({lesson_id:v.lesson_id,fingerprint:fingerprint(draft),body:draft,
-   base_updated_at:v.lessons.updated_at,created_by:user.id,status:'needs_review'},{onConflict:'lesson_id,fingerprint',ignoreDuplicates:true}))
+  const hash=fingerprint(draft)
+  const prior=assertDB(await db.from('curriculum_versions').select('id').eq('lesson_id',v.lesson_id).eq('fingerprint',hash).maybeSingle())
+  const data=prior || assertDB(await db.from('curriculum_versions').insert({lesson_id:v.lesson_id,fingerprint:hash,body:draft,
+   base_updated_at:v.lessons.updated_at,created_by:user.id,status:'needs_review'}).select('id').single())
   return Response.json({data})
+ }
+ if(input.action==='edit_assessment'){
+  const activities=z.array(activitySchema).min(3).max(10).parse(input.payload)
+  return Response.json({data:assertDB(await db.rpc('curriculum_stage_assessment',{p_module:uuid.parse(input.module_id),p_activities:activities}))})
  }
  if(input.action==='review_attempt'){
   const result=assertDB(await db.from('activity_attempts').update({status:'reviewed',score:z.number().int().min(0).max(1).parse(input.score),

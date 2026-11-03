@@ -25,11 +25,9 @@ export function ChallengePublishSection({
       <CardHeader>
         <div className="flex items-center gap-2">
           <Save className="h-5 w-5 text-primary" />
-          <CardTitle>Publishing</CardTitle>
+          <CardTitle>{dictionary.factory.builder.publishing}</CardTitle>
         </div>
-        <CardDescription>
-          Finalize and publish the challenge.
-        </CardDescription>
+        <CardDescription>{dictionary.factory.builder.publishHint}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex flex-wrap justify-end gap-4 pt-4 border-t">
@@ -39,9 +37,7 @@ export function ChallengePublishSection({
             disabled={isSubmitting}
             className="w-full sm:w-auto"
             onClick={() => window.history.back()}
-          >
-            Cancel
-          </Button>
+          >{dictionary.factory.builder.cancel}</Button>
 
           {!isEditMode ? (
             <>
@@ -53,7 +49,7 @@ export function ChallengePublishSection({
                 onClick={() => form.setValue('is_active', false, { shouldDirty: true })}
               >
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Save Draft
+                {dictionary.factory.builder.saveDraft}
               </Button>
               <Button 
                 type="submit" 
@@ -63,7 +59,7 @@ export function ChallengePublishSection({
                 onClick={() => form.setValue('is_active', true, { shouldDirty: true })}
               >
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Publish Challenge
+                {dictionary.factory.builder.publish}
               </Button>
             </>
           ) : (
@@ -76,7 +72,7 @@ export function ChallengePublishSection({
                 onClick={() => form.setValue('is_active', false, { shouldDirty: true })}
               >
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Unpublish
+                {dictionary.factory.builder.unpublish}
               </Button>
               <Button 
                 type="submit" 
@@ -86,7 +82,7 @@ export function ChallengePublishSection({
                 onClick={() => form.setValue('is_active', true, { shouldDirty: true })}
               >
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Update Challenge
+                {dictionary.factory.builder.update}
               </Button>
             </>
           )}

@@ -1,4 +1,6 @@
+import { factoryEn } from '../factory'
 export const en = {
+  factory: factoryEn,
   common: {
     appName: "TestCraft",
     loading: "Loading...",

@@ -1,4 +1,4 @@
-export type PracticalAppKey = 'login_form'
+export type PracticalAppKey = 'login_form' | 'registration_form' | 'storefront'
 
 export interface BugPreset {
   key: string

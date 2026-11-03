@@ -1,4 +1,6 @@
+import { factoryAr } from '../factory'
 export const ar = {
+  factory: factoryAr,
   common: {
     appName: "تيست كرافت",
     loading: "جاري التحميل...",

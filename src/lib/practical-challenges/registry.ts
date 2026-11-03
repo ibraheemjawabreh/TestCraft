@@ -1,9 +1,12 @@
+import { registrationDefinition, storefrontDefinition } from './additional-definitions'
 import type { PracticalAppDefinition, PracticalAppKey } from './types'
 import { loginFormDefinition } from './login-form-definition'
 
 // The central registry for all practical applications
 export const PRACTICAL_APPS: Record<PracticalAppKey, PracticalAppDefinition> = {
   login_form: loginFormDefinition,
+  registration_form: registrationDefinition,
+  storefront: storefrontDefinition,
 }
 
 /**

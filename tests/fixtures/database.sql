@@ -39,3 +39,61 @@ end $$;
 create policy hidden_bugs_tester_read_bug_keys on hidden_bugs for select to authenticated using(is_active=true);
 grant select,insert,update on lesson_progress,challenge_attempts to authenticated;
 
+
+-- Existing application reward/report contracts used by integration migrations.
+create table public.module_progress(user_id uuid references profiles(id),module_id uuid references learning_modules(id));
+create table public.learning_path_progress(user_id uuid references profiles(id),learning_path_id uuid references learning_paths(id));
+alter table public.profiles enable row level security;
+create policy fixture_profiles_select on profiles for select to authenticated using(id=auth.uid() or public.is_admin());
+create policy fixture_profiles_update on profiles for update to authenticated using(id=auth.uid());
+grant update on public.profiles to authenticated;
+alter table public.challenges add column base_xp_reward integer not null default 150;
+alter table public.challenge_attempts add column xp_awarded boolean not null default false;
+alter table public.challenge_attempts add column awarded_xp integer not null default 0;
+alter table public.challenge_attempts add column earned_xp integer not null default 0;
+alter table public.challenge_attempts add column score integer;
+alter table public.challenge_attempts add column admin_feedback text;
+alter table public.challenge_attempts add column reviewed_by uuid;
+alter table public.challenge_attempts add column reviewed_at timestamptz;
+create table public.bug_reports(id uuid primary key default gen_random_uuid(),user_id uuid references profiles(id),
+ challenge_id uuid references challenges(id),attempt_id uuid references challenge_attempts(id),title text,
+ admin_classification text,status text default 'Pending',admin_score integer,admin_feedback text,reviewed_by uuid,reviewed_at timestamptz);
+create table public.xp_transactions(id uuid primary key default gen_random_uuid(),user_id uuid references profiles(id),source_type text,
+ source_id uuid,amount integer,reason text,metadata jsonb not null default '{}');
+create unique index fixture_lesson_xp_once on public.xp_transactions(user_id,source_id,reason) where reason='lesson_completed';
+create unique index fixture_challenge_xp_once on public.xp_transactions(user_id,source_id,reason) where reason='challenge_approved';
+create unique index fixture_perfect_once on public.xp_transactions(user_id,source_id,reason) where reason='perfect_challenge';
+alter table public.xp_transactions enable row level security;
+create policy fixture_xp_select on xp_transactions for select to authenticated using(user_id=auth.uid());
+grant select,insert on public.xp_transactions to authenticated;
+create table public.badges(id uuid primary key default gen_random_uuid(),badge_key text unique);
+insert into badges(badge_key) values('first_lesson_completed'),('first_bug_report'),('first_approved_challenge'),
+ ('three_challenges_completed'),('perfect_bug_hunt'),('ten_valid_bug_reports');
+create table public.user_badges(user_id uuid references profiles(id),badge_id uuid references badges(id),earned_at timestamptz,primary key(user_id,badge_id));
+
+
+alter table public.bug_reports add column steps_to_reproduce text;
+alter table public.bug_reports add column expected_result text;
+alter table public.bug_reports add column actual_result text;
+alter table public.bug_reports add column reported_severity text;
+alter table public.bug_reports add column matched_hidden_bug_id uuid references hidden_bugs(id);
+alter table public.bug_reports add column created_at timestamptz not null default now();
+alter table public.challenge_attempts add column created_at timestamptz not null default now();
+grant select,insert,update on public.bug_reports to authenticated;
+alter table public.bug_reports enable row level security;
+create policy fixture_report_own on bug_reports for select to authenticated using(user_id=auth.uid() or public.is_admin());
+create policy fixture_report_insert on bug_reports for insert to authenticated with check(user_id=auth.uid());
+create policy fixture_report_admin on bug_reports for update to authenticated using(public.is_admin()) with check(public.is_admin());
+grant select on public.challenge_attempts,public.xp_transactions to service_role;
+
+
+-- Mirror the existing published-content/owned-attempt read policies.
+create policy fixture_paths_public on learning_paths for select to authenticated using(is_active);
+create policy fixture_modules_public on learning_modules for select to authenticated using(is_published);
+create policy fixture_lessons_public on lessons for select to authenticated using(is_published);
+create policy fixture_challenges_public on challenges for select to authenticated using(is_active);
+alter table public.challenge_attempts enable row level security;
+create policy fixture_attempts_read on challenge_attempts for select to authenticated using(user_id=auth.uid() or public.is_admin());
+create policy fixture_attempts_insert on challenge_attempts for insert to authenticated with check(user_id=auth.uid() or public.is_admin());
+create policy fixture_attempts_update on challenge_attempts for update to authenticated using(user_id=auth.uid() or public.is_admin()) with check(user_id=auth.uid() or public.is_admin());
+

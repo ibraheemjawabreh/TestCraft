@@ -47,6 +47,11 @@ export function PracticalChallengeBuilder({ dictionary, locale, initialData, cha
   const methods = useForm<PracticalChallengeFormValues>({
     resolver: zodResolver(practicalChallengeSchema),
     defaultValues: {
+      slug: initialData?.slug || '',
+      learning_path_id: initialData?.learning_path_id || null,
+      module_id: initialData?.module_id || null,
+      lesson_id: initialData?.lesson_id || null,
+      sort_order: initialData?.sort_order || 1,
       title_en: initialData?.title_en || '',
       title_ar: initialData?.title_ar || '',
       description_en: initialData?.description_en || '',
@@ -59,7 +64,7 @@ export function PracticalChallengeBuilder({ dictionary, locale, initialData, cha
       base_xp_reward: initialData?.base_xp_reward || 50,
       challenge_type: 'bug_report',
       is_required: initialData?.is_required ?? true,
-      is_active: initialData?.is_active ?? true,
+      is_active: initialData?.is_active ?? false,
       practical_app_key: initialData?.practical_app_key || null,
       practical_app_config: initialData?.practical_app_config || {},
       embedded_bugs: initialData?.embedded_bugs || [],
@@ -67,6 +72,7 @@ export function PracticalChallengeBuilder({ dictionary, locale, initialData, cha
   })
 
   const onSubmit = async (data: PracticalChallengeFormValues) => {
+    if (data.is_active && !window.confirm(dictionary.factory.confirmPublish)) return
     setIsSubmitting(true)
     try {
       const endpoint = challengeId 
@@ -86,7 +92,7 @@ export function PracticalChallengeBuilder({ dictionary, locale, initialData, cha
         throw new Error(errorData?.error || 'Failed to save challenge')
       }
       
-      router.push('/en/admin/challenges')
+      router.push('/'+locale+'/admin/challenges')
       router.refresh()
     } catch (error: any) {
       console.error(error)
@@ -112,7 +118,7 @@ export function PracticalChallengeBuilder({ dictionary, locale, initialData, cha
         <LoginFormConfigurationSection dictionary={dictionary} />
         
         <IntentionalBugsSection locale={locale} />
-        <ChallengeTesterPreview dictionary={dictionary} locale={locale} />
+
         
         <ChallengePublishSection 
           dictionary={dictionary} 
@@ -120,6 +126,7 @@ export function PracticalChallengeBuilder({ dictionary, locale, initialData, cha
           isEditMode={!!challengeId}
         />
       </form>
+      <ChallengeTesterPreview dictionary={dictionary} locale={locale} />
     </FormProvider>
   )
 }

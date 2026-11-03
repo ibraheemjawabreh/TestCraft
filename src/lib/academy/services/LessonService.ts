@@ -53,8 +53,8 @@ export async function getLessonWithModuleGate(
 
     // Check module access
     if (lesson.module_id) {
-      const moduleStatus = await getModuleAccessStatus(userId, lesson.module_id)
-      if (moduleStatus === 'locked') {
+      const { data: allowed, error: gateError } = await supabase.rpc('curriculum_can_read_module', { p_module: lesson.module_id })
+      if (gateError || !allowed) {
         return { data: null, error: 'module_locked' }
       }
     }
@@ -75,7 +75,6 @@ export async function getLessonWithModuleGate(
         .from('lessons')
         .select('*', { count: 'exact', head: true })
         .eq('module_id', lesson.module_id)
-        .eq('is_published', true)
         .gt('sort_order', lesson.sort_order)
 
       if (count && count > 0) {

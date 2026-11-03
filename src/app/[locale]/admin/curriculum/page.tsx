@@ -1,4 +1,5 @@
-import { redirect } from 'next/navigation'
+import { requireAdmin } from '@/lib/auth/require-admin'
+import { CurriculumFactory } from '@/components/admin/curriculum/curriculum-factory'
 import { getDictionary } from '@/i18n/get-dictionary'
 import { getCurriculumTree } from '@/lib/admin/curriculum'
 import { CurriculumManager } from '@/components/admin/curriculum/CurriculumManager'
@@ -9,13 +10,15 @@ export default async function CurriculumPage({
 }: {
   params: { locale: Locale }
 }) {
+  await requireAdmin(locale)
   const dictionary = await getDictionary(locale)
   const { data, error } = await getCurriculumTree()
 
   if (error || !data) {
     return (
       <div className="p-8 text-center text-destructive">
-        <p>Failed to load curriculum: {error}</p>
+        <CurriculumFactory dictionary={dictionary} locale={locale} />
+        <p>{dictionary.factory.failed}: {error}</p>
       </div>
     )
   }
@@ -31,6 +34,8 @@ export default async function CurriculumPage({
           {dictionary.curriculum?.subtitle || 'Manage your learning paths, modules, lessons, and challenges all in one place.'}
         </p>
       </div>
+
+      <CurriculumFactory dictionary={dictionary} locale={locale} />
 
       <CurriculumManager
         initialPaths={data.paths}

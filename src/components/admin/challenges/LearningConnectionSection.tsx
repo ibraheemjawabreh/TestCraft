@@ -25,11 +25,9 @@ export function LearningConnectionSection({ dictionary, learningPathOptions, mod
       <CardHeader>
         <div className="flex items-center gap-2">
           <Network className="h-5 w-5 text-primary" />
-          <CardTitle>Learning Connection</CardTitle>
+          <CardTitle>{dictionary.factory.builder.learning}</CardTitle>
         </div>
-        <CardDescription>
-          Connect this challenge to a specific module and lesson.
-        </CardDescription>
+        <CardDescription>{dictionary.factory.builder.learningHint}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid gap-4 md:grid-cols-3">
@@ -38,14 +36,14 @@ export function LearningConnectionSection({ dictionary, learningPathOptions, mod
             name="learning_path_id"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Learning Path (Optional)</FormLabel>
+                <FormLabel>{dictionary.factory.builder.path}</FormLabel>
                 <FormControl>
-                  <Select onValueChange={field.onChange} value={field.value || undefined}>
+                  <Select onValueChange={value => field.onChange(value === 'none' ? null : value)} value={field.value || undefined}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select Path" />
+                      <SelectValue placeholder={dictionary.factory.builder.selectPath} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="none">{dictionary.factory.builder.none}</SelectItem>
                       {learningPathOptions.map((path) => (
                         <SelectItem key={path.id} value={path.id}>
                           {path.title}
@@ -63,14 +61,14 @@ export function LearningConnectionSection({ dictionary, learningPathOptions, mod
             name="module_id"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Module (Optional)</FormLabel>
+                <FormLabel>{dictionary.factory.builder.module}</FormLabel>
                 <FormControl>
-                  <Select onValueChange={field.onChange} value={field.value || undefined}>
+                  <Select onValueChange={value => field.onChange(value === 'none' ? null : value)} value={field.value || undefined}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select Module" />
+                      <SelectValue placeholder={dictionary.factory.builder.selectModule} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="none">{dictionary.factory.builder.none}</SelectItem>
                       {moduleOptions.map((module) => (
                         <SelectItem key={module.id} value={module.id}>
                           {module.title}
@@ -88,14 +86,14 @@ export function LearningConnectionSection({ dictionary, learningPathOptions, mod
             name="lesson_id"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Lesson (Optional)</FormLabel>
+                <FormLabel>{dictionary.factory.builder.lesson}</FormLabel>
                 <FormControl>
-                  <Select onValueChange={field.onChange} value={field.value || undefined}>
+                  <Select onValueChange={value => field.onChange(value === 'none' ? null : value)} value={field.value || undefined}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select Lesson" />
+                      <SelectValue placeholder={dictionary.factory.builder.selectLesson} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="none">{dictionary.factory.builder.none}</SelectItem>
                       {lessonOptions.map((lesson) => (
                         <SelectItem key={lesson.id} value={lesson.id}>
                           {lesson.learning_path_title ? `${lesson.learning_path_title} > ` : ''}

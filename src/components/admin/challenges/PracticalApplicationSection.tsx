@@ -18,11 +18,9 @@ export function PracticalApplicationSection({ dictionary }: { dictionary: Dictio
       <CardHeader>
         <div className="flex items-center gap-2">
           <FlaskConical className="h-5 w-5 text-primary" />
-          <CardTitle>Practical Application</CardTitle>
+          <CardTitle>{dictionary.factory.builder.app}</CardTitle>
         </div>
-        <CardDescription>
-          Select the interactive application for this challenge. The tester will see a working version of this app.
-        </CardDescription>
+        <CardDescription>{dictionary.factory.builder.appHint}</CardDescription>
       </CardHeader>
       <CardContent>
         <FormField
@@ -30,7 +28,7 @@ export function PracticalApplicationSection({ dictionary }: { dictionary: Dictio
           name="practical_app_key"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Application Type</FormLabel>
+              <FormLabel>{dictionary.factory.builder.appType}</FormLabel>
               <Select 
                 onValueChange={(value) => {
                   field.onChange(value)
@@ -45,20 +43,18 @@ export function PracticalApplicationSection({ dictionary }: { dictionary: Dictio
               >
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select an application..." />
+                    <SelectValue placeholder={dictionary.factory.builder.selectApp} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
                   {apps.map(app => (
                     <SelectItem key={app.key} value={app.key}>
-                      {app.nameEn}
+                      {dictionary.factory.builder.path === 'مسار التعلم' ? app.nameAr : app.nameEn}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <FormDescription>
-                Changing the application type will reset its configuration and bugs.
-              </FormDescription>
+              <FormDescription>{dictionary.factory.builder.changeApp}</FormDescription>
               <FormMessage />
             </FormItem>
           )}

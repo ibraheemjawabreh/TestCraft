@@ -194,7 +194,7 @@ export async function createLesson(input: LessonFormValues): Promise<DataResult<
       estimated_minutes: input.estimated_minutes,
       difficulty: input.difficulty,
       sort_order: sortOrder,
-      is_published: input.is_published,
+      is_published: false,
     })
     .select()
     .single()
@@ -215,7 +215,8 @@ export async function createLesson(input: LessonFormValues): Promise<DataResult<
 export async function updateLesson(id: string, input: LessonFormValues): Promise<DataResult<Lesson>> {
   await requireAdmin('en')
   const supabase = await createClient()
-
+  const { data: current } = await supabase.from('lessons').select('is_published').eq('id',id).single()
+  if (current?.is_published) return { data: null, error: 'Unpublish explicitly before editing this lesson.' }
   const slug = input.slug?.trim() || `lesson-${Date.now().toString(36)}`
 
   const { data, error } = await supabase
@@ -237,7 +238,7 @@ export async function updateLesson(id: string, input: LessonFormValues): Promise
       estimated_minutes: input.estimated_minutes,
       difficulty: input.difficulty,
       sort_order: input.sort_order,
-      is_published: input.is_published,
+      is_published: false,
     })
     .eq('id', id)
     .select()
@@ -260,6 +261,12 @@ export async function toggleLessonPublished(id: string, isPublished: boolean): P
   await requireAdmin('en')
   const supabase = await createClient()
 
+  if (isPublished) {
+    const { error: publishError } = await supabase.rpc('curriculum_publish', { p_lesson: id, p_acknowledged: true })
+    if (publishError) return { data: null, error: publishError.message }
+    const { data } = await supabase.from('lessons').select('*').eq('id',id).single()
+    return { data: data as Lesson, error: null }
+  }
   const { data, error } = await supabase
     .from('lessons')
     .update({ is_published: isPublished })
@@ -353,8 +360,7 @@ export async function deleteLesson(id: string): Promise<DataResult<null>> {
   const supabase = await createClient()
 
   const { error } = await supabase
-    .from('lessons')
-    .delete()
+    .from('lessons').update({ is_published: false })
     .eq('id', id)
 
   if (error) {

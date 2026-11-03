@@ -9,6 +9,7 @@ export const activitySchema = z.object({
   rubric:z.array(textPair).max(6), sort_order:z.number().int().nonnegative(),
 }).strict().superRefine((a,ctx) => {
   const bad = (message:string) => ctx.addIssue({code:'custom',message})
+  if (a.prompt.en.length<15 || a.prompt.ar.length<15 || a.explanation.en.length<30 || a.explanation.ar.length<30) bad('Question and feedback need meaningful bilingual text')
   if (a.kind === 'short_answer') {
     if (a.options.length || a.answer.length || a.rubric.length < 2) bad('Short answer requires rubric, no auto-grade key/options')
   } else {

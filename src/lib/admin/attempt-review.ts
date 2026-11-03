@@ -1,4 +1,5 @@
 import 'server-only'
+import { requireAdmin } from '@/lib/auth/require-admin'
 
 import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/types/database.types'
@@ -39,6 +40,7 @@ export async function getAdminAttemptReview(
   challengeId: string,
   attemptId: string
 ): Promise<DataResult<AttemptReviewData>> {
+  await requireAdmin('en')
   try {
     const supabase = await createClient()
 
@@ -141,6 +143,7 @@ export async function getAdminAttemptReview(
 
 export interface ReportClassificationUpdate {
   id: string
+  feedback?: string
   status: 'Pending' | 'Reviewed' | 'Rejected'
   adminClassification?: 'valid_bug' | 'duplicate' | 'not_a_bug' | 'needs_improvement'
   matchedHiddenBugId?: string | null
@@ -157,6 +160,7 @@ export interface SaveReviewInput {
 }
 
 export async function saveAdminAttemptReview(input: SaveReviewInput): Promise<DataResult<boolean>> {
+  await requireAdmin('en')
   try {
     const supabase = await createClient()
 
@@ -202,7 +206,7 @@ export async function saveAdminAttemptReview(input: SaveReviewInput): Promise<Da
               : input.status === 'approved' ? 'Reviewed' : 'Rejected'
           }
 
-          const updatePayload: Record<string, any> = { status: finalStatus }
+          const updatePayload: Record<string, any> = { status: finalStatus, admin_feedback: ru.feedback || input.adminFeedback, reviewed_by: user.id, reviewed_at: now }
 
           if (ru.adminClassification) {
             updatePayload.admin_classification = ru.adminClassification
@@ -278,6 +282,7 @@ export async function startAttemptReview(
   attemptId: string,
   challengeId: string,
 ): Promise<DataResult<boolean>> {
+  await requireAdmin('en')
   try {
     const supabase = await createClient()
     const now = new Date().toISOString()

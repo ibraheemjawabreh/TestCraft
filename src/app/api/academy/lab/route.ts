@@ -19,7 +19,7 @@ export async function POST(request:Request){
  if(!admin)query=query.eq('is_active',true).eq('status','published')
  const {data:challenge,error}=await query.single()
  if(error||!challenge)throw new ApiError(404,'Challenge unavailable')
- if(!admin&&(!challenge.module_id||!assertDB(await db.rpc('curriculum_can_read_module',{p_module:challenge.module_id}))))throw new ApiError(403,'Complete the prerequisite modules first')
+ if(!admin&&(!challenge.module_id||!assertDB(await db.rpc('curriculum_can_enter_lab',{p_challenge:challenge.id}))))throw new ApiError(403,'Complete all module lessons and prerequisites first')
  if(!['login_form','registration_form','storefront'].includes(challenge.practical_app_key||''))throw new ApiError(400,'Application unavailable')
  if(!process.env.SUPABASE_SERVICE_ROLE_KEY)throw new ApiError(503,'The lab server is not configured. Contact the administrator.')
  const service=createServiceClient()

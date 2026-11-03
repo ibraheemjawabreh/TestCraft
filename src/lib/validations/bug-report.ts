@@ -5,6 +5,9 @@ import { z } from 'zod'
  * All validation messages are i18n keys resolved on the client.
  */
 export const bugReportSchema = z.object({
+  environment: z.string().trim().max(500).optional().default(''),
+  evidence_url: z.string().trim().max(2000).refine(v => !v || /^https?:\/\//i.test(v), 'required').optional().default(''),
+
   title: z
     .string()
     .min(5, 'reportTitleMin')

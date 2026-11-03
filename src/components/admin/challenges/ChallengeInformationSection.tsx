@@ -37,9 +37,9 @@ export function ChallengeInformationSection({ dictionary }: { dictionary: Dictio
       <CardHeader>
         <div className="flex items-center gap-2">
           <BookOpen className="h-5 w-5 text-primary" />
-          <CardTitle>Challenge Information</CardTitle>
+          <CardTitle>{dictionary.factory.builder.information}</CardTitle>
         </div>
-        <CardDescription>Basic details about this challenge.</CardDescription>
+        <CardDescription>{dictionary.factory.builder.infoHint}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <FormField
@@ -47,7 +47,7 @@ export function ChallengeInformationSection({ dictionary }: { dictionary: Dictio
           name="slug"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Slug</FormLabel>
+              <FormLabel>{dictionary.factory.builder.slug}</FormLabel>
               <FormControl>
                 <Input {...field} placeholder="e.g. login-form-bug-hunt" />
               </FormControl>
@@ -61,7 +61,7 @@ export function ChallengeInformationSection({ dictionary }: { dictionary: Dictio
             name="title_en"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Title (English)</FormLabel>
+                <FormLabel>{dictionary.factory.builder.titleEn}</FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -74,7 +74,7 @@ export function ChallengeInformationSection({ dictionary }: { dictionary: Dictio
             name="title_ar"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Title (Arabic)</FormLabel>
+                <FormLabel>{dictionary.factory.builder.titleAr}</FormLabel>
                 <FormControl>
                   <Input dir="rtl" {...field} />
                 </FormControl>
@@ -90,7 +90,7 @@ export function ChallengeInformationSection({ dictionary }: { dictionary: Dictio
             name="description_en"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Description (English)</FormLabel>
+                <FormLabel>{dictionary.factory.builder.descriptionEn}</FormLabel>
                 <FormControl>
                   <Textarea className="min-h-[100px]" {...field} />
                 </FormControl>
@@ -103,7 +103,7 @@ export function ChallengeInformationSection({ dictionary }: { dictionary: Dictio
             name="description_ar"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Description (Arabic)</FormLabel>
+                <FormLabel>{dictionary.factory.builder.descriptionAr}</FormLabel>
                 <FormControl>
                   <Textarea dir="rtl" className="min-h-[100px]" {...field} />
                 </FormControl>
@@ -119,7 +119,7 @@ export function ChallengeInformationSection({ dictionary }: { dictionary: Dictio
             name="scenario_en"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Scenario (English)</FormLabel>
+                <FormLabel>{dictionary.factory.builder.scenarioEn}</FormLabel>
                 <FormControl>
                   <Textarea className="min-h-[100px]" {...field} />
                 </FormControl>
@@ -132,7 +132,7 @@ export function ChallengeInformationSection({ dictionary }: { dictionary: Dictio
             name="scenario_ar"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Scenario (Arabic)</FormLabel>
+                <FormLabel>{dictionary.factory.builder.scenarioAr}</FormLabel>
                 <FormControl>
                   <Textarea dir="rtl" className="min-h-[100px]" {...field} />
                 </FormControl>
@@ -148,7 +148,7 @@ export function ChallengeInformationSection({ dictionary }: { dictionary: Dictio
             name="instructions_en"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Instructions (English)</FormLabel>
+                <FormLabel>{dictionary.factory.builder.instructionsEn}</FormLabel>
                 <FormControl>
                   <Textarea className="min-h-[150px]" {...field} />
                 </FormControl>
@@ -161,7 +161,7 @@ export function ChallengeInformationSection({ dictionary }: { dictionary: Dictio
             name="instructions_ar"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Instructions (Arabic)</FormLabel>
+                <FormLabel>{dictionary.factory.builder.instructionsAr}</FormLabel>
                 <FormControl>
                   <Textarea dir="rtl" className="min-h-[150px]" {...field} />
                 </FormControl>
@@ -177,7 +177,7 @@ export function ChallengeInformationSection({ dictionary }: { dictionary: Dictio
             name="difficulty"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Difficulty</FormLabel>
+                <FormLabel>{dictionary.factory.builder.difficulty}</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
@@ -185,9 +185,9 @@ export function ChallengeInformationSection({ dictionary }: { dictionary: Dictio
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="Beginner">Beginner</SelectItem>
-                    <SelectItem value="Intermediate">Intermediate</SelectItem>
-                    <SelectItem value="Advanced">Advanced</SelectItem>
+                    <SelectItem value="Beginner">{dictionary.factory.builder.beginner}</SelectItem>
+                    <SelectItem value="Intermediate">{dictionary.factory.builder.intermediate}</SelectItem>
+                    <SelectItem value="Advanced">{dictionary.factory.builder.advanced}</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -199,7 +199,7 @@ export function ChallengeInformationSection({ dictionary }: { dictionary: Dictio
             name="base_xp_reward"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Base XP Reward</FormLabel>
+                <FormLabel>{dictionary.factory.builder.xp}</FormLabel>
                 <FormControl>
                   <Input 
                     type="number" 

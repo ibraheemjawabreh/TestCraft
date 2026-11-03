@@ -336,6 +336,10 @@ export async function toggleLessonPublished(id: string, isPublished: boolean): P
   await requireAdmin('en')
   try {
     const supabase = await createClient()
+    if (isPublished) {
+      const { error } = await supabase.rpc('curriculum_publish', { p_lesson: id, p_acknowledged: true })
+      return { data: null, error: error?.message || null }
+    }
     const { error } = await supabase.from('lessons').update({ is_published: isPublished }).eq('id', id)
     if (error) throw error
     return { data: null, error: null }

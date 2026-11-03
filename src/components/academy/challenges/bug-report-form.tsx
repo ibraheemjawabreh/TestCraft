@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -42,6 +42,7 @@ function resolveValidationMessage(key: string, dictionary: Dictionary): string {
 
 export function BugReportForm({ challengeId, labTemplateId, dictionary }: BugReportFormProps) {
   const router = useRouter()
+  const requestId = useRef<string | null>(null)
   const [serverError, setServerError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -61,6 +62,8 @@ export function BugReportForm({ challengeId, labTemplateId, dictionary }: BugRep
   const isLoading = isSubmitting || isPending
 
   const onSubmit = (data: BugReportFormValues) => {
+    if (!data.environment || data.environment.trim().length < 3) { setServerError(dictionary.validation.required); return }
+    requestId.current ||= crypto.randomUUID()
     setServerError(null)
     setSuccessMessage(null)
 
@@ -69,7 +72,7 @@ export function BugReportForm({ challengeId, labTemplateId, dictionary }: BugRep
         const res = await fetch('/api/academy/reports', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...data, challengeId, labTemplateId }),
+          body: JSON.stringify({ ...data, challengeId, labTemplateId, request_id: requestId.current }),
         })
 
         const json = (await res.json()) as { error?: string }
@@ -81,6 +84,7 @@ export function BugReportForm({ challengeId, labTemplateId, dictionary }: BugRep
 
         setSuccessMessage(dictionary.challengeLab.reportSubmitted)
         reset()
+        requestId.current = null
         router.refresh() // Refresh the server components to show the new report
       } catch {
         setServerError(dictionary.challengeLab.reportSubmitFailed)
@@ -94,6 +98,12 @@ export function BugReportForm({ challengeId, labTemplateId, dictionary }: BugRep
       noValidate
       className="space-y-5"
     >
+      <label className="block space-y-1 text-sm">{dictionary.factory.lab.environment}
+        <input className="w-full rounded-lg border bg-background p-3" required minLength={3} maxLength={500} {...register('environment', { required: true, minLength: 3 })} />
+      </label>
+      <label className="block space-y-1 text-sm">{dictionary.factory.lab.evidence}
+        <input className="w-full rounded-lg border bg-background p-3" type="url" dir="ltr" maxLength={2000} {...register('evidence_url')} />
+      </label>
       {/* Title */}
       <div className="space-y-1.5">
         <label
@@ -109,7 +119,7 @@ export function BugReportForm({ challengeId, labTemplateId, dictionary }: BugRep
           autoComplete="off"
           disabled={isLoading}
           className="block w-full rounded-lg border border-border/60 bg-background/60 px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50 transition-colors"
-          placeholder="e.g. Login button does not respond on mobile"
+          placeholder={dictionary.factory.lab.titleExample}
           {...register('title')}
         />
         {errors.title && (
@@ -133,7 +143,7 @@ export function BugReportForm({ challengeId, labTemplateId, dictionary }: BugRep
           rows={5}
           disabled={isLoading}
           className="block w-full rounded-lg border border-border/60 bg-background/60 px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50 transition-colors resize-none"
-          placeholder="1. Open the app&#10;2. Navigate to...&#10;3. Click..."
+          placeholder={dictionary.factory.lab.stepsExample}
           {...register('steps_to_reproduce')}
         />
         {errors.steps_to_reproduce && (
@@ -157,7 +167,7 @@ export function BugReportForm({ challengeId, labTemplateId, dictionary }: BugRep
           rows={3}
           disabled={isLoading}
           className="block w-full rounded-lg border border-border/60 bg-background/60 px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50 transition-colors resize-none"
-          placeholder="The button should submit the form and show a success message."
+          placeholder={dictionary.factory.lab.expectedExample}
           {...register('expected_result')}
         />
         {errors.expected_result && (

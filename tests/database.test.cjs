@@ -9,7 +9,7 @@ test('isolated PostgreSQL migration, RLS, import, review, publication, attempts 
  const actor=async(id,role='authenticated')=>db.exec("reset role;set role "+role+";set request.jwt.claim.sub='"+id+"'")
  try{
  await db.exec(fs.readFileSync('tests/fixtures/database.sql','utf8'))
- for(const migration of ['020_practical_challenge_security.sql','021_curriculum_factory.sql','022_curriculum_jobs.sql','023_practical_lab_sessions.sql','024_curriculum_backup_and_bug_history.sql'])
+ for(const migration of ['020_practical_challenge_security.sql','021_curriculum_factory.sql','022_curriculum_jobs.sql','023_practical_lab_sessions.sql','024_curriculum_backup_and_bug_history.sql','025_bug_report_context.sql','026_curriculum_assessment_review.sql','027_atomic_rewards_and_review_security.sql','028_report_review_security.sql','029_complete_module_progression.sql','030_admin_reward_inspection.sql'])
   await db.exec(fs.readFileSync('supabase/migrations/'+migration,'utf8').replace(/^\uFEFF/,''))
  await actor(ADMIN)
  const load=async()=> (await q('select curriculum_import($1::jsonb,$2,$3::jsonb,$4::jsonb) result',
@@ -50,6 +50,7 @@ test('isolated PostgreSQL migration, RLS, import, review, publication, attempts 
  let publicActivities
  await t.test('public DTO contains no keys/rubrics/explanations; objective grading is idempotent and retakes preserve history',async()=>{
   publicActivities=(await q('select curriculum_get_activities($1) result',[firstLesson.id]))[0].result
+  assert.equal(publicActivities.length,3, 'No early checkpoint while later module lessons remain drafts')
   const own=publicActivities.filter(a=>!a.module_assessment)
   assert.equal(own.length,3)
   assert.doesNotMatch(JSON.stringify(publicActivities),/"answer"|"rubric"|"explanation"/)
@@ -97,7 +98,7 @@ test('isolated PostgreSQL migration, RLS, import, review, publication, attempts 
 
  await t.test('challenge edits retain hidden bug IDs and removed bugs become inactive',async()=>{
   await actor(ADMIN)
-  const lesson=(await q("select * from lessons where slug='bva-and-ep'"))[0]
+  const lesson=(await q("select * from lessons where slug='software-testing-fundamentals'"))[0]
   const cid=(await q("insert into challenges(slug,module_id,learning_path_id,is_active,is_required,practical_app_key,practical_app_config) values('fixture-login',$1,$2,false,true,'login_form','{}') returning id",[lesson.module_id,lesson.learning_path_id]))[0].id
   const bugs=[{bug_key:'invalid_email_validation_missing',bug_title:'Missing email validation',description:'Controlled fixture',actual_severity:'Medium',bonus_xp:25,is_active:true}]
   await q('select curriculum_sync_bugs($1,$2::jsonb)',[cid,JSON.stringify(bugs)])
@@ -108,6 +109,51 @@ test('isolated PostgreSQL migration, RLS, import, review, publication, attempts 
   assert.equal((await q('select is_active from hidden_bugs where id=$1',[original]))[0].is_active,false)
   await actor(TESTER);assert.equal((await q('select * from hidden_bugs')).length,0)
  })
+
+ await t.test('lesson and challenge XP update exactly once; learners cannot forge totals or review fields',async()=>{
+  await actor(TESTER)
+  await q('insert into lesson_progress(user_id,lesson_id,completed_at) values($1,$2,now()) on conflict do nothing',[TESTER,firstLesson.id])
+  const first=(await q('select curriculum_award_lesson($1) result',[firstLesson.id]))[0].result
+  const second=(await q('select curriculum_award_lesson($1) result',[firstLesson.id]))[0].result
+  assert.equal(first.totalXpAwarded,10);assert.equal(second.totalXpAwarded,0);assert.equal(second.newTotalXp,10)
+  await assert.rejects(()=>q('update profiles set total_xp=999999 where id=$1',[TESTER]),/server-managed/)
+  await assert.rejects(()=>q("insert into xp_transactions(user_id,source_type,source_id,amount,reason) values($1,'lesson',$2,1000,'lesson_completed')",[TESTER,firstLesson.id]),/row-level security/)
+  await actor(ADMIN)
+  const cid=(await q("select id from challenges where slug='fixture-login'"))[0].id
+  const bug=(await q('update hidden_bugs set is_active=true where challenge_id=$1 returning id',[cid]))[0].id
+  const attempt=(await q("insert into challenge_attempts(user_id,challenge_id,status,is_passed) values($1,$2,'approved',true) returning id",[TESTER,cid]))[0].id
+  const found=[bug,bug,'ffffffff-ffff-4fff-8fff-ffffffffffff']
+  const reward=(await q('select curriculum_award_challenge($1,$2::uuid[]) result',[attempt,found]))[0].result
+  assert.equal(reward.totalXpAwarded,205) //150base+30bug+25perfect; duplicates/foreign IDs ignored
+  assert.equal((await q('select curriculum_award_challenge($1,$2::uuid[]) result',[attempt,found]))[0].result.totalXpAwarded,0)
+  const retry=(await q("insert into challenge_attempts(user_id,challenge_id,status,is_passed) values($1,$2,'approved',true) returning id",[TESTER,cid]))[0].id
+  assert.equal((await q('select curriculum_award_challenge($1,$2::uuid[]) result',[retry,found]))[0].result.totalXpAwarded,0)
+  await actor(TESTER)
+  await assert.rejects(()=>q('select curriculum_award_challenge($1,$2::uuid[])',[attempt,found]),/Administrator/)
+  await assert.rejects(()=>q("insert into challenge_attempts(user_id,challenge_id,status,is_passed) values($1,$2,'approved',true)",[TESTER,cid]),/admin-only/)
+  const started=(await q("insert into challenge_attempts(user_id,challenge_id,status,is_passed) values($1,$2,'started',false) returning id",[TESTER,cid]))[0].id
+  await assert.rejects(()=>q("update challenge_attempts set status='approved' where id=$1",[started]),/admin-only/)
+  await q("update challenge_attempts set status='submitted' where id=$1",[started])
+ })
+
+ await t.test('practical entry requires all current-module lessons published/completed; checkpoints follow the actual final lesson',async()=>{
+  await actor(ADMIN)
+  const cid=(await q("select id from challenges where slug='fixture-login'"))[0].id
+  await q("update challenges set is_active=true,status='published' where id=$1",[cid])
+  await actor(TESTER)
+  assert.equal((await q('select curriculum_can_enter_lab($1) allowed',[cid]))[0].allowed,false)
+  await actor(ADMIN)
+  const rows=await q('select id from lessons where module_id=$1 order by sort_order',[firstLesson.module_id])
+  for(const l of rows)await q('select curriculum_publish($1,true)',[l.id])
+  await actor(TESTER)
+  assert.equal((await q('select curriculum_can_enter_lab($1) allowed',[cid]))[0].allowed,false)
+  for(const l of rows)await q('insert into lesson_progress(user_id,lesson_id,completed_at) values($1,$2,now()) on conflict do nothing',[TESTER,l.id])
+  assert.equal((await q('select curriculum_can_enter_lab($1) allowed',[cid]))[0].allowed,true)
+  const first=(await q('select curriculum_get_activities($1) result',[rows[0].id]))[0].result
+  const last=(await q('select curriculum_get_activities($1) result',[rows.at(-1).id]))[0].result
+  assert.equal(first.filter(x=>x.module_assessment).length,0)
+  assert.equal(last.filter(x=>x.module_assessment).length,3)
+ })
  await t.test('master backup restores UUIDs, bilingual content, activities and challenge links into empty isolated test DB',async()=>{
   await actor(ADMIN)
   const bid=(await q('select curriculum_backup() id'))[0].id
@@ -115,7 +161,7 @@ test('isolated PostgreSQL migration, RLS, import, review, publication, attempts 
   const restored=new PGlite()
   try{
    await restored.exec(fs.readFileSync('tests/fixtures/database.sql','utf8'))
-   for(const m of ['020_practical_challenge_security.sql','021_curriculum_factory.sql','022_curriculum_jobs.sql','023_practical_lab_sessions.sql','024_curriculum_backup_and_bug_history.sql'])
+   for(const m of ['020_practical_challenge_security.sql','021_curriculum_factory.sql','022_curriculum_jobs.sql','023_practical_lab_sessions.sql','024_curriculum_backup_and_bug_history.sql','025_bug_report_context.sql','026_curriculum_assessment_review.sql','027_atomic_rewards_and_review_security.sql','028_report_review_security.sql','029_complete_module_progression.sql','030_admin_reward_inspection.sql'])
     await restored.exec(fs.readFileSync('supabase/migrations/'+m,'utf8').replace(/^\uFEFF/,''))
    await restored.exec("set role authenticated;set request.jwt.claim.sub='"+ADMIN+"'")
    const restore=()=>restored.query('select curriculum_restore_test_backup($1::jsonb,$2) result',[JSON.stringify(payload),'RESTORE_EMPTY_TEST_DATABASE'])
@@ -133,4 +179,6 @@ test('isolated PostgreSQL migration, RLS, import, review, publication, attempts 
  })
  }finally{await db.close()}
 })
+
+
 

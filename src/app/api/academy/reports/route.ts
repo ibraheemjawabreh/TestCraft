@@ -1,4 +1,6 @@
-﻿export const runtime = 'nodejs'
+import { z } from 'zod'
+import { checkOrigin } from '@/lib/auth/api-auth'
+export const runtime = 'nodejs'
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { submitBugReport, submitAttempt } from '@/lib/academy/reports'
@@ -7,6 +9,9 @@ import type { Database } from '@/types/database.types'
 type SeverityLevel = Database['public']['Enums']['severity_level']
 
 interface RequestBody {
+  environment: string
+  evidence_url?: string
+  request_id: string
   challengeId: string
   labTemplateId?: string | null
   title: string
@@ -23,6 +28,7 @@ interface RequestBody {
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
+    checkOrigin(request)
     const supabase = await createClient()
 
     const {
@@ -39,7 +45,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       .eq('id', user.id)
       .single()
 
-    if (!profile || profile.role !== 'tester') {
+    if (!profile || !['tester','student'].includes(profile.role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -56,8 +62,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 })
     }
 
+    const context = z.object({ environment:z.string().trim().min(3).max(500),request_id:z.string().uuid(),evidence_url:z.string().max(2000).optional() }).parse(body)
     // 1. Save the bug report (creates/reuses an attempt internally)
     const result = await submitBugReport({
+      environment:context.environment,
+      evidence_url:context.evidence_url,
+      request_id:context.request_id,
       userId: user.id,
       challengeId: body.challengeId,
       labTemplateId: body.labTemplateId ?? null,
@@ -86,7 +96,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     if (activeAttempt) {
       // Transition attempt from started â†’ submitted (non-blocking, best effort)
-      void submitAttempt(user.id, body.challengeId, activeAttempt.id)
+      await submitAttempt(user.id, body.challengeId, activeAttempt.id)
     }
 
     return NextResponse.json({ id: result.data.id }, { status: 201 })

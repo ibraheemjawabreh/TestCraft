@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
 import type { Database } from '@/types/database.types'
 import type { HiddenBugFormValues } from '@/lib/validations/challenge'
 
@@ -13,6 +14,7 @@ interface DataResult<T> {
  * Fetch all hidden bugs for a specific challenge.
  */
 export async function getHiddenBugsByChallengeId(challengeId: string): Promise<DataResult<HiddenBug[]>> {
+  await requireAdmin('en')
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -96,7 +98,7 @@ export async function deleteHiddenBug(id: string): Promise<DataResult<null>> {
 
   const { error } = await supabase
     .from('hidden_bugs')
-    .delete()
+    .update({is_active:false})
     .eq('id', id)
 
   if (error) {

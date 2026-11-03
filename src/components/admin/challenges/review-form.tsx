@@ -333,6 +333,20 @@ export function ReviewForm({ attemptData, locale, dictionary }: ReviewFormProps)
                   </div>
                 </div>
 
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="text-sm">{locale === 'ar' ? 'تصنيف البلاغ' : 'Report classification'}
+                    <select aria-label={locale === 'ar' ? 'تصنيف البلاغ' : 'Report classification'} className="w-full rounded-lg border bg-background p-2"
+                      value={reportUpdates[report.id]?.adminClassification || 'not_a_bug'}
+                      onChange={e => setReportUpdates(prev => ({...prev,[report.id]:{...prev[report.id],adminClassification:e.target.value as ReportClassificationUpdate['adminClassification']}}))}>
+                      {['valid_bug','duplicate','not_a_bug','needs_improvement'].map(k => <option key={k} value={k}>{({valid_bug:locale==='ar'?'عيب مؤكد':'Valid bug',duplicate:locale==='ar'?'مكرر':'Duplicate',not_a_bug:locale==='ar'?'ليس عيبًا':'Not a bug',needs_improvement:locale==='ar'?'يحتاج إلى تحسين':'Needs improvement'})[k]}</option>)}
+                    </select>
+                  </label>
+                  <label className="text-sm">{dictionary.factory.reviewFeedback}
+                    <textarea aria-label={dictionary.factory.reviewFeedback} className="w-full rounded-lg border bg-background p-2"
+                      value={reportUpdates[report.id]?.feedback || ''}
+                      onChange={e => setReportUpdates(prev=>({...prev,[report.id]:{...prev[report.id],feedback:e.target.value}}))}/>
+                  </label>
+                </div>
                 {/* Report Content */}
                 <div className="grid gap-3 sm:grid-cols-3 text-sm border-y border-border/50 py-3">
                   <div>

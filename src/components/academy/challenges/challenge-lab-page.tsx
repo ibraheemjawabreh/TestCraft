@@ -29,7 +29,7 @@ export function ChallengeLabPage({
   locale,
   username,
 }: ChallengeLabPageProps) {
-  const { challenge, previousReports, activeBugs } = data
+  const { challenge, previousReports } = data
 
   const DIFFICULTY_CONFIG = {
     Beginner: {
@@ -127,7 +127,7 @@ export function ChallengeLabPage({
             <PracticalAppRenderer 
               appKey={challenge.practical_app_key}
               config={challenge.practical_app_config}
-              activeBugs={activeBugs}
+              challengeId={challenge.id}
               dictionary={dictionary}
               locale={locale}
             />

@@ -1,4 +1,5 @@
 import 'server-only'
+import { onBugReportSubmitted } from '@/lib/gamification/engine'
 
 import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/types/database.types'
@@ -132,6 +133,9 @@ export async function getTesterReportsForChallenge(
 }
 
 export interface SubmitBugReportInput {
+  environment?: string
+  evidence_url?: string
+  request_id?: string
   userId: string
   challengeId: string
   labTemplateId: string | null
@@ -161,6 +165,8 @@ export async function submitBugReport(
 ): Promise<Result<{ id: string }>> {
   try {
     const parsed = bugReportSchema.safeParse({
+      environment: input.environment,
+      evidence_url: input.evidence_url,
       title: input.title,
       steps_to_reproduce: input.steps_to_reproduce,
       expected_result: input.expected_result,
@@ -174,13 +180,19 @@ export async function submitBugReport(
 
     const supabase = await createClient()
 
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user || user.id !== input.userId) return { data: null, error: 'Unauthorized' }
+    if (input.request_id) {
+      const { data: prior } = await supabase.from('bug_reports').select('id').eq('user_id',user.id).eq('request_id',input.request_id).maybeSingle()
+      if (prior) return { data: { id: prior.id }, error: null }
+    }
     // Safely resolve challengeId to actual UUID
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(input.challengeId)
     const isNumeric = /^\d+$/.test(input.challengeId)
 
     let query = supabase
       .from('challenges')
-      .select('id, is_active')
+      .select('id, is_active, module_id')
 
     if (isUuid) {
       query = query.eq('id', input.challengeId)
@@ -196,6 +208,11 @@ export async function submitBugReport(
       return { data: null, error: 'Challenge not found.' }
     }
 
+    if (!challenge.is_active) return { data:null,error:'Challenge unavailable' }
+    if (challenge.module_id) {
+      const { data: allowed, error: gateError } = await supabase.rpc('curriculum_can_enter_lab', { p_challenge: challenge.id })
+      if (gateError || !allowed) return { data:null,error:'Complete prerequisite modules first' }
+    }
     const challengeId = challenge.id
 
     // Find the current active (mutable) attempt
@@ -262,6 +279,9 @@ export async function submitBugReport(
         challenge_id: challengeId,
         lab_template_id: input.labTemplateId,
         attempt_id: attemptId,
+        environment: parsed.data.environment,
+        evidence_url: parsed.data.evidence_url || null,
+        request_id: input.request_id || null,
         title: parsed.data.title,
         steps_to_reproduce: parsed.data.steps_to_reproduce,
         expected_result: parsed.data.expected_result,
@@ -277,8 +297,9 @@ export async function submitBugReport(
       return { data: null, error: 'Failed to submit report. Please try again.' }
     }
 
-    // Sync challenge_progress (non-blocking)
-    void syncChallengeProgress(supabase, input.userId, challengeId)
+    await onBugReportSubmitted(input.userId)
+    // Await progress persistence before returning.
+    await syncChallengeProgress(supabase, input.userId, challengeId)
 
     return { data: { id: report.id }, error: null }
   } catch {
@@ -334,7 +355,7 @@ export async function submitAttempt(
 
     // Sync challenge_progress (non-blocking)
     const client = supabase
-    void syncChallengeProgress(client, userId, challengeId, 'submitted', now)
+    await syncChallengeProgress(client, userId, challengeId, 'submitted', now)
 
     return { data: { success: true }, error: null }
   } catch {

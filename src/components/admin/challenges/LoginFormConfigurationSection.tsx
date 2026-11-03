@@ -19,11 +19,9 @@ export function LoginFormConfigurationSection({ dictionary }: { dictionary: Dict
       <CardHeader>
         <div className="flex items-center gap-2">
           <Settings2 className="h-5 w-5 text-primary" />
-          <CardTitle>Login Form Settings</CardTitle>
+          <CardTitle>{dictionary.factory.builder.settings}</CardTitle>
         </div>
-        <CardDescription>
-          Configure the specific behavior of the simulated login form.
-        </CardDescription>
+        <CardDescription>{dictionary.factory.builder.settingsHint}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <FormField
@@ -31,7 +29,7 @@ export function LoginFormConfigurationSection({ dictionary }: { dictionary: Dict
           name="practical_app_config.passwordMinLength"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Minimum Password Length</FormLabel>
+              <FormLabel>{dictionary.factory.builder.minPassword}</FormLabel>
               <FormControl>
                 <Input 
                   type="number" 
@@ -49,7 +47,7 @@ export function LoginFormConfigurationSection({ dictionary }: { dictionary: Dict
           name="practical_app_config.validEmail"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Valid Email (For Tester Success)</FormLabel>
+              <FormLabel>{dictionary.factory.builder.email}</FormLabel>
               <FormControl>
                 <Input 
                   type="email" 
@@ -58,7 +56,7 @@ export function LoginFormConfigurationSection({ dictionary }: { dictionary: Dict
                   onChange={e => field.onChange(e.target.value)}
                 />
               </FormControl>
-              <FormDescription>The email testers should use to log in successfully.</FormDescription>
+              <FormDescription>{dictionary.factory.builder.emailHint}</FormDescription>
             </FormItem>
           )}
         />
@@ -68,7 +66,7 @@ export function LoginFormConfigurationSection({ dictionary }: { dictionary: Dict
           name="practical_app_config.validPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Valid Password (For Tester Success)</FormLabel>
+              <FormLabel>{dictionary.factory.builder.password}</FormLabel>
               <FormControl>
                 <Input 
                   type="text" 
@@ -77,7 +75,7 @@ export function LoginFormConfigurationSection({ dictionary }: { dictionary: Dict
                   onChange={e => field.onChange(e.target.value)}
                 />
               </FormControl>
-              <FormDescription>The correct password for the tester.</FormDescription>
+              <FormDescription>{dictionary.factory.builder.passwordHint}</FormDescription>
             </FormItem>
           )}
         />
