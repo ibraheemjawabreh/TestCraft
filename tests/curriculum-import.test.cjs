@@ -40,7 +40,6 @@ test('real import HTTP handlers and PostgreSQL RPCs: batches, safe re-import, pu
  // Production progress columns, uniqueness and ownership policies used by ProgressService.
  await pg.exec(`alter table lesson_progress add column status text default 'not_started';
  alter table lesson_progress add column started_at timestamptz default now();
- alter table lesson_progress add column last_opened_at timestamptz default now();
  alter table module_progress add column status text,add column completion_percentage integer,add column completed_lessons integer,add column total_lessons integer,add column completed_at timestamptz;
  create unique index import_module_progress on module_progress(user_id,module_id);
  alter table learning_path_progress add column completion_percentage integer,add column completed_modules integer,add column completed_lessons integer,add column completed_challenges integer,add column current_module_id uuid,add column current_lesson_id uuid,add column last_activity_at timestamptz;

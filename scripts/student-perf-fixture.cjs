@@ -134,13 +134,19 @@ async function main() {
   const server = http.createServer(async (req,res) => {
     const started = performance.now(), u = new URL(req.url,url), method = req.method
     let sqlMs = 0, rows = null
+    const browserOrigin = req.headers.origin
+    const cors = ['http://127.0.0.1:3210','http://localhost:3210'].includes(browserOrigin)
+      ? { 'Access-Control-Allow-Origin':browserOrigin, 'Access-Control-Allow-Methods':'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers':'authorization, apikey, content-type, x-client-info, x-supabase-api-version',
+        'Vary':'Origin' } : {}
     const send = (status, data, headers = {}) => {
       const body = data === undefined ? '' : JSON.stringify(data)
       if (!u.pathname.startsWith('/__')) events.push({ method, path:u.pathname, query:u.search, status, ms:performance.now()-started, sqlMs, rows, bytes:Buffer.byteLength(body) })
-      res.writeHead(status, { 'Content-Type':'application/json', 'Cache-Control':'no-store', ...headers })
+      res.writeHead(status, { 'Content-Type':'application/json', 'Cache-Control':'no-store', ...cors, ...headers })
       res.end(body)
     }
     try {
+      if (method === 'OPTIONS' && cors['Access-Control-Allow-Origin']) return send(204)
       if (u.pathname === '/__session') return send(200,session(Number(u.searchParams.get('user') || 2),u.searchParams.has('expired')))
       if (u.pathname === '/__events') return send(200,events.splice(0))
       if (u.pathname === '/__progress') {
@@ -155,17 +161,23 @@ async function main() {
         const {rows} = await pg.query('select coalesce(sum(amount),0)::int as xp,count(*)::int as awards from xp_transactions where user_id=$1',[uid(2)])
         return send(200,rows[0])
       }
-      if (u.pathname === '/__meta') return send(200,{ latency, path:id('path1'), otherPath:id('path2'), lesson:id('lesson1-1-2'), next:id('lesson1-1-3'), fresh:id('lesson1-1-7'), existing:id('lesson1-1-1'), locked:id('lesson1-2-1'), last:id('lesson1-1-12') })
+      if (u.pathname === '/__meta') return send(200,{ latency, path:id('path1'), otherPath:id('path2'), lesson:id('lesson1-1-2'), next:id('lesson1-1-3'), fresh:id('lesson1-1-7'), existing:id('lesson1-1-1'), locked:id('lesson1-2-1'), last:id('lesson1-1-12'), firstStart:id('lesson2-1-1') })
       if (req.headers.apikey !== key) return send(401,{message:'Invalid fixture key'})
       const user = users.get(req.headers.authorization?.slice(7))
       await delay(latency)
       if (u.pathname === '/auth/v1/token' && method === 'POST') {
         const chunks = []
         for await (const chunk of req) chunks.push(chunk)
-        const match = /^fixture-refresh-([123])$/.exec(JSON.parse(Buffer.concat(chunks).toString()).refresh_token)
+        const input = JSON.parse(Buffer.concat(chunks).toString())
+        if (u.searchParams.get('grant_type') === 'password') {
+          const tester = /^fixture([23])@example\.test$/.exec(input.email)
+          return tester && input.password === 'Fixture!1234' ? send(200,session(Number(tester[1]))) : send(400,{message:'Invalid fixture credentials'})
+        }
+        const match = /^fixture-refresh-([123])$/.exec(input.refresh_token)
         return match ? send(200,session(Number(match[1]))) : send(401,{message:'Invalid fixture refresh token'})
       }
-      if (!user) return send(401,{message:'Invalid fixture session'})
+      const publicCatalog = u.pathname === '/rest/v1/rpc/curriculum_public_catalog' && method === 'POST'
+      if (!user && !publicCatalog) return send(401,{message:'Invalid fixture session'})
       if (u.pathname === '/auth/v1/user') return send(200,user)
       const pieces = u.pathname.split('/').filter(Boolean)
       if (pieces[0] !== 'rest' || pieces[1] !== 'v1') throw Error('Unsupported fixture endpoint')
@@ -203,8 +215,8 @@ async function main() {
         }
       }
       const result = await pg.transaction(async tx => {
-        await tx.exec('set local role authenticated')
-        await tx.query("select set_config('request.jwt.claim.sub',$1,true)",[user.id])
+        await tx.exec(user ? 'set local role authenticated' : 'set local role anon')
+        await tx.query("select set_config('request.jwt.claim.sub',$1,true)",[user?.id ?? ''])
         const t = performance.now()
         try { return await tx.query(sql,args) } finally { sqlMs = performance.now()-t }
       })

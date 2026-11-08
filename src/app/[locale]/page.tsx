@@ -1,9 +1,8 @@
 import { resolveLocale } from '@/lib/locale'
 import type { Metadata } from 'next'
 
-import { type Locale } from '@/i18n/config'
-import { getDictionary } from '@/i18n/get-dictionary'
 import { MarketingHomepage } from '@/components/marketing/marketing-homepage'
+import { marketingCopy } from '@/components/marketing/copy'
 
 interface HomePageProps {
   params: Promise<{
@@ -17,24 +16,17 @@ export async function generateMetadata({
   const { locale: routeLocale } = await params
   const locale = resolveLocale(routeLocale)
 
-  const dictionary = await getDictionary(locale)
+  const t = marketingCopy(locale)
 
   return {
-    title: dictionary.marketing.meta.title,
-    description: dictionary.marketing.meta.description,
+    title: t.heroTag,
+    description: t.heroBody,
   }
 }
 
-/**
- * Public Marketing Homepage — Sunset Tech visual identity.
- * Replaces the previous redirect-to-login behavior.
- * Admin and academy routes remain fully protected and unaffected.
- */
 export default async function HomePage({ params }: HomePageProps) {
   const { locale: routeLocale } = await params
   const locale = resolveLocale(routeLocale)
 
-  const dictionary = await getDictionary(locale)
-
-  return <MarketingHomepage dictionary={dictionary} locale={locale} />
+  return <MarketingHomepage locale={locale} />
 }

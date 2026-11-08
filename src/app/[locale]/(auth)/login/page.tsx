@@ -7,6 +7,7 @@ import { getDictionary } from '@/i18n/get-dictionary'
 import { type Locale } from '@/i18n/config'
 import { ThemeToggle } from '@/components/theme/theme-toggle'
 import { LanguageSwitcher } from '@/components/language/language-switcher'
+import { safeLearningRedirect } from '@/lib/auth/learning-redirect'
 
 export const metadata: Metadata = {
   title: 'Sign In',
@@ -14,9 +15,12 @@ export const metadata: Metadata = {
     'Sign in to TestCraft and continue your QA engineering journey.',
 }
 
-export default async function LoginPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function LoginPage({ params, searchParams }: {
+  params: Promise<{ locale: string }>; searchParams: Promise<{ redirectTo?: string | string[] }>
+}) {
   const { locale: routeLocale } = await params
   const locale = resolveLocale(routeLocale)
+  const destination = safeLearningRedirect((await searchParams).redirectTo, locale)
 
   const dictionary = await getDictionary(locale)
 
@@ -27,7 +31,7 @@ export default async function LoginPage({ params }: { params: Promise<{ locale: 
       {/* ── Top-right Controls ────────────────────────────────────────── */}
       <div className="auth-controls absolute top-5 end-5 z-50 flex items-center gap-3 rounded-full px-3 py-2 shadow-lg backdrop-blur-xl animate-fade-in-up">
         <ThemeToggle dictionary={dictionary} />
-        <LanguageSwitcher dictionary={dictionary} locale={locale} />
+        <LanguageSwitcher dictionary={dictionary} locale={locale} destination={destination} />
       </div>
 
       {/* ── Atmospheric background ──────────────────────────────────────── */}
@@ -91,7 +95,7 @@ export default async function LoginPage({ params }: { params: Promise<{ locale: 
           </div>
 
           {/* ── Form (Client Component) ───────────────────────────────── */}
-          <LoginForm dictionary={dictionary} locale={locale} />
+          <LoginForm dictionary={dictionary} locale={locale} destination={destination} />
         </div>
 
         {/* Bottom gradient line — subtle brand accent */}

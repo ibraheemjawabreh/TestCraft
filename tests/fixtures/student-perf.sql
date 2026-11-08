@@ -4,8 +4,7 @@ alter table lessons add column summary text;
 update profiles set username = case right(id::text,1) when '2' then 'Bench Tester' when '3' then 'Other Tester' else 'Bench Admin' end;
 alter table lesson_progress add column id uuid default gen_random_uuid(),
   add column status text not null default 'not_started',
-  add column started_at timestamptz not null default now(),
-  add column last_opened_at timestamptz not null default now();
+  add column started_at timestamptz not null default now();
 alter table lesson_progress enable row level security;
 create policy bench_owned_lesson_progress on lesson_progress to authenticated using(user_id=auth.uid()) with check(user_id=auth.uid());
 alter table module_progress add unique(user_id,module_id);

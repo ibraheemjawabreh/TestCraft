@@ -1,51 +1,60 @@
-import { MarketingHeader } from '@/components/marketing/marketing-header'
-import { MarketingHero } from '@/components/marketing/marketing-hero'
-import { MarketingFeatures } from '@/components/marketing/marketing-features'
-import { MarketingFooter } from '@/components/marketing/marketing-footer'
-import type { Dictionary } from '@/i18n/types'
+import Link from 'next/link'
+import { Suspense } from 'react'
+import { ArrowRight, BookOpen, Bug, CheckCircle2, FlaskConical, ListChecks } from 'lucide-react'
 import type { Locale } from '@/i18n/config'
+import { readCatalog } from '@/lib/learning-catalog/data'
+import { MarketingShell } from './marketing-shell'
+import { MarketingHero } from './marketing-hero'
+import { PathGrid } from './path-grid'
+import { marketingCopy } from './copy'
+import s from './marketing.module.css'
 
-interface MarketingHomepageProps {
-  dictionary: Dictionary
-  locale: Locale
+async function PathPreview({ locale }: { locale: Locale }) {
+  const paths = await readCatalog()
+  return <PathGrid paths={paths?.slice(0,3) ?? null} locale={locale} />
 }
 
-/**
- * MarketingHomepage — self-contained Sunset Tech landing page.
- * All colors are locally scoped to avoid disrupting the app-wide Cyber Violet theme.
- */
-export function MarketingHomepage({ dictionary, locale }: MarketingHomepageProps) {
+export function MarketingHomepage({ locale }: { locale: Locale }) {
+  const t = marketingCopy(locale)
+  const listing = '/' + locale + '/learning-paths'
+  const stepIcons = [BookOpen, FlaskConical, CheckCircle2]
   return (
-    <div
-      className="min-h-screen antialiased relative overflow-hidden"
-      style={{
-        background: '#0f172a',
-        color: '#f8fafc',
-        fontFamily: 'var(--font-plus-jakarta), system-ui, sans-serif',
-      }}
-    >
-      {/* Subtle animated background grid */}
-      <div className="fixed inset-0 marketing-grid-bg opacity-40 pointer-events-none" aria-hidden="true" />
-      {/* Skip-to-content accessibility link */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white"
-        style={{ background: 'linear-gradient(135deg, #f97316, #fbbf24)' }}
-      >
-        {locale === 'ar' ? 'انتقل إلى المحتوى الرئيسي' : 'Skip to main content'}
-      </a>
-
-      {/* ── Navigation ───────────────────────────────────────────────────── */}
-      <MarketingHeader dictionary={dictionary} locale={locale} />
-
-      {/* ── Page Content ─────────────────────────────────────────────────── */}
-      <main id="main-content">
-        <MarketingHero dictionary={dictionary} locale={locale} />
-        <MarketingFeatures dictionary={dictionary} />
-      </main>
-
-      {/* ── Footer ───────────────────────────────────────────────────────── */}
-      <MarketingFooter dictionary={dictionary} locale={locale} />
-    </div>
+    <MarketingShell locale={locale}>
+      <MarketingHero locale={locale} />
+      <section className={s.section} aria-labelledby="path-preview">
+        <div className={s.sectionHeader}>
+          <div><p className={s.eyebrow}>{t.previewTag}</p><h2 id="path-preview">{t.previewTitle}</h2><p>{t.previewBody}</p></div>
+          <Link className={s.textLink} href={listing}>{t.allPaths}<ArrowRight size={17} className={s.directional} aria-hidden="true" /></Link>
+        </div>
+        <Suspense fallback={<p className={s.notice} role="status">{locale === 'ar' ? 'جارٍ تحميل المسارات…' : 'Loading published paths…'}</p>}>
+          <PathPreview locale={locale} />
+        </Suspense>
+      </section>
+      <section className={s.band} aria-labelledby="learning-loop">
+        <div className={s.section}>
+          <div className={s.sectionHeader}><div><p className={s.eyebrow}>{t.howTag}</p><h2 id="learning-loop">{t.howTitle}</h2></div></div>
+          <ol className={s.steps}>
+            {t.steps.map(([title, body], i) => { const Icon = stepIcons[i]; return (
+              <li className={s.reveal} key={title}>
+                <span className={s.stepNumber} aria-hidden="true">0{i+1}</span>
+                <Icon size={24} aria-hidden="true" /><h3>{title}</h3><p>{body}</p>
+              </li>
+            ) })}
+          </ol>
+        </div>
+      </section>
+      <section className={s.section} aria-labelledby="practical-challenges">
+        <div className={s.lab}>
+          <div><p className={s.eyebrow}><Bug size={16} aria-hidden="true" />{t.labTag}</p>
+            <h2 id="practical-challenges">{t.labTitle}</h2><p className={s.lead}>{t.labBody}</p>
+            <Link className={s.textLink} href={listing}>{t.explore}<ArrowRight size={17} className={s.directional} aria-hidden="true" /></Link>
+          </div>
+          <div className={s.issueCard}>
+            <p className={s.eyebrow}><ListChecks size={17} aria-hidden="true" />{t.labCase}</p><h3>{t.labIssue}</h3>
+            <dl><div><dt>{t.demoExpected}</dt><dd>{t.labExpected}</dd></div><div><dt>{t.demoObserved}</dt><dd>{t.labObserved}</dd></div></dl>
+          </div>
+        </div>
+      </section>
+    </MarketingShell>
   )
 }

@@ -6,9 +6,9 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertCircle, CheckCircle2, Loader2, Mail, User } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 
 import { registerSchema, type RegisterFormValues } from '@/lib/validations/auth'
+import { withLearningRedirect } from '@/lib/auth/learning-redirect'
 import { createClient } from '@/lib/supabase/client'
 import type { RegistrationMetadata } from '@/types/database'
 import { Button } from '@/components/ui/button'
@@ -107,9 +107,10 @@ type FormStatus = 'idle' | 'submitting' | 'email-sent' | 'error'
 interface SuccessCardProps {
   dictionary: any
   locale: string
+  destination?: string
 }
 
-function SuccessCard({ dictionary, locale }: SuccessCardProps) {
+function SuccessCard({ dictionary, locale, destination }: SuccessCardProps) {
   return (
     <div
       className="flex flex-col items-center gap-5 py-4 text-center animate-fade-in"
@@ -131,7 +132,7 @@ function SuccessCard({ dictionary, locale }: SuccessCardProps) {
 
       <div className="flex flex-col w-full gap-3 mt-4">
         <Link
-          href={`/${locale}/login`}
+          href={withLearningRedirect(`/${locale}/login`, destination)}
           className="flex h-11 items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium text-sm w-full"
         >
           {dictionary.auth.goToSignIn}
@@ -162,8 +163,7 @@ function SuccessCard({ dictionary, locale }: SuccessCardProps) {
  *
  * Google sign-up is delegated to OAuthButton (separate component).
  */
-export function RegisterForm({ dictionary, locale }: { dictionary: any; locale: string }) {
-  const router = useRouter()
+export function RegisterForm({ dictionary, locale, destination }: { dictionary: any; locale: string; destination?: string }) {
   const [status, setStatus]           = useState<FormStatus>('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -203,7 +203,7 @@ export function RegisterForm({ dictionary, locale }: { dictionary: any; locale: 
         options: {
           data: metadata,
           // Email confirmation link redirects here
-          emailRedirectTo: `${window.location.origin}/auth/callback?locale=${locale}`,
+          emailRedirectTo: withLearningRedirect(`${window.location.origin}/auth/callback?locale=${locale}`, destination),
         },
       })
 
@@ -221,15 +221,14 @@ export function RegisterForm({ dictionary, locale }: { dictionary: any; locale: 
 
       // Case 2: Email confirmation disabled — user is immediately signed in
       if (data.session) {
-        router.push(`/auth/post-login?locale=${locale}`)
-        router.refresh()
+        window.location.assign(withLearningRedirect(`/auth/post-login?locale=${locale}`, destination))
         return
       }
 
       // Fallback: treat as email-sent (edge case)
       setStatus('email-sent')
     },
-    [router],
+    [dictionary, locale, destination],
   )
 
 
@@ -242,6 +241,7 @@ export function RegisterForm({ dictionary, locale }: { dictionary: any; locale: 
       <SuccessCard
         dictionary={dictionary}
         locale={locale}
+        destination={destination}
       />
     )
   }
@@ -488,14 +488,14 @@ export function RegisterForm({ dictionary, locale }: { dictionary: any; locale: 
           provider="google"
           label={dictionary.auth.continueWithGoogle}
           disabled={isDisabled}
-          redirectPath={`/auth/callback?locale=${locale}`}
+          redirectPath={withLearningRedirect(`/auth/callback?locale=${locale}`, destination)}
         />
 
         {/* ── Sign in link ──────────────────────────────────────────────── */}
         <p className="text-center text-sm text-muted-foreground pt-1">
           {dictionary.auth.alreadyHaveAccount}{' '}
           <Link
-            href={`/${locale}/login`}
+            href={withLearningRedirect(`/${locale}/login`, destination)}
             className={[
               'font-semibold text-foreground',
               'underline underline-offset-4 decoration-border',

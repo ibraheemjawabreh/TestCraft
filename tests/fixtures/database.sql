@@ -24,7 +24,7 @@ create table public.challenges(id uuid primary key default gen_random_uuid(),slu
  practical_app_key text,practical_app_config jsonb,status text default 'draft');
 create table public.hidden_bugs(id uuid primary key default gen_random_uuid(),challenge_id uuid references challenges(id),bug_key text,is_active boolean,description text,bug_title text,actual_severity severity_level,bonus_xp integer);
 create table public.challenge_attempts(id uuid primary key default gen_random_uuid(),user_id uuid references profiles(id),challenge_id uuid references challenges(id),status text,is_passed boolean);
-create table public.lesson_progress(user_id uuid references profiles(id),lesson_id uuid references lessons(id),completed_at timestamptz,primary key(user_id,lesson_id));
+create table public.lesson_progress(user_id uuid references profiles(id),lesson_id uuid references lessons(id),completed_at timestamptz,last_opened_at timestamptz not null default now(),primary key(user_id,lesson_id));
 create function public.is_admin() returns boolean language sql stable security definer as $$ select exists(select 1 from profiles where id=auth.uid() and role='admin') $$;
 grant select on public.profiles to authenticated;
 do $$

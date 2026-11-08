@@ -1,12 +1,14 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import type { CookieOptions } from '@supabase/ssr'
-import { i18n } from './i18n/config'
+import { i18n, type Locale } from './i18n/config'
+import { safeLearningRedirect } from './lib/auth/learning-redirect'
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl
   // These handlers validate the user and can refresh cookies themselves.
-  if (pathname === '/api/academy/activities' || pathname === '/api/academy/lesson-open') {
+  if (pathname === '/api/academy/activities' || pathname === '/api/academy/lesson-open' ||
+      pathname === '/auth/post-login') {
     return NextResponse.next()
   }
 
@@ -86,11 +88,16 @@ async function handleSupabaseAuth(
   const { pathname } = request.nextUrl
   const prefix = locale ? `/${locale}` : ''
 
-  if (locale && (pathname === `${prefix}/academy` || pathname.startsWith(`${prefix}/academy/`))) {
+  const learningStart = !!locale && (pathname === `${prefix}/learn` ||
+    /^\/learning-paths\/[^/]+\/start$/.test(pathname.slice(prefix.length)))
+  const marketing = !!locale && (pathname === prefix || pathname === `${prefix}/learning-paths` ||
+    /^\/learning-paths\/[^/]+$/.test(pathname.slice(prefix.length)) ||
+    pathname === `${prefix}/privacy` || pathname === `${prefix}/terms`)
+  if (locale && (marketing || learningStart || pathname === `${prefix}/academy` || pathname.startsWith(`${prefix}/academy/`))) {
     // Read/refresh the cookie here. The layout and pages verify the user with
     // Auth and check the database role in requireTester() before serving data.
     const { data: { session } } = await supabase.auth.getSession()
-    if (session) return finalResponse
+    if (session || marketing || learningStart) return finalResponse
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = `${prefix}/login`
     loginUrl.searchParams.set('redirectTo', pathname)
@@ -114,9 +121,8 @@ async function handleSupabaseAuth(
   const isAuthPage = authPaths.some((p) => pathname === p || pathname.startsWith(`${p}/`))
 
   if (user && isAuthPage) {
-    const academyUrl = request.nextUrl.clone()
-    academyUrl.pathname = `${prefix}/academy`
-    return NextResponse.redirect(academyUrl)
+    const destination = locale && safeLearningRedirect(request.nextUrl.searchParams.get('redirectTo'), locale as Locale)
+    return NextResponse.redirect(new URL(destination || `${prefix}/academy`, request.url))
   }
 
   return finalResponse

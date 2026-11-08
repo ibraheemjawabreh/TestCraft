@@ -11,9 +11,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { i18n, type Locale } from '@/i18n/config'
+import type { Locale } from '@/i18n/config'
+import { safeLearningRedirect, withLearningRedirect } from '@/lib/auth/learning-redirect'
 
-export function LanguageSwitcher({ dictionary, locale }: { dictionary: any; locale: Locale }) {
+export function LanguageSwitcher({ dictionary, locale, destination }: { dictionary: any; locale: Locale; destination?: string }) {
   const pathname = usePathname()
   const router = useRouter()
 
@@ -23,7 +24,8 @@ export function LanguageSwitcher({ dictionary, locale }: { dictionary: any; loca
     const segments = pathname.split('/')
     // Replace the locale segment
     segments[1] = newLocale
-    router.push(segments.join('/'))
+    const next = destination && safeLearningRedirect('/' + newLocale + destination.slice(locale.length + 1), newLocale)
+    router.push(withLearningRedirect(segments.join('/'), next || undefined))
   }
 
   return (

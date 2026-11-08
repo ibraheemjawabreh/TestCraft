@@ -5,6 +5,7 @@ import { Loader2 } from 'lucide-react'
 
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
+import { withLearningRedirect } from '@/lib/auth/learning-redirect'
 
 interface GoogleSignInButtonProps {
   /** Disable the button externally — e.g., when the email form is submitting. */
@@ -13,6 +14,7 @@ interface GoogleSignInButtonProps {
   text?: string
   /** Current route locale, forwarded through the OAuth callback. */
   locale?: string
+  destination?: string
 }
 
 /**
@@ -24,6 +26,7 @@ export function GoogleSignInButton({
   disabled = false,
   text = 'Continue with Google',
   locale = 'en',
+  destination,
 }: GoogleSignInButtonProps) {
   const [isLoading, setIsLoading] = useState(false)
 
@@ -39,7 +42,7 @@ export function GoogleSignInButton({
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?locale=${locale}`,
+          redirectTo: withLearningRedirect(`${window.location.origin}/auth/callback?locale=${locale}`, destination),
           queryParams: {
             // Request an access token that includes the user's email
             access_type: 'offline',

@@ -1,131 +1,41 @@
-'use client'
-
 import Link from 'next/link'
-import { LogIn, Rocket, Menu, X } from 'lucide-react'
-import { useState } from 'react'
-
-import { Logo } from '@/components/brand/Logo'
-import { LanguageSwitcher } from '@/components/language/language-switcher'
-import type { Dictionary } from '@/i18n/types'
+import { FlaskConical, Globe2, UserRound } from 'lucide-react'
 import type { Locale } from '@/i18n/config'
+import { getPublicViewer } from '@/lib/learning-catalog/data'
+import { marketingCopy } from './copy'
+import s from './marketing.module.css'
 
-interface MarketingHeaderProps {
-  dictionary: Dictionary
-  locale: Locale
-}
-
-export function MarketingHeader({ dictionary, locale }: MarketingHeaderProps) {
-  const t = dictionary.marketing.nav
-  const [mobileOpen, setMobileOpen] = useState(false)
-
-  const navLinks = [
-    { label: t.tracks, href: '#tracks' },
-    { label: t.practice, href: `/${locale}/academy` },
-    { label: t.community, href: '#community' },
-    { label: t.pricing, href: '#pricing' },
-  ]
-
+export async function MarketingHeader({ locale, suffix = '' }: { locale: Locale; suffix?: string }) {
+  const [t, viewer] = [marketingCopy(locale), await getPublicViewer()]
+  const home = '/' + locale
+  const paths = home + '/learning-paths'
+  const alternate = locale === 'ar' ? 'en' : 'ar'
   return (
-    <header
-      className="sticky top-0 z-50 w-full border-b border-[#334155]/60 animate-fade-in glass-surface"
-      style={{
-        background: 'rgba(15, 23, 42, 0.75)',
-      }}
-    >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-
-        {/* ── Left: Logo ─────────────────────────────────────────────────── */}
-        <Logo locale={locale} textClassName="text-white font-bold" />
-
-        {/* ── Center: Nav (desktop only) ─────────────────────────────────── */}
-        <nav
-          className="hidden md:flex items-center gap-1"
-          aria-label={locale === 'ar' ? 'التنقل الرئيسي' : 'Main navigation'}
-        >
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="px-4 py-2 rounded-lg text-sm font-medium text-[#94a3b8] transition-colors duration-200 hover:text-[#f8fafc] hover:bg-[#1e293b]/60"
-            >
-              {link.label}
-            </Link>
-          ))}
+    <header className={s.header}>
+      <div className={s.headerInner}>
+        <Link href={home} className={s.brand} aria-label={'TestCraft — ' + t.home}>
+          <span className={s.brandMark}><FlaskConical size={18} aria-hidden="true" /></span>
+          <span dir="ltr">Test<span>Craft</span></span>
+        </Link>
+        <nav className={s.nav} aria-label={t.nav}>
+          <Link href={home} aria-current={!suffix ? 'page' : undefined}>{t.home}</Link>
+          <Link href={paths} aria-current={suffix.startsWith('/learning-paths') ? 'page' : undefined}>{t.paths}</Link>
         </nav>
-
-        {/* ── Right: CTAs ────────────────────────────────────────────────── */}
-        <div className="flex items-center gap-2">
-          {/* Language Switcher */}
-          <div className="hidden sm:block me-2">
-            <LanguageSwitcher dictionary={dictionary} locale={locale} />
-          </div>
-
-          {/* Sign In */}
-          <Link
-            href={`/${locale}/login`}
-            className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-[#94a3b8] transition-all duration-200 hover:text-[#f8fafc] hover:bg-[#1e293b]/60"
-          >
-            <LogIn className="h-4 w-4" aria-hidden="true" />
-            {t.signIn}
+        <div className={s.headerActions}>
+          <Link href={'/' + alternate + suffix} prefetch={false} className={s.language}
+            lang={alternate} aria-label={alternate === 'ar' ? 'العربية' : 'English'}>
+            <Globe2 size={15} aria-hidden="true" />{alternate === 'ar' ? 'عربي' : 'EN'}
           </Link>
-
-          {/* Start Free */}
-          <Link
-            href={`/${locale}/register`}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all duration-200 hover:scale-105 hover:shadow-[0_8px_24px_-8px_rgba(249,115,22,0.6)]"
-            style={{
-              background: 'linear-gradient(135deg, #f97316, #fbbf24)',
-            }}
-          >
-            <Rocket className="h-4 w-4" aria-hidden="true" />
-            {t.startFree}
-          </Link>
-
-          {/* Mobile hamburger */}
-          <button
-            className="md:hidden ms-1 p-2 rounded-lg text-[#94a3b8] hover:text-[#f8fafc] hover:bg-[#1e293b]/60 transition-colors"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-            aria-expanded={mobileOpen}
-          >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+          {viewer ? (
+            <Link href={home + '/settings'} prefetch={false} className={s.signup}><UserRound size={15} aria-hidden="true" />{t.account}</Link>
+          ) : (
+            <>
+              <Link href={home + '/login'} prefetch={false} className={s.login}>{t.login}</Link>
+              <Link href={home + '/register'} prefetch={false} className={s.signup}>{t.signup}</Link>
+            </>
+          )}
         </div>
       </div>
-
-      {/* ── Mobile Nav Drawer ──────────────────────────────────────────────── */}
-      {mobileOpen && (
-        <div
-          className="md:hidden border-t border-[#334155]/60 px-4 pb-4 pt-2"
-          style={{ background: 'rgba(15, 23, 42, 0.95)' }}
-        >
-          <nav className="flex flex-col gap-1" aria-label="Mobile navigation">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className="px-4 py-3 rounded-lg text-sm font-medium text-[#94a3b8] hover:text-[#f8fafc] hover:bg-[#1e293b]/60 transition-colors"
-              >
-                {link.label}
-              </Link>
-            ))}
-            <Link
-              href={`/${locale}/login`}
-              onClick={() => setMobileOpen(false)}
-              className="mt-2 px-4 py-3 rounded-lg text-sm font-medium text-[#94a3b8] hover:text-[#f8fafc] hover:bg-[#1e293b]/60 transition-colors flex items-center gap-2"
-            >
-              <LogIn className="h-4 w-4" />
-              {t.signIn}
-            </Link>
-            
-            <div className="mt-4 px-4 border-t border-[#334155]/60 pt-4 flex items-center justify-between">
-              <span className="text-sm font-medium text-[#94a3b8]">{dictionary.language?.switchLanguage || 'Language'}</span>
-              <LanguageSwitcher dictionary={dictionary} locale={locale} />
-            </div>
-          </nav>
-        </div>
-      )}
     </header>
   )
 }

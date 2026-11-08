@@ -6,7 +6,6 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 
 import { loginSchema, type LoginFormValues } from '@/lib/validations/auth'
 import { createClient } from '@/lib/supabase/client'
@@ -24,6 +23,7 @@ import {
 } from '@/components/ui/form'
 import { AuthDivider } from './AuthDivider'
 import { GoogleSignInButton } from './GoogleSignInButton'
+import { withLearningRedirect } from '@/lib/auth/learning-redirect'
 
 // ─── Error Message Mapping ────────────────────────────────────────────────────
 
@@ -63,8 +63,7 @@ function mapAuthError(message: string): string {
  * - Google OAuth via GoogleSignInButton
  * - Link to register and forgot-password pages
  */
-export function LoginForm({ dictionary, locale }: { dictionary: any; locale: string }) {
-  const router = useRouter()
+export function LoginForm({ dictionary, locale, destination }: { dictionary: any; locale: string; destination?: string }) {
   const [showPassword, setShowPassword] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
 
@@ -104,8 +103,7 @@ export function LoginForm({ dictionary, locale }: { dictionary: any; locale: str
 
     // Refresh server components to pick up the new session cookie, then
     // let the server choose the role-aware landing page.
-    router.refresh()
-    router.push(`/auth/post-login?locale=${locale}`)
+    window.location.assign(withLearningRedirect(`/auth/post-login?locale=${locale}`, destination))
   }
 
   return (
@@ -283,13 +281,14 @@ export function LoginForm({ dictionary, locale }: { dictionary: any; locale: str
           disabled={isSubmitting}
           text={dictionary.auth.continueWithGoogle}
           locale={locale}
+          destination={destination}
         />
 
         {/* ── Register link ─────────────────────────────────────────────── */}
         <p className="text-center text-sm text-muted-foreground pt-1">
           {dictionary.auth.dontHaveAccount}{' '}
           <Link
-            href={`/${locale}/register`}
+            href={withLearningRedirect(`/${locale}/register`, destination)}
             className={[
               'font-semibold text-foreground',
               'underline underline-offset-4 decoration-border',

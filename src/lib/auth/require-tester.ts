@@ -5,6 +5,7 @@ import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/types/database.types'
 import { type Locale } from '@/i18n/config'
+import { safeLearningRedirect, withLearningRedirect } from '@/lib/auth/learning-redirect'
 
 type Profile = Pick<Database['public']['Tables']['profiles']['Row'], 'username' | 'role' | 'avatar_url' | 'total_xp'>
 
@@ -27,7 +28,7 @@ export interface TesterAuthContext {
  * @param locale Current route locale for correct redirects.
  */
 // One verified identity/profile per React server render, never shared across users.
-export const requireTester = cache(async (locale: Locale): Promise<TesterAuthContext> => {
+export const requireTester = cache(async (locale: Locale, destination?: string): Promise<TesterAuthContext> => {
   const supabase = await createClient()
 
   const {
@@ -35,7 +36,7 @@ export const requireTester = cache(async (locale: Locale): Promise<TesterAuthCon
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect(`/${locale}/login`)
+    redirect(withLearningRedirect(`/${locale}/login`, safeLearningRedirect(destination, locale)))
   }
 
   const { data: profile, error } = await supabase
@@ -45,7 +46,7 @@ export const requireTester = cache(async (locale: Locale): Promise<TesterAuthCon
     .single()
 
   if (error || !profile) {
-    redirect(`/${locale}/login`)
+    redirect(withLearningRedirect(`/${locale}/login`, safeLearningRedirect(destination, locale)))
   }
 
   if (profile.role === 'admin') {
