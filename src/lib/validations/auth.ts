@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { displayNameSchema } from './profile-name'
 
 // ─── Login ────────────────────────────────────────────────────────────────────
 
@@ -35,7 +36,7 @@ export type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>
  * Registration form schema.
  *
  * Transformations applied before validation:
- *  - fullName: trimmed
+ *  - displayName: trimmed
  *  - email:    trimmed + lowercased
  *
  * These transformed values are what the `onSubmit` handler receives,
@@ -43,12 +44,7 @@ export type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>
  */
 export const registerSchema = z
   .object({
-    username: z
-      .string()
-      .trim()
-      .min(2, 'Username must be at least 2 characters.')
-      .max(40, 'Username must be 40 characters or less.')
-      .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores.'),
+    displayName: displayNameSchema,
 
     email: z
       .string()

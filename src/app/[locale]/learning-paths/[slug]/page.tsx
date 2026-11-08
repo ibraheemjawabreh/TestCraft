@@ -29,7 +29,7 @@ export default async function PathDetails({ params }: Props) {
   const prefix = '/' + locale
   const suffix = '/learning-paths/' + encodeURIComponent(slug)
   const [paths, viewer] = await Promise.all([readCatalog(slug), getPublicViewer()])
-  if (paths === null) return <MarketingShell locale={locale} suffix={suffix}>
+  if (paths === null) return <MarketingShell locale={locale}>
     <section className={s.section}><h1 className={s.eyebrow}>{t.paths}</h1><p className={s.notice} role="status">{t.unavailable}</p></section>
   </MarketingShell>
   const path = paths[0]
@@ -44,7 +44,7 @@ export default async function PathDetails({ params }: Props) {
   const action = canLaunch ? (study?.started ? t.continue : t.start) : (viewer ? t.academy : t.allPaths)
   const destination = canLaunch ? prefix + suffix + '/start' : (viewer ? academy : prefix + '/learning-paths')
   return (
-    <MarketingShell locale={locale} suffix={suffix}>
+    <MarketingShell locale={locale}>
       <section className={s.detailHero} aria-labelledby="path-title">
         <div className={s.listingHeroInner}>
           <Link href={prefix + '/learning-paths'} className={s.textLink}><ArrowLeft size={17} className={s.directional} aria-hidden="true" />{t.allPaths}</Link>

@@ -1,9 +1,10 @@
 import Link from 'next/link'
-import { BookOpen, FileText, Github, Linkedin, Mail, Settings, Trophy } from 'lucide-react'
+import { BookOpen, FileText, Github, Linkedin, Mail, Trophy } from 'lucide-react'
 
 import { siteConfig } from '@/config/site'
 import type { Locale } from '@/i18n/config'
 import type { Dictionary } from '@/i18n/types'
+import { marketingCopy } from '@/components/marketing/copy'
 
 interface TesterFooterProps {
   dictionary: Dictionary
@@ -24,8 +25,8 @@ export function TesterFooter({ dictionary, locale }: TesterFooterProps) {
 
   const usefulLinks: FooterLink[] = [
     {
-      label: dictionary.footer.academy,
-      href: `/${locale}/academy`,
+      label: marketingCopy(locale).paths,
+      href: `/${locale}/learning-paths`,
       icon: BookOpen,
     },
     {
@@ -37,11 +38,6 @@ export function TesterFooter({ dictionary, locale }: TesterFooterProps) {
       label: dictionary.footer.reports,
       href: `/${locale}/academy/reports`,
       icon: FileText,
-    },
-    {
-      label: dictionary.footer.settings,
-      href: `/${locale}/settings`,
-      icon: Settings,
     },
     {
       label: dictionary.footer.privacyPolicy,
@@ -141,6 +137,7 @@ export function TesterFooter({ dictionary, locale }: TesterFooterProps) {
                   <li key={link.href}>
                     <Link
                       href={link.href}
+                      prefetch={false}
                       className="inline-flex items-center gap-2 rounded-md text-sm text-muted-foreground transition-colors hover:text-primary focus-visible:text-primary"
                     >
                       {link.icon ? <link.icon className="h-4 w-4" aria-hidden="true" /> : null}

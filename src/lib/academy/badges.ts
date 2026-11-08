@@ -3,12 +3,14 @@ import 'server-only'
 import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/types/database.types'
 
-type Badge = Database['public']['Tables']['badges']['Row']
+type Badge = Pick<Database['public']['Tables']['badges']['Row'], 'name' | 'description' | 'name_ar' | 'description_ar' | 'icon_url'>
 type UserBadge = Database['public']['Tables']['user_badges']['Row']
 
 export interface UserBadgeWithDetails extends UserBadge {
   name: string
   description: string
+  name_ar: string | null
+  description_ar: string | null
   icon_url: string | null
 }
 
@@ -34,6 +36,8 @@ export async function getTesterBadges(
         badges (
           name,
           description,
+          name_ar,
+          description_ar,
           icon_url
         )
       `)
@@ -55,6 +59,8 @@ export async function getTesterBadges(
         earned_at: row.earned_at,
         name: badge?.name ?? '',
         description: badge?.description ?? '',
+        name_ar: badge?.name_ar ?? null,
+        description_ar: badge?.description_ar ?? null,
         icon_url: badge?.icon_url ?? null,
       }
     })

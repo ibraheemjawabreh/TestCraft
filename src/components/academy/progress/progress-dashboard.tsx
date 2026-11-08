@@ -18,6 +18,7 @@ interface ProgressDashboardProps {
   progress: TesterProgressStats
   dictionary: Dictionary
   locale: Locale
+  displayName: string
 }
 
 function AttemptStatusBadge({ status }: { status: string }) {
@@ -36,7 +37,7 @@ function AttemptStatusBadge({ status }: { status: string }) {
   )
 }
 
-export function ProgressDashboard({ progress, dictionary, locale }: ProgressDashboardProps) {
+export function ProgressDashboard({ progress, dictionary, locale, displayName }: ProgressDashboardProps) {
   const labels = dictionary.academy.progress
   const { rank, levelProgress, earnedBadges } = progress
 
@@ -58,20 +59,20 @@ export function ProgressDashboard({ progress, dictionary, locale }: ProgressDash
               {progress.profile.avatar_url ? (
                 <Image
                   src={progress.profile.avatar_url}
-                  alt={progress.profile.username}
+                  alt=""
                   width={72}
                   height={72}
                   className="h-[72px] w-[72px] rounded-xl object-cover ring-2 ring-[#f97316]/30"
                 />
               ) : (
                 <div className="flex h-[72px] w-[72px] items-center justify-center rounded-xl bg-cyber-gradient text-2xl font-bold text-white">
-                  {progress.profile.username.charAt(0).toUpperCase()}
+                  {Array.from(displayName)[0]?.toUpperCase()}
                 </div>
               )}
               <div className="min-w-0 space-y-1">
                 <div className="flex items-center gap-3">
                   <h2 className="truncate font-heading text-2xl font-bold text-foreground">
-                    {progress.profile.username}
+                    {displayName}
                   </h2>
                   <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20">
                     {labels.title === 'تقدمي' ? rank.labelAr : rank.labelEn}

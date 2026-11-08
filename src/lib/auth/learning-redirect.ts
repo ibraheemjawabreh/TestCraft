@@ -8,7 +8,7 @@ export function safeLearningRedirect(value: unknown, locale: Locale): string | u
   const prefix = '/' + locale
   if (!value.startsWith(prefix + '/')) return
   const suffix = value.slice(prefix.length)
-  if (suffix === '/learn' || suffix === '/academy' ||
+  if (suffix === '/learn' || suffix === '/academy' || suffix === '/profile' || suffix === '/settings' ||
       /^\/learning-paths\/[a-z0-9][a-z0-9-]{0,139}\/start$/.test(suffix) ||
       new RegExp('^/academy/lessons/' + uuid + '$').test(suffix) ||
       new RegExp('^/academy\\?path=' + uuid + '$').test(suffix)) return value

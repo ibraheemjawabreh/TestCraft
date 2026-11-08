@@ -5,11 +5,11 @@ import { MarketingFooter } from './marketing-footer'
 import { marketingCopy } from './copy'
 import s from './marketing.module.css'
 
-export function MarketingShell({ locale, suffix, children }: { locale: Locale; suffix?: string; children: ReactNode }) {
+export function MarketingShell({ locale, children }: { locale: Locale; children: ReactNode }) {
   return (
     <div className={s.site}>
       <a href="#marketing-main" className={s.skip}>{marketingCopy(locale).skip}</a>
-      <MarketingHeader locale={locale} suffix={suffix} />
+      <MarketingHeader locale={locale} />
       <main id="marketing-main" tabIndex={-1}>{children}</main>
       <MarketingFooter locale={locale} />
     </div>

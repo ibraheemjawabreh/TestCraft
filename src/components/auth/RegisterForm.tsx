@@ -4,13 +4,14 @@ import type { z } from 'zod'
 import { useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { AlertCircle, CheckCircle2, Loader2, Mail, User } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Loader2, Mail } from 'lucide-react'
 import Link from 'next/link'
 
 import { registerSchema, type RegisterFormValues } from '@/lib/validations/auth'
 import { withLearningRedirect } from '@/lib/auth/learning-redirect'
 import { createClient } from '@/lib/supabase/client'
 import type { RegistrationMetadata } from '@/types/database'
+import { accountCopy } from '@/i18n/account-copy'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -164,13 +165,14 @@ function SuccessCard({ dictionary, locale, destination }: SuccessCardProps) {
  * Google sign-up is delegated to OAuthButton (separate component).
  */
 export function RegisterForm({ dictionary, locale, destination }: { dictionary: any; locale: string; destination?: string }) {
+  const names = accountCopy(locale === 'ar' ? 'ar' : 'en')
   const [status, setStatus]           = useState<FormStatus>('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const form = useForm<z.input<typeof registerSchema>, unknown, RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      username: '',
+      displayName: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -191,7 +193,9 @@ export function RegisterForm({ dictionary, locale, destination }: { dictionary: 
       const supabase = createClient()
 
       const metadata: RegistrationMetadata = {
-        username: values.username,
+        // The existing trigger owns the unique handle. Keep it independent of the email and display name.
+        username: 'learner_' + crypto.randomUUID().replaceAll('-', '').slice(0, 24),
+        display_name: values.displayName,
         registration_provider: 'email',
       }
 
@@ -271,39 +275,16 @@ export function RegisterForm({ dictionary, locale, destination }: { dictionary: 
           </div>
         )}
 
-        {/* ── Username ─────────────────────────────────────────────────── */}
         <FormField
           control={form.control}
-          name="username"
-          render={({ field, fieldState }) => (
+          name="displayName"
+          render={({ field }) => (
             <FormItem>
-              <FormLabel>{dictionary.auth.username}</FormLabel>
+              <FormLabel>{names.displayName}</FormLabel>
               <FormControl>
-                <div className="relative">
-                  <User
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50"
-                    aria-hidden="true"
-                  />
-                  <Input
-                    {...field}
-                    id="username"
-                    type="text"
-                    placeholder="janesmith123"
-                    autoComplete="username"
-                    autoCapitalize="none"
-                    spellCheck={false}
-                    disabled={isDisabled}
-                    className={[
-                      'pl-10',
-                      fieldState.error
-                        ? 'border-destructive/60 focus-visible:ring-destructive/30'
-                        : '',
-                    ].join(' ')}
-                    aria-required="true"
-                  />
-                </div>
+                <Input {...field} type="text" dir="auto" autoComplete="name" disabled={isDisabled} aria-required="true" />
               </FormControl>
-              <FormMessage />
+              <FormMessage errorText={names.displayNameInvalid} />
             </FormItem>
           )}
         />

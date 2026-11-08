@@ -3,18 +3,20 @@
 import { LogOut, Trash2 } from 'lucide-react'
 import type { Dictionary } from '@/i18n/types'
 import type { Database } from '@/types/database.types'
+import type { Locale } from '@/i18n/config'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
 interface AccountSettingsProps {
   profile: Profile
   dictionary: Dictionary
+  locale: Locale
 }
 
-export function AccountSettings({ profile, dictionary }: AccountSettingsProps) {
+export function AccountSettings({ profile, dictionary, locale }: AccountSettingsProps) {
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '—'
-    return new Date(dateStr).toLocaleDateString(undefined, {
+    return new Date(dateStr).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -39,6 +41,7 @@ export function AccountSettings({ profile, dictionary }: AccountSettingsProps) {
           </div>
           
           <form action="/auth/signout" method="POST" className="pt-2">
+            <input type="hidden" name="locale" value={locale} />
             <button
               type="submit"
               className="flex items-center gap-2 rounded-lg bg-secondary px-4 py-2 text-sm font-medium text-foreground transition-all hover:bg-secondary/80"

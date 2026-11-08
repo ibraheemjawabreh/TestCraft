@@ -3,6 +3,7 @@ import { cache } from 'react'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { getVerifiedViewer } from '@/lib/auth/viewer'
 
 const id = z.string().regex(/^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i)
 const text = z.string().nullable()
@@ -37,16 +38,7 @@ export const readCatalog = cache(async (slug: string | null = null) => {
   }
 })
 
-// Request-scoped only, shared by the header and the path details page.
-export const getPublicViewer = cache(async () => {
-  try {
-    const db = await createClient()
-    const { data, error } = await db.auth.getUser()
-    return !error && data.user ? { db } : null
-  } catch {
-    return null
-  }
-})
+export const getPublicViewer = getVerifiedViewer
 
 export async function readPathStudy(slug: string | null, db?: Awaited<ReturnType<typeof createClient>>) {
   try {

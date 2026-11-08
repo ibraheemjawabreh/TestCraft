@@ -12,14 +12,6 @@ const uid = index => '00000000-0000-4000-8000-00000000000' + index
 const id = name => { const h = createHash('md5').update(name).digest('hex'); return [h.slice(0,8),h.slice(8,12),h.slice(12,16),h.slice(16,20),h.slice(20)].join('-') }
 const encode = value => Buffer.from(JSON.stringify(value)).toString('base64url')
 const users = new Map()
-const session = (index, expired = false) => {
-  const user = { id: uid(index), aud: 'authenticated', role: 'authenticated', email: 'fixture' + index + '@example.test', app_metadata: {}, user_metadata: {}, created_at: '2026-01-01T00:00:00Z' }
-  const expires_at = Math.floor(Date.now() / 1000) + (expired ? -3600 : 3600)
-  const jwt = encode({ alg: 'HS256', typ: 'JWT' }) + '.' + encode({ sub: user.id, role: user.role, exp: expires_at, aud: user.aud })
-  const access_token = jwt + '.' + createHmac('sha256', key).update(jwt).digest('base64url')
-  users.set(access_token, user)
-  return { access_token, token_type: 'bearer', refresh_token: 'fixture-refresh-' + index, expires_at, expires_in: 3600, user }
-}
 const relations = {
   lessons: { learning_modules: 'module_id', learning_paths: 'learning_path_id' },
   learning_modules: { learning_paths: 'learning_path_id' },
@@ -126,11 +118,28 @@ async function main() {
   const pg = new PGlite({ initialMemory: 128*1024*1024 })
   for (const file of ['tests/fixtures/database.sql','tests/fixtures/curriculum-deletion-progress.sql',
     ...fs.readdirSync('supabase/migrations').filter(n => Number(n.slice(0,3)) >= 20).sort().map(n => 'supabase/migrations/' + n),
-    'tests/fixtures/student-perf.sql']) {
+    'tests/fixtures/student-perf.sql', 'tests/fixtures/student-account.sql']) {
     await pg.exec(fs.readFileSync(file,'utf8').replace(/^\uFEFF/,''))
   }
   const events = []
   const latency = Number(process.env.TESTCRAFT_BENCH_LATENCY_MS || 60)
+  const revoked = new Set()
+  const session = async (index, expired = false) => {
+    const {rows:[account]} = await pg.query('select email,raw_user_meta_data from auth.users where id=$1',[uid(index)])
+    if (!account) return null
+    const user = { id: uid(index), aud: 'authenticated', role: 'authenticated', email: account.email, app_metadata: {}, user_metadata: account.raw_user_meta_data, created_at: '2026-01-01T00:00:00Z' }
+    const expires_at = Math.floor(Date.now() / 1000) + (expired ? -3600 : 3600)
+    const jwt = encode({ alg: 'HS256', typ: 'JWT' }) + '.' + encode({ sub: user.id, role: user.role, exp: expires_at, aud: user.aud })
+    const access_token = jwt + '.' + createHmac('sha256', key).update(jwt).digest('base64url')
+    users.set(access_token,user)
+    revoked.delete(index)
+    return { access_token, token_type:'bearer', refresh_token:'fixture-refresh-'+index, expires_at, expires_in:3600, user }
+  }
+  const readBody = async req => {
+    const chunks = []
+    for await (const chunk of req) chunks.push(chunk)
+    return JSON.parse(Buffer.concat(chunks).toString())
+  }
   const server = http.createServer(async (req,res) => {
     const started = performance.now(), u = new URL(req.url,url), method = req.method
     let sqlMs = 0, rows = null
@@ -147,7 +156,11 @@ async function main() {
     }
     try {
       if (method === 'OPTIONS' && cors['Access-Control-Allow-Origin']) return send(204)
-      if (u.pathname === '/__session') return send(200,session(Number(u.searchParams.get('user') || 2),u.searchParams.has('expired')))
+      if (u.pathname === '/__session') return send(200,await session(Number(u.searchParams.get('user') || 2),u.searchParams.has('expired')))
+      if (u.pathname === '/__account') {
+        const { rows:[account] } = await pg.query('select p.username,p.role,p.total_xp,u.raw_user_meta_data as metadata from public.profiles p join auth.users u using(id) where p.id=$1',[uid(Number(u.searchParams.get('user') || 2))])
+        return send(200,account ?? null)
+      }
       if (u.pathname === '/__events') return send(200,events.splice(0))
       if (u.pathname === '/__progress') {
         const result = await pg.query('select * from lesson_progress where lesson_id=$1 and user_id=$2',[u.searchParams.get('id'),uid(Number(u.searchParams.get('user') || 2))])
@@ -163,30 +176,42 @@ async function main() {
       }
       if (u.pathname === '/__meta') return send(200,{ latency, path:id('path1'), otherPath:id('path2'), lesson:id('lesson1-1-2'), next:id('lesson1-1-3'), fresh:id('lesson1-1-7'), existing:id('lesson1-1-1'), locked:id('lesson1-2-1'), last:id('lesson1-1-12'), firstStart:id('lesson2-1-1') })
       if (req.headers.apikey !== key) return send(401,{message:'Invalid fixture key'})
-      const user = users.get(req.headers.authorization?.slice(7))
+      const token = req.headers.authorization?.slice(7)
+      const user = users.get(token)
       await delay(latency)
       if (u.pathname === '/auth/v1/token' && method === 'POST') {
-        const chunks = []
-        for await (const chunk of req) chunks.push(chunk)
-        const input = JSON.parse(Buffer.concat(chunks).toString())
+        const input = await readBody(req)
         if (u.searchParams.get('grant_type') === 'password') {
           const tester = /^fixture([23])@example\.test$/.exec(input.email)
-          return tester && input.password === 'Fixture!1234' ? send(200,session(Number(tester[1]))) : send(400,{message:'Invalid fixture credentials'})
+          return tester && input.password === 'Fixture!1234' ? send(200,await session(Number(tester[1]))) : send(400,{message:'Invalid fixture credentials'})
         }
-        const match = /^fixture-refresh-([123])$/.exec(input.refresh_token)
-        return match ? send(200,session(Number(match[1]))) : send(401,{message:'Invalid fixture refresh token'})
+        const match = /^fixture-refresh-([1234])$/.exec(input.refresh_token)
+        return match && !revoked.has(Number(match[1])) ? send(200,await session(Number(match[1]))) : send(401,{message:'Invalid fixture refresh token'})
+      }
+      if (u.pathname === '/auth/v1/signup' && method === 'POST') {
+        const input = await readBody(req)
+        if (input.email !== 'new-student@example.test' || input.password !== 'Fixture!1234') return send(400,{message:'Unexpected fixture signup'})
+        await pg.query('insert into auth.users(id,email,raw_user_meta_data) values($1,$2,$3)',[uid(4),input.email,JSON.stringify(input.data)])
+        return send(200,await session(4))
       }
       const publicCatalog = u.pathname === '/rest/v1/rpc/curriculum_public_catalog' && method === 'POST'
       if (!user && !publicCatalog) return send(401,{message:'Invalid fixture session'})
-      if (u.pathname === '/auth/v1/user') return send(200,user)
+      if (u.pathname === '/auth/v1/user' && method === 'GET') return send(200,user)
+      if (u.pathname === '/auth/v1/user' && method === 'PUT') {
+        const input = await readBody(req)
+        const { rows:[account] } = await pg.query("update auth.users set raw_user_meta_data=raw_user_meta_data||$2::jsonb where id=$1 returning raw_user_meta_data",[user.id,JSON.stringify(input.data)])
+        for (const current of users.values()) if (current.id === user.id) current.user_metadata = account.raw_user_meta_data
+        return send(200,user)
+      }
+      if (u.pathname === '/auth/v1/logout' && method === 'POST') {
+        for (const [access, current] of users) if (current.id === user.id) users.delete(access)
+        revoked.add(Number(user.id.slice(-1)))
+        return send(204)
+      }
       const pieces = u.pathname.split('/').filter(Boolean)
       if (pieces[0] !== 'rest' || pieces[1] !== 'v1') throw Error('Unsupported fixture endpoint')
       let body, sql, args
-      if (method === 'POST' || method === 'PATCH') {
-        const chunks = []
-        for await (const chunk of req) chunks.push(chunk)
-        body = JSON.parse(Buffer.concat(chunks).toString())
-      }
+      if (method === 'POST' || method === 'PATCH') body = await readBody(req)
       const rpc = pieces[2] === 'rpc', table = pieces[2]
       if (rpc) {
         if (!pieces[3]?.startsWith('curriculum_')) throw Error('Unsupported fixture RPC')
@@ -197,7 +222,7 @@ async function main() {
         if (!tables.has(table)) throw Error('Unsupported fixture table ' + table)
         if (method === 'GET' || method === 'HEAD') ({sql,args} = readQuery(table,u.searchParams,method==='HEAD'))
         else {
-          if (!['lesson_progress','module_progress','learning_path_progress'].includes(table)) throw Error('Unsupported fixture write')
+          if (!['lesson_progress','module_progress','learning_path_progress','profiles'].includes(table)) throw Error('Unsupported fixture write')
           const names = Object.keys(body).map(quoted)
           args = Object.values(body)
           const conflict = u.searchParams.get('on_conflict')

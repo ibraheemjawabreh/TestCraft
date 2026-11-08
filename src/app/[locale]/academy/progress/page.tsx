@@ -1,10 +1,9 @@
 import { resolveLocale } from '@/lib/locale'
-import { AcademyLayout } from '@/components/academy/academy-layout'
 import { ProgressDashboard } from '@/components/academy/progress/progress-dashboard'
 import { getTesterProgress } from '@/lib/academy/progress'
 import { requireTester } from '@/lib/auth/require-tester'
-import { type Locale } from '@/i18n/config'
 import { getDictionary } from '@/i18n/get-dictionary'
+import { getDisplayName } from '@/lib/auth/account-identity'
 
 export default async function AcademyProgressPage({
   params,
@@ -23,6 +22,7 @@ export default async function AcademyProgressPage({
       <p className="text-muted-foreground">{dictionary.academy.failedToLoad}</p>
     </div>
   ) : (
-    <ProgressDashboard progress={progress} dictionary={dictionary} locale={locale} />
+    <ProgressDashboard progress={progress} dictionary={dictionary} locale={locale}
+      displayName={getDisplayName(user, profile.username, locale)} />
   )
 }

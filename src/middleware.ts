@@ -8,7 +8,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl
   // These handlers validate the user and can refresh cookies themselves.
   if (pathname === '/api/academy/activities' || pathname === '/api/academy/lesson-open' ||
-      pathname === '/auth/post-login') {
+      pathname === '/auth/post-login' || pathname === '/auth/signout') {
     return NextResponse.next()
   }
 
@@ -21,7 +21,6 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   // 1. Check if the path should be excluded from locale routing
   const isExcludedPath = [
     '/auth/callback',
-    '/auth/signout',
     '/api',
     '/_next',
     '/favicon.ico',
@@ -93,7 +92,8 @@ async function handleSupabaseAuth(
   const marketing = !!locale && (pathname === prefix || pathname === `${prefix}/learning-paths` ||
     /^\/learning-paths\/[^/]+$/.test(pathname.slice(prefix.length)) ||
     pathname === `${prefix}/privacy` || pathname === `${prefix}/terms`)
-  if (locale && (marketing || learningStart || pathname === `${prefix}/academy` || pathname.startsWith(`${prefix}/academy/`))) {
+  const accountPage = pathname === `${prefix}/profile` || pathname === `${prefix}/settings`
+  if (locale && (marketing || learningStart || accountPage || pathname === `${prefix}/academy` || pathname.startsWith(`${prefix}/academy/`))) {
     // Read/refresh the cookie here. The layout and pages verify the user with
     // Auth and check the database role in requireTester() before serving data.
     const { data: { session } } = await supabase.auth.getSession()

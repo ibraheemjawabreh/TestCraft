@@ -19,6 +19,7 @@ async function main() {
   const browser = await chromium.launch({ channel: process.env.TESTCRAFT_BENCH_BROWSER || 'chrome' })
   const samples = [], errors = []
   const count = Number(process.env.TESTCRAFT_BENCH_RUNS || 7)
+  const coreOnly = process.argv.includes('--core')
   const lessonPath = academy + '/lessons/' + meta.lesson
   const progressPath = academy + '/progress'
   async function context(user = 2, kind = 'valid') {
@@ -116,12 +117,12 @@ async function main() {
       await p.goto(origin+fresh.replace('/en/','/ar/'))
       await p.getByRole('heading',{name:'الدرس 1.7'}).waitFor()
       assert.equal(await p.locator('html').getAttribute('dir'),'rtl')
-      await p.getByRole('link',{name:'English',exact:true}).click()
+      await p.getByRole('banner').getByRole('link',{name:'English',exact:true}).click()
       await p.getByRole('heading',{name:'Benchmark lesson 1.7'}).waitFor()
       await p.locator('header a[href="'+progressPath+'"]').click()
       await p.getByText('Completed Lessons',{exact:true}).waitFor()
       await p.getByText(/^Benchmark challenge [1-4]$/).first().waitFor()
-      await p.locator('header nav a[href="'+academy+'"]').click()
+      await p.goto(origin+academy)
       await p.getByText('Benchmark module 1',{exact:true}).first().waitFor()
       await p.locator('main nav a[href$="'+meta.otherPath+'"]').click()
       await p.locator('main nav a[aria-current="page"][href$="'+meta.otherPath+'"]').waitFor()
@@ -206,13 +207,14 @@ async function main() {
       }
     }
     await warm.close()
+    const hardLoads = [
+      ['academy',academy,'text=Benchmark module 1'],
+      ['lesson',lessonPath,'h1:has-text("Benchmark lesson 1.2")'],
+      ['progress',progressPath,'text=Completed Lessons'],
+      ['challenges',academy+'/challenges','text=Benchmark challenge 1'],
+    ]
     for (let i=0;i<count;i++) {
-      for (const [name,url,selector] of [
-        ['academy',academy,'text=Benchmark module 1'],
-        ['lesson',lessonPath,'h1:has-text("Benchmark lesson 1.2")'],
-        ['progress',progressPath,'text=Completed Lessons'],
-        ['challenges',academy+'/challenges','text=Benchmark challenge 1'],
-      ]) {
+      for (const [name,url,selector] of coreOnly ? hardLoads.slice(0,2) : hardLoads) {
         const ctx = await context(), p = await page(ctx)
         try { await record(p,name,()=>p.goto(origin+url,{waitUntil:'domcontentloaded'}),p.locator(selector).first(),true) }
         finally { await ctx.close() }
@@ -223,12 +225,14 @@ async function main() {
         await p.waitForTimeout(500)
         const lesson = p.locator('main a[href="'+lessonPath+'"]').last()
         await record(p,'academy → lesson',()=>lesson.click(),p.locator('h1:has-text("Benchmark lesson 1.2")'),false)
-        await record(p,'lesson → progress',()=>p.locator('header a[href="'+progressPath+'"]').click(),p.getByText('Completed Lessons',{exact:true}),false)
-        await p.locator('header nav a[href="'+academy+'"]').click()
-        const pathLink = p.locator('main a[href="'+academy+'?path='+meta.otherPath+'"]')
-        await pathLink.waitFor()
-        await p.waitForTimeout(500)
-        await record(p,'path switch',()=>pathLink.click(),p.locator('main nav a[aria-current="page"][href$="'+meta.otherPath+'"]'),false)
+        if (!coreOnly) {
+          await record(p,'lesson → progress',()=>p.locator('header a[href="'+progressPath+'"]').click(),p.getByText('Completed Lessons',{exact:true}),false)
+          await p.goto(origin+academy)
+          const pathLink = p.locator('main a[href="'+academy+'?path='+meta.otherPath+'"]')
+          await pathLink.waitFor()
+          await p.waitForTimeout(500)
+          await record(p,'path switch',()=>pathLink.click(),p.locator('main nav a[aria-current="page"][href$="'+meta.otherPath+'"]'),false)
+        }
       } finally { await ctx.close() }
       console.log('Completed sample ' + (i+1) + '/' + count)
     }

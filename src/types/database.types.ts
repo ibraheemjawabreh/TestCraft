@@ -62,21 +62,27 @@ export type Database = {
       badges: {
         Row: {
           description: string
+          description_ar: string | null
           icon_url: string | null
           id: string
           name: string
+          name_ar: string | null
         }
         Insert: {
           description: string
+          description_ar?: string | null
           icon_url?: string | null
           id?: string
           name: string
+          name_ar?: string | null
         }
         Update: {
           description?: string
+          description_ar?: string | null
           icon_url?: string | null
           id?: string
           name?: string
+          name_ar?: string | null
         }
         Relationships: []
       }

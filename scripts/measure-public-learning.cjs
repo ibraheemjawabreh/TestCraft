@@ -33,7 +33,7 @@ async function browserChecks(browser) {
     await json('/__events')
     assert.equal((await page.goto(app+'/en')).status(),200)
     await page.getByText('by doing QA.',{exact:true}).waitFor()
-    assert.equal(await page.getByRole('link',{name:'My account',exact:true}).count(),0)
+    assert.equal(await page.getByRole('button',{name:'Account menu',exact:true}).count(),0)
     await page.getByRole('button',{name:'Empty password',exact:true}).click()
     await page.getByText('Failed',{exact:true}).waitFor()
     assert.equal(await page.getByRole('button',{name:'Empty password',exact:true}).getAttribute('aria-pressed'),'true')
@@ -82,7 +82,7 @@ async function browserChecks(browser) {
     await page.goto(app+details)
     await ready('Benchmark path 1')
     assert.equal(await page.getByRole('progressbar').getAttribute('value'),'0')
-    await page.getByRole('link',{name:'My account',exact:true}).waitFor()
+    await page.getByRole('button',{name:'Account menu',exact:true}).waitFor()
     console.log('PASS: password sign-in retained the intended path and opened its first accessible lesson')
   } finally { await guest.close() }
 
@@ -93,7 +93,7 @@ async function browserChecks(browser) {
     const p = await signed.newPage()
     await json('/__events')
     await p.goto(app+'/en')
-    await p.getByRole('link',{name:'My account',exact:true}).waitFor()
+    await p.getByRole('button',{name:'Account menu',exact:true}).waitFor()
     assert.equal(await p.getByRole('link',{name:'Log in',exact:true}).count(),0)
     await p.goto(app+details)
     await p.getByRole('progressbar').waitFor()
@@ -182,7 +182,7 @@ async function main() {
     }
     const metrics = ['ready','ttfb','fcp','lcp','totalBytes','jsBytes','db','auth']
     const summary = Object.fromEntries(scenarios.map(([name])=>[name,Object.fromEntries(metrics.map(m=>[m,round(med(samples.filter(s=>s.name===name).map(s=>s[m])))]))]))
-    const output = '.test-output/phase2-public-'+mode+'.json'
+    const output = process.argv[3] || '.test-output/phase2-public-'+mode+'.json'
     fs.writeFileSync(output,JSON.stringify({mode,browser:browser.version(),summary,samples},null,2))
     console.table(summary)
   } finally { await browser.close() }

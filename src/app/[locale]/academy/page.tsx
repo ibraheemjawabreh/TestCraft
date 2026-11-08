@@ -2,6 +2,7 @@ import { resolveLocale } from '@/lib/locale'
 import { ModuleView } from '@/components/academy/home/module-view'
 import { getLearningPathWithProgress, getAllLearningPaths } from '@/lib/academy/services/ModuleService'
 import { requireTester } from '@/lib/auth/require-tester'
+import { getDisplayName } from '@/lib/auth/account-identity'
 import { getDictionary } from '@/i18n/get-dictionary'
 import Link from 'next/link'
 
@@ -56,7 +57,7 @@ export default async function AcademyPage({
       pathData={pathData}
       dictionary={dictionary}
       locale={locale}
-      username={profile.username}
+      username={getDisplayName(user, profile.username, locale)}
     />
     </div>
   )

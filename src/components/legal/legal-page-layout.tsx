@@ -30,7 +30,7 @@ export function LegalPageLayout({
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-[#f8fafc]">
-      <MarketingHeader locale={locale} suffix={'/' + kind} />
+      <MarketingHeader locale={locale} />
       <main className="px-4 py-10 sm:px-6 sm:py-14">
         <div className="mx-auto max-w-5xl space-y-8">
           <Link

@@ -19,7 +19,7 @@ export default async function LearningPathsPage({ params }: Props) {
   const t = marketingCopy(locale)
   const [paths] = await Promise.all([readCatalog(), getPublicViewer()])
   return (
-    <MarketingShell locale={locale} suffix="/learning-paths">
+    <MarketingShell locale={locale}>
       <section className={s.listingHero} aria-labelledby="catalog-title">
         <div className={s.listingHeroInner}>
           <p className={s.eyebrow}><Route size={16} aria-hidden="true" />{t.previewTag}</p>

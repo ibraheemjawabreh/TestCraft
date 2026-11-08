@@ -8,19 +8,20 @@ import { PreferencesSettings } from './preferences-settings'
 import { AccountSettings } from './account-settings'
 import type { Dictionary } from '@/i18n/types'
 import type { Locale } from '@/i18n/config'
-import type { User } from '@supabase/supabase-js'
 import type { Database } from '@/types/database.types'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
 interface SettingsClientProps {
-  user: User
+  email: string
+  googleAccount: boolean
+  displayName: string
   profile: Profile
   dictionary: Dictionary
   locale: Locale
 }
 
-export function SettingsClient({ user, profile, dictionary, locale }: SettingsClientProps) {
+export function SettingsClient({ email, googleAccount, displayName, profile, dictionary, locale }: SettingsClientProps) {
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile')
 
   return (
@@ -32,16 +33,16 @@ export function SettingsClient({ user, profile, dictionary, locale }: SettingsCl
       />
       <div className="flex-1 min-w-0 w-full">
         {activeTab === 'profile' && (
-          <ProfileSettingsForm profile={profile} dictionary={dictionary} />
+          <ProfileSettingsForm profile={profile} displayName={displayName} dictionary={dictionary} locale={locale} />
         )}
         {activeTab === 'security' && (
-          <SecuritySettingsForm user={user} dictionary={dictionary} />
+          <SecuritySettingsForm email={email} isGoogleUser={googleAccount} dictionary={dictionary} />
         )}
         {activeTab === 'preferences' && (
           <PreferencesSettings dictionary={dictionary} locale={locale} />
         )}
         {activeTab === 'account' && (
-          <AccountSettings profile={profile} dictionary={dictionary} />
+          <AccountSettings profile={profile} dictionary={dictionary} locale={locale} />
         )}
       </div>
     </div>

@@ -8,19 +8,17 @@ import { Loader2, ShieldCheck, Mail } from 'lucide-react'
 import { updatePasswordSchema, type UpdatePasswordValues } from '@/lib/validations/settings'
 import { updatePassword, sendPasswordResetEmail } from '@/lib/settings/security'
 import type { Dictionary } from '@/i18n/types'
-import type { User } from '@supabase/supabase-js'
 
 interface SecuritySettingsFormProps {
-  user: User
+  email: string
+  isGoogleUser: boolean
   dictionary: Dictionary
 }
 
-export function SecuritySettingsForm({ user, dictionary }: SecuritySettingsFormProps) {
+export function SecuritySettingsForm({ email, isGoogleUser, dictionary }: SecuritySettingsFormProps) {
   const [isPending, startTransition] = useTransition()
   const [serverError, setServerError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
-
-  const isGoogleUser = user.app_metadata?.provider === 'google' || user.identities?.some(i => i.provider === 'google')
 
   const {
     register,
@@ -49,11 +47,11 @@ export function SecuritySettingsForm({ user, dictionary }: SecuritySettingsFormP
   }
 
   const handleSendReset = () => {
-    if (!user.email) return
+    if (!email) return
     setServerError(null)
     setSuccessMessage(null)
     startTransition(async () => {
-      const result = await sendPasswordResetEmail(user.email!)
+      const result = await sendPasswordResetEmail(email)
       if (result.error) {
         setServerError(dictionary.settings.somethingWentWrong)
       } else {
@@ -76,7 +74,7 @@ export function SecuritySettingsForm({ user, dictionary }: SecuritySettingsFormP
           <input
             type="email"
             disabled
-            value={user.email ?? ''}
+            value={email}
             className={inputBaseClass}
           />
           <p className="text-xs text-muted-foreground">{dictionary.settings.emailReadonly}</p>

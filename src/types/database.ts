@@ -52,5 +52,6 @@ export type ProfileUpdate = Pick<Profile, 'username' | 'avatar_url'>
  */
 export interface RegistrationMetadata {
   username: string
+  display_name: string
   registration_provider: 'email' | 'google'
 }

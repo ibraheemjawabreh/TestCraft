@@ -2,10 +2,10 @@ import { redirect } from 'next/navigation'
 import { cache } from 'react'
 import type { User } from '@supabase/supabase-js'
 
-import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/types/database.types'
 import { type Locale } from '@/i18n/config'
 import { safeLearningRedirect, withLearningRedirect } from '@/lib/auth/learning-redirect'
+import { getViewerProfile } from '@/lib/auth/viewer'
 
 type Profile = Pick<Database['public']['Tables']['profiles']['Row'], 'username' | 'role' | 'avatar_url' | 'total_xp'>
 
@@ -29,29 +29,14 @@ export interface TesterAuthContext {
  */
 // One verified identity/profile per React server render, never shared across users.
 export const requireTester = cache(async (locale: Locale, destination?: string): Promise<TesterAuthContext> => {
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
+  const viewer = await getViewerProfile()
+  if (!viewer?.profile) {
     redirect(withLearningRedirect(`/${locale}/login`, safeLearningRedirect(destination, locale)))
   }
 
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('username,role,avatar_url,total_xp')
-    .eq('id', user.id)
-    .single()
-
-  if (error || !profile) {
-    redirect(withLearningRedirect(`/${locale}/login`, safeLearningRedirect(destination, locale)))
-  }
-
-  if (profile.role === 'admin') {
+  if (viewer.profile.role === 'admin') {
     redirect(`/${locale}/admin`)
   }
 
-  return { user, profile }
+  return { user: viewer.user, profile: viewer.profile }
 })

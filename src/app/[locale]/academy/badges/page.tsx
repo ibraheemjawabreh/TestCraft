@@ -2,9 +2,6 @@ import { resolveLocale } from '@/lib/locale'
 import { requireTester } from '@/lib/auth/require-tester'
 import { getTesterBadges } from '@/lib/academy/badges'
 import { getDictionary } from '@/i18n/get-dictionary'
-import { type Locale } from '@/i18n/config'
-
-import { AcademyLayout } from '@/components/academy/academy-layout'
 import { BadgesPreview } from '@/components/academy/badges-preview'
 import { Award } from 'lucide-react'
 
@@ -17,7 +14,7 @@ export default async function AcademyBadgesPage({
   const locale = resolveLocale(routeLocale)
 
   const dictionary = await getDictionary(locale)
-  const { user, profile } = await requireTester(locale)
+  const { user } = await requireTester(locale)
 
   const { data: badges, error } = await getTesterBadges(user.id)
 
@@ -42,7 +39,7 @@ export default async function AcademyBadgesPage({
           <p className="text-muted-foreground">{dictionary.academy.failedToLoad}</p>
         </div>
       ) : (
-        <BadgesPreview badges={badges ?? []} dictionary={dictionary} />
+        <BadgesPreview badges={badges ?? []} dictionary={dictionary} locale={locale} />
       )}
     </div>
   )

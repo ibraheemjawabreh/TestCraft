@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 
-import { createClient } from '@/lib/supabase/server'
+import { getVerifiedViewer } from '@/lib/auth/viewer'
 import type { Database } from '@/types/database.types'
 import { type Locale } from '@/i18n/config'
 
@@ -26,17 +26,13 @@ export interface AuthenticatedUserContext {
  * @param locale Current route locale for correct redirects.
  */
 export async function requireAuthenticatedUser(locale: Locale): Promise<AuthenticatedUserContext> {
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
+  const viewer = await getVerifiedViewer()
+  if (!viewer) {
     redirect(`/${locale}/login`)
   }
 
-  const { data: profile, error } = await supabase
+  const { db, user } = viewer
+  const { data: profile, error } = await db
     .from('profiles')
     .select('*')
     .eq('id', user.id)

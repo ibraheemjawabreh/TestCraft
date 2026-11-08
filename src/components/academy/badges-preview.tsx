@@ -3,37 +3,32 @@ import { Award } from 'lucide-react'
 import { AcademyEmptyState } from './academy-empty-state'
 import type { Dictionary } from '@/i18n/types'
 import type { UserBadgeWithDetails } from '@/lib/academy/badges'
+import type { Locale } from '@/i18n/config'
 
 interface BadgesPreviewProps {
   badges: UserBadgeWithDetails[]
   dictionary: Dictionary
+  locale: Locale
+  title?: string
+  emptyMessage?: string
 }
 
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return '—'
-  return new Date(dateStr).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
-}
-
-export function BadgesPreview({ badges, dictionary }: BadgesPreviewProps) {
+export function BadgesPreview({ badges, dictionary, locale, title, emptyMessage }: BadgesPreviewProps) {
   return (
     <section>
       <div className="mb-4">
         <h2 className="font-heading text-lg font-semibold text-foreground">
-          {dictionary.academy.badgesPreview}
+          {title ?? dictionary.academy.badgesPreview}
         </h2>
       </div>
 
       {badges.length === 0 ? (
         <AcademyEmptyState
           icon={Award}
-          message={dictionary.academy.noBadges}
+          message={emptyMessage ?? dictionary.academy.noBadges}
         />
       ) : (
-        <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {badges.map((badge) => (
             <div
               key={badge.badge_id}
@@ -46,7 +41,7 @@ export function BadgesPreview({ badges, dictionary }: BadgesPreviewProps) {
               {badge.icon_url ? (
                 <Image
                   src={badge.icon_url}
-                  alt={badge.name}
+                  alt=""
                   width={48}
                   height={48}
                   className="h-12 w-12 rounded-full object-cover"
@@ -57,13 +52,13 @@ export function BadgesPreview({ badges, dictionary }: BadgesPreviewProps) {
                 </div>
               )}
               <div>
-                <p className="text-sm font-semibold text-foreground">{badge.name}</p>
-                <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
-                  {badge.description}
+                <p dir="auto" className="text-sm font-semibold text-foreground">{locale === 'ar' && badge.name_ar || badge.name}</p>
+                <p dir="auto" className="mt-0.5 text-xs text-muted-foreground">
+                  {locale === 'ar' && badge.description_ar || badge.description}
                 </p>
-                <p className="mt-1 text-xs text-muted-foreground/60">
-                  {formatDate(badge.earned_at)}
-                </p>
+                {badge.earned_at && <time dateTime={badge.earned_at} className="mt-1 block text-xs text-muted-foreground">
+                  {new Date(badge.earned_at).toLocaleDateString(locale, { dateStyle: 'medium', timeZone: 'UTC' })}
+                </time>}
               </div>
             </div>
           ))}
