@@ -6,6 +6,12 @@ import { i18n } from './i18n/config'
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl
 
+  // These public JSON assets are files, not localized pages. Never redirect them
+  // through locale/auth routing (which would turn a download into an HTML 404).
+  if (pathname === '/curriculum/schema.json' || pathname === '/curriculum/example.json') {
+    return NextResponse.next()
+  }
+
   // 1. Check if the path should be excluded from locale routing
   const isExcludedPath = [
     '/auth/callback',

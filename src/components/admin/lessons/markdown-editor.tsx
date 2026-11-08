@@ -219,7 +219,7 @@ export function MarkdownEditor({
             {label}
           </span>
           <span className="text-xs text-muted-foreground">
-            {wordCount.toLocaleString()} words · {charCount.toLocaleString()} chars
+            {wordCount.toLocaleString('en-US')} words · {charCount.toLocaleString('en-US')} chars
           </span>
         </div>
       )}

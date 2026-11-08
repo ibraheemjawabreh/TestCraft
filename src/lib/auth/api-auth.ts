@@ -21,7 +21,24 @@ export function apiFailure(error:unknown) {
   if (error instanceof ApiError) return Response.json({error:error.message},{status:error.status})
   if (error instanceof SyntaxError) return Response.json({error:'Malformed JSON'},{status:400})
   if (error instanceof Error && error.name==='ZodError') return Response.json({error:'Validation failed',details:JSON.parse(error.message)},{status:400})
-  console.error('TestCraft API failure', error instanceof Error ? error.name : 'UnknownError')
+  const databaseError = error instanceof Error ? error as Error & { code?: string } : null
+  if (databaseError?.code === 'PGRST205' || /could not find (?:the )?table .* in the schema cache/i.test(databaseError?.message ?? '')) {
+    return Response.json({
+      error: 'Curriculum database schema is unavailable: table "curriculum_sources" does not exist in Supabase. Please run the consolidated SQL file "supabase/apply_curriculum_factory_migrations.sql" in your Supabase Dashboard -> SQL Editor, then reload.',
+    }, { status: 503 })
+  }
+  if (process.env.NODE_ENV === 'development' && error instanceof Error) {
+    const diagnostic = error as Error & { code?: unknown; details?: unknown; hint?: unknown }
+    console.error('TestCraft API failure', {
+      name: diagnostic.name,
+      message: diagnostic.message,
+      code: diagnostic.code,
+      details: diagnostic.details,
+      hint: diagnostic.hint,
+    })
+  } else {
+    console.error('TestCraft API failure', error instanceof Error ? error.name : 'UnknownError')
+  }
   return Response.json({error:'Operation failed. Check migrations, connection and server configuration.'},{status:500})
 }
 

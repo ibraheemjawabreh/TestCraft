@@ -85,12 +85,12 @@ export async function getLearningPathWithProgress(
         .select('*')
         .eq('learning_path_id', pathId)
         .eq('is_published', true)
-        .order('sort_order', { ascending: true }),
+        .order('sort_order', { ascending: true }).order('slug'),
       supabase.from('lessons')
         .select('id, title_en, title_ar, slug, sort_order, estimated_minutes, difficulty, module_id')
         .eq('learning_path_id', pathId)
         .eq('is_published', true)
-        .order('sort_order', { ascending: true }),
+        .order('sort_order', { ascending: true }).order('slug'),
       supabase.from('challenges')
         .select('id, title_en, title_ar, module_id, is_active')
         .eq('is_active', true)
@@ -148,12 +148,33 @@ export async function getLearningPathWithProgress(
       lessonsByModule.set(lesson.module_id, list)
     }
 
-    // Determine module unlock status sequentially
-    // Rule: Module N is unlocked when Module (N-1) is FULLY completed:
-    //       all lessons done + challenge passed (or no challenge in that module)
-    let previousModuleFullyCompleted = true // Module 1 is always available
-
-    const enrichedModules: ModuleWithProgress[] = modules.map((mod, idx) => {
+    const accessResult = await supabase.rpc('curriculum_path_status', { p_path: pathId })
+    // If the RPC doesn't exist yet (migration 034 not applied), fall back to open access
+    // so the page renders instead of showing a generic error. Apply the educational engine
+    // migrations (supabase/apply_educational_engine_migrations.sql) to enable proper gates.
+    let access: Map<string, { allowed: boolean; ready: boolean }>
+    if (accessResult.error) {
+      const isSchemaError = /function.*curriculum_path_status.*does not exist|could not find.*schema cache|PGRST/i.test(
+        accessResult.error.message ?? ''
+      )
+      if (!isSchemaError) {
+        // Real unexpected error – surface it
+        return { data: null, error: 'Failed to verify module access.' }
+      }
+      // Migration not applied yet: unlock all published modules so the page loads
+      console.warn(
+        '[TestCraft] curriculum_path_status RPC missing – apply supabase/apply_educational_engine_migrations.sql to enable module gates.'
+      )
+      access = new Map(
+        modules.map((m) => [m.id, { allowed: true, ready: false }])
+      )
+    } else {
+      access = new Map<string, { allowed: boolean; ready: boolean }>(
+        (accessResult.data ?? []).map((m: { id: string; allowed: boolean; ready: boolean }) => [m.id, m])
+      )
+    }
+    // Use authoritative gates; student RLS intentionally hides draft lesson rows.
+    const enrichedModules: ModuleWithProgress[] = modules.map((mod) => {
       const mp = modProgressMap.get(mod.id)
       const moduleLessons = lessonsByModule.get(mod.id) ?? []
       const moduleChallenge = challengesByModule.get(mod.id) ?? null
@@ -178,10 +199,10 @@ export async function getLearningPathWithProgress(
 
       const totalLessons = enrichedLessons.length
       const completedLessons = enrichedLessons.filter(l => l.is_completed).length
-      const allLessonsCompleted = totalLessons > 0 && completedLessons === totalLessons
+      const allLessonsCompleted = access.get(mod.id)?.ready === true
 
       // Is this module accessible at all?
-      const isModuleUnlocked = idx === 0 || previousModuleFullyCompleted
+      const isModuleUnlocked = access.get(mod.id)?.allowed === true
 
       // Determine challenge status for this module
       let challengeStatus: ModuleChallengeStatus | null = null
@@ -228,14 +249,12 @@ export async function getLearningPathWithProgress(
         !moduleChallenge ||
         challengeStatus?.status === 'completed'
 
-      const isModuleFullyCompleted =
-        (allLessonsCompleted && challengePassed) ||
-        mp?.status === 'completed'
+      const isModuleFullyCompleted = allLessonsCompleted && challengePassed
 
       // Determine module display status
       let moduleStatus: ModuleStatus = 'locked'
       if (isModuleUnlocked) {
-        if (isModuleFullyCompleted || mp?.status === 'completed') {
+        if (isModuleFullyCompleted) {
           moduleStatus = 'completed'
         } else if (completedLessons > 0 || (mp && mp.status !== 'locked')) {
           moduleStatus = 'in_progress'
@@ -243,9 +262,6 @@ export async function getLearningPathWithProgress(
           moduleStatus = 'available'
         }
       }
-
-      // Pass to the next iteration: this module is fully completed?
-      previousModuleFullyCompleted = isModuleFullyCompleted || mp?.status === 'completed'
 
       const completionPct = totalLessons > 0
         ? Math.round((completedLessons / totalLessons) * 100)
@@ -301,11 +317,21 @@ export async function getLearningPathWithProgress(
 export async function getAllLearningPaths(locale: Locale): Promise<Result<{ id: string; title: string; slug: string }[]>> {
   try {
     const supabase = await createClient()
-    const { data, error } = await supabase
+    // is_active is added by migration 034. Fall back to is_published for older schemas.
+    let { data, error } = await supabase
       .from('learning_paths')
       .select('id, title_en, title_ar, slug')
       .eq('is_active', true)
       .order('sort_order', { ascending: true })
+
+    if (error && /column.*is_active.*does not exist|PGRST/i.test(error.message ?? '')) {
+      // Migration 034 not applied yet – fall back to is_published
+      ;({ data, error } = await supabase
+        .from('learning_paths')
+        .select('id, title_en, title_ar, slug')
+        .eq('is_published', true)
+        .order('sort_order', { ascending: true }))
+    }
 
     if (error) return { data: null, error: 'Failed to fetch learning paths.' }
 

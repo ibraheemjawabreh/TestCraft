@@ -502,6 +502,7 @@ export type Database = {
       }
       learning_modules: {
         Row: {
+          archived_at: string | null
           id: string
           learning_path_id: string
           title_en: string
@@ -515,6 +516,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          archived_at?: string | null
           id?: string
           learning_path_id: string
           title_en: string
@@ -528,6 +530,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          archived_at?: string | null
           id?: string
           learning_path_id?: string
           title_en?: string
@@ -615,6 +618,7 @@ export type Database = {
       }
       learning_paths: {
         Row: {
+          archived_at: string | null
           created_at: string
           description: string
           description_ar: string | null
@@ -629,6 +633,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          archived_at?: string | null
           created_at?: string
           description: string
           description_ar?: string | null
@@ -643,6 +648,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          archived_at?: string | null
           created_at?: string
           description?: string
           description_ar?: string | null
@@ -768,6 +774,7 @@ export type Database = {
       }
       lessons: {
         Row: {
+          archived_at: string | null
           content: string
           content_ar: string | null
           content_en: string | null
@@ -792,6 +799,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          archived_at?: string | null
           content: string
           content_ar?: string | null
           content_en?: string | null
@@ -816,6 +824,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          archived_at?: string | null
           content?: string
           content_ar?: string | null
           content_en?: string | null

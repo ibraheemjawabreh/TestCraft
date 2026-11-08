@@ -2,7 +2,6 @@ import 'server-only'
 import { createClient } from '@/lib/supabase/server'
 import { getLocalizedContent, getLocalizedArray } from '@/lib/i18n/content'
 import type { Locale } from '@/i18n/config'
-import { getModuleAccessStatus } from './ProgressService'
 
 interface Result<T> { data: T | null; error: string | null }
 
@@ -71,15 +70,16 @@ export async function getLessonWithModuleGate(
 
     let isLastInModule = true
     if (lesson.module_id) {
-      const { count } = await supabase
+      const { data: lastLesson } = await supabase
         .from('lessons')
-        .select('*', { count: 'exact', head: true })
+        .select('id')
         .eq('module_id', lesson.module_id)
-        .gt('sort_order', lesson.sort_order)
-
-      if (count && count > 0) {
-        isLastInModule = false
-      }
+        .eq('is_published', true)
+        .order('sort_order', { ascending: false })
+        .order('slug', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      isLastInModule = lastLesson?.id === lesson.id
     }
 
     let challengeId = null
@@ -125,87 +125,16 @@ export async function getLessonWithModuleGate(
   }
 }
 
-/**
- * Get the next lesson after the given lesson, ordered by sort_order.
- * Stays within the same module first, then moves to the next module.
- */
-export async function getNextLessonForUser(
-  userId: string,
-  locale: Locale,
-  currentLessonId?: string,
-): Promise<Result<{ id: string; title: string; moduleTitle: string | null } | null>> {
-  try {
-    const supabase = await createClient()
 
-    if (currentLessonId) {
-      // Get current lesson details
-      const { data: current } = await supabase
-        .from('lessons')
-        .select('module_id, sort_order, learning_path_id')
-        .eq('id', currentLessonId)
-        .single()
-
-      if (current?.module_id) {
-        // Look for the next lesson in the same module by sort_order
-        const { data: nextInModule } = await supabase
-          .from('lessons')
-          .select('id, title_en, title_ar, learning_modules(title_en, title_ar)')
-          .eq('module_id', current.module_id)
-          .eq('is_published', true)
-          .gt('sort_order', current.sort_order)
-          .order('sort_order', { ascending: true })
-          .limit(1)
-          .maybeSingle()
-
-        if (nextInModule) {
-          const mod = nextInModule.learning_modules as any
-          return {
-            data: {
-              id: nextInModule.id,
-              title: getLocalizedContent(nextInModule, 'title', locale),
-              moduleTitle: mod ? getLocalizedContent(mod, 'title', locale) : null,
-            },
-            error: null,
-          }
-        }
-
-        // No more lessons in this module — no "next lesson" button
-        // (user should go to challenge or next module via academy page)
-        return { data: null, error: null }
-      }
-    }
-
-    // Fallback (no currentLessonId): find first uncompleted lesson in current module
-    const { data: completedLessons } = await supabase
-      .from('lesson_progress')
-      .select('lesson_id')
-      .eq('user_id', userId)
-      .eq('status', 'completed')
-
-    const completedIds = new Set((completedLessons ?? []).map(l => l.lesson_id))
-
-    const { data: allLessons } = await supabase
-      .from('lessons')
-      .select('id, title_en, title_ar, module_id, sort_order, learning_modules(title_en, title_ar)')
-      .eq('is_published', true)
-      .order('sort_order', { ascending: true })
-
-    const next = (allLessons ?? []).find(l => !completedIds.has(l.id))
-    if (next) {
-      const mod = next.learning_modules as any
-      return {
-        data: {
-          id: next.id,
-          title: getLocalizedContent(next, 'title', locale),
-          moduleTitle: mod ? getLocalizedContent(mod, 'title', locale) : null,
-        },
-        error: null,
-      }
-    }
-
-    return { data: null, error: null }
-  } catch (err) {
-    console.error('getNextLessonForUser error:', err)
-    return { data: null, error: 'Failed to get next lesson.' }
-  }
+export interface LessonNavigation {
+  previous: { id: string; title_en: string; title_ar: string; module_id: string } | null
+  next: { id: string; title_en: string; title_ar: string; module_id: string; available: boolean } | null
+  completed: number
+  total: number
+  position: number
+}
+export async function getLessonNavigation(lessonId: string): Promise<Result<LessonNavigation>> {
+  const db = await createClient()
+  const { data, error } = await db.rpc('curriculum_lesson_navigation', { p_lesson: lessonId })
+  return { data: error ? null : data, error: error?.message ?? null }
 }

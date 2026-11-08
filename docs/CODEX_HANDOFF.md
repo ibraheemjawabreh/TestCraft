@@ -1,6 +1,6 @@
 # Codex backend and content handoff — 2026-11-03
 
-Final integration note: the checkpoint below records backend work as originally saved. The implementation uses migrations 020–033, Next 15.5.28/React 19.3.1/Zod 4.6.7. Earlier integration recorded 23 passing automated tests and seven browser scenarios; current Prompt 1/2 verification and environment limits are in `RELEASE_AUDIT.md`. `TESTCRAFT_GO_LIVE.md` is the migration runbook. No live migration, import, provider call or publication was performed. All nine authored drafts/36 activities remain for editorial approval.
+Final integration note: the implementation uses migrations 020–033, Next 15.5.28/React 19.3.1/Zod 4.6.7. Prompt 3 added the release audit, runbook, a deterministic full-flow database test, duplicate challenge request coverage, and shared origin/admin checks on all challenge mutation routes. Final local verification is 27 automated tests, type-check/content validation/build, and 7/7 isolated Chromium scenarios. Production remains gated by the missing approved Master Curriculum, schema reconciliation and real Supabase acceptance. No live migration, import, provider call or publication was performed. See `RELEASE_AUDIT.md` and `TESTCRAFT_GO_LIVE.md`.
 
 ## Prompt 1 revalidation — 2026-11-03
 
@@ -18,7 +18,11 @@ Sequential checkpoint in the original repository. No Antigravity agent was launc
 
 Added an explicit admin approval transition before a curriculum version can replace an unpublished draft, with a database guard, authenticated API action, separate draft/ready filters and a browser scenario. The learner's open-answer activity can be collapsed under a localized “Try it” summary. Localized review queue states and the bug report actual-result example in EN/AR.
 
-Current verification: 24 automated tests, content validation, TypeScript, production build and all seven Chromium scenarios passed. Playwright required broader local filesystem access because the default sandbox blocked esbuild's parent-directory lookup. This is isolated-fixture acceptance, not a live Supabase migration or data acceptance.
+Prompt 2 checkpoint: 24 automated tests, content validation, TypeScript, production build and all seven Chromium scenarios passed. Playwright required broader local filesystem access because the default sandbox blocked esbuild's parent-directory lookup. This was isolated-fixture acceptance, not a live Supabase migration or data acceptance.
+
+## Prompt 3 release audit — 2026-11-03
+
+The final audit found and fixed missing origin checks on challenge create/update/archive/delete routes; all now use the shared admin guard. Demo seeding writes inactive/draft challenges. Clean-checkout verification after these fixes: `npm.cmd run type-check`, `npm.cmd run content:validate`, `npm.cmd test` (27/27), `npm.cmd run build`, and `npm.cmd run test:ui` (7/7 with isolated localhost configuration and broader esbuild filesystem access). After the initial SWC lock error, a later workspace `npm.cmd ci --cache C:\Users\barho\Desktop\TestCeaft\.npm-cache` succeeded, `npm.cmd run dev` reached `Ready`, and workspace type-check passed. The build emits a Supabase Edge Runtime warning. The latest dependency advisory refresh and all live Supabase row counts remain NONVERIFIED because network access to the advisory endpoint and live REST endpoint did not return. Read the release audit for exact counts, errors and blockers.
 
 ## Real authored data
 

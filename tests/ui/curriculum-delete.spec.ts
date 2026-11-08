@@ -1,0 +1,45 @@
+import { test, expect } from '@playwright/test'
+import fs from 'node:fs'
+
+for (const locale of ['en', 'ar'] as const) for (const kind of ['path', 'module', 'lesson'] as const) test(`confirmed ${kind} deletion and backup work in ${locale}`, async ({ page, request }) => {
+  await request.get('/__fixture/reset')
+  const document = JSON.parse(fs.readFileSync('tests/fixtures/curriculum-import.json', 'utf8'))
+  async function seed(payload: unknown) {
+    const preview = await (await request.post('/api/admin/curriculum/import?role=admin', { data: { action: 'preview', payload } })).json()
+    const start = await (await request.post('/api/admin/curriculum/import?role=admin', { data: { action: 'prepare', payload: preview.data.document, revision: preview.data.revision } })).json()
+    const response = await request.post('/api/admin/curriculum/import?role=admin', { data: { action: 'batch', source_id: start.data.source_id, offset: 0 } })
+    expect(response.ok()).toBe(true)
+  }
+  await seed(document)
+  const unrelated = structuredClone(document); unrelated.paths[0].slug = 'unrelated-path'; await seed(unrelated)
+  const before = await (await request.get('/__fixture/state')).json()
+  await page.goto(`/?view=delete&role=admin&kind=${kind}&locale=${locale}`)
+  const dialog = page.getByRole('alertdialog')
+  await expect(dialog).toBeVisible()
+  await expect(dialog.getByText(locale === 'ar' ? 'اكتب الاسم التقني التالي (slug) للتأكيد:' : 'Type this exact slug to confirm:', { exact: false })).toBeVisible()
+  const confirm = dialog.getByRole('button', { name: locale === 'ar' ? 'حذف نهائي' : 'Delete permanently', exact: true })
+  await expect(confirm).toBeDisabled()
+  const input = dialog.getByRole('textbox', { name: locale === 'ar' ? 'تأكيد الحذف' : 'Deletion confirmation' })
+  await input.fill('wrong-slug'); await expect(confirm).toBeDisabled()
+  await dialog.getByRole('button', { name: locale === 'ar' ? 'إلغاء' : 'Cancel', exact: true }).click()
+  expect(await (await request.get('/__fixture/state')).json()).toEqual(before)
+  await page.getByRole('button', { name: 'Open deletion dialog', exact: true }).click()
+  const path = before.paths.find((p: any) => p.slug === 'qa-foundations')
+  const slug = kind === 'path' ? path.slug : kind === 'module' ? document.paths[0].modules[0].slug : document.paths[0].modules[0].lessons[0].slug
+  await input.fill(slug); await expect(confirm).toBeEnabled(); await confirm.click()
+  await expect(dialog).toHaveCount(0)
+  await expect(page.getByRole('status')).toContainText(locale === 'ar' ? 'تم حذف المحتوى' : 'Content deleted')
+  const after = await (await request.get('/__fixture/state')).json()
+  const unrelatedPath = before.paths.find((p: any) => p.slug === 'unrelated-path')
+  expect(after.lessons.filter((l: any) => l.learning_path_id === unrelatedPath.id)).toEqual(before.lessons.filter((l: any) => l.learning_path_id === unrelatedPath.id))
+  expect(after.lessons.filter((l: any) => l.learning_path_id === path.id)).toHaveLength(kind === 'path' ? 0 : 1)
+  expect(after.xp).toEqual(before.xp)
+  const event = page.waitForEvent('download')
+  await page.getByRole('button', { name: locale === 'ar' ? 'تنزيل نسخة ما قبل الحذف' : 'Download pre-deletion backup', exact: true }).click()
+  const file = await event
+  expect(await file.failure()).toBeNull()
+  const backup = JSON.parse(fs.readFileSync((await file.path())!, 'utf8'))
+  expect(backup.deletion.kind).toBe(kind)
+  expect(backup.deletion.slug).toBe(slug)
+  expect(backup.lessons).toHaveLength(4)
+})

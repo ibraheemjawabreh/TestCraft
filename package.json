@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "test": "node --test tests/*.test.cjs",
+    "test": "node scripts/run-tests.cjs",
+    "test:import": "node scripts/run-tests.cjs tests/curriculum-import.test.cjs",
     "content:build": "node scripts/build-pilot.cjs",
     "content:validate": "node scripts/validate-content.cjs",
     "test:ui": "playwright test"

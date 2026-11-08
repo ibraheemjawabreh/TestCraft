@@ -35,14 +35,14 @@ export function validateForPublish(moduleId:string,titleEn:string,titleAr:string
  if(!moduleId)blockingErrors.push(t.moduleMissing)
  if(!titleEn.trim())blockingErrors.push(t.enTitle)
  if(!titleAr.trim())blockingErrors.push(t.arTitle)
- if(contentEn.trim().length<2200)blockingErrors.push(t.enContent)
- if(contentAr.trim().length<1800)blockingErrors.push(t.arContent)
+ if(!contentEn.trim())blockingErrors.push(t.enContent)
+ if(!contentAr.trim())blockingErrors.push(t.arContent)
  if((contentEn.match(/^## /gm)||[]).length<5||(contentAr.match(/^## /gm)||[]).length<5)structureWarnings.push(t.structure)
  return{canPublish:!blockingErrors.length,blockingErrors,structureWarnings}
 }
 
 /** Check if a language version is "complete" (title + content present) */
-function isLanguageComplete(title: string, content: string, minimum=1800): boolean {
+function isLanguageComplete(title: string, content: string, minimum=1): boolean {
   return title.trim().length >= 3 && content.trim().length >= minimum
 }
 
@@ -65,7 +65,7 @@ export function LessonPublishPanel({
   const labels = (locale === 'ar' ? factoryAr : factoryEn).publishPanel
   const validation = validateForPublish(moduleId, titleEn, titleAr, contentEn, contentAr, locale)
   const arComplete = isLanguageComplete(titleAr, contentAr)
-  const enComplete = isLanguageComplete(titleEn, contentEn,2200)
+  const enComplete = isLanguageComplete(titleEn, contentEn)
 
   const isLoading = isSaving || isPublishing
 

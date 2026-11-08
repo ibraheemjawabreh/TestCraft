@@ -7,7 +7,7 @@ import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { requireTester } from '@/lib/auth/require-tester'
 import { getDictionary } from '@/i18n/get-dictionary'
 import { type Locale } from '@/i18n/config'
-import { getLessonWithModuleGate, getNextLessonForUser } from '@/lib/academy/services/LessonService'
+import { getLessonWithModuleGate, getLessonNavigation } from '@/lib/academy/services/LessonService'
 import { markLessonInProgress } from '@/lib/academy/services/ProgressService'
 import { AcademyLayout } from '@/components/academy/academy-layout'
 import { LessonViewer } from '@/components/academy/learning/lesson-viewer'
@@ -59,16 +59,16 @@ export default async function TesterLessonPage({
   // Track that the user opened this lesson (mark in_progress)
   await markLessonInProgress(user.id, id)
 
-  // Get next lesson by sort_order within the same module
-  const nextResult = await getNextLessonForUser(user.id, locale, id)
-  const nextLessonId = nextResult.data?.id ?? null
+  const navigationResult = await getLessonNavigation(id)
+  const navigation = navigationResult.data
+  const nextLessonId = navigation?.next?.id ?? null
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
       {/* Breadcrumb: Back + Module name */}
       <div className="flex items-center gap-2">
         <Link
-          href={`/${locale}/academy`}
+          href={`/${locale}/academy?path=${lesson.learning_path_id}`}
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           {isRtl ? <ArrowRight className="h-4 w-4" /> : <ArrowLeft className="h-4 w-4" />}
@@ -82,6 +82,12 @@ export default async function TesterLessonPage({
         )}
       </div>
 
+      <nav className="flex flex-wrap items-center justify-between gap-3 text-sm" aria-label={locale === 'ar' ? 'تنقل الدرس' : 'Lesson navigation'}>
+        {navigation?.previous ? <Link className="text-primary hover:underline" href={`/${locale}/academy/lessons/${navigation.previous.id}`}>{locale === 'ar' ? 'الدرس السابق' : 'Previous lesson'}</Link> : <span />}
+        <div className="flex gap-3"><Link href={`/en/academy/lessons/${id}`} lang="en" aria-current={locale === 'en' ? 'page' : undefined}>English</Link><Link href={`/ar/academy/lessons/${id}`} lang="ar" aria-current={locale === 'ar' ? 'page' : undefined}>العربية</Link></div>
+      </nav>
+      {navigation && <div className="space-y-2"><p className="text-sm text-muted-foreground">{locale === 'ar' ? 'تقدم المسار' : 'Path progress'}: {navigation.completed}/{navigation.total}</p><progress aria-label={locale === 'ar' ? 'تقدم التعلم' : 'Learning progress'} className="w-full" max={Math.max(1, navigation.total)} value={navigation.completed} /></div>}
+      {navigationResult.error && <p role="alert" className="text-sm text-destructive">{locale === 'ar' ? 'تعذر تحميل التنقل. يرجى إعادة المحاولة.' : 'Could not load lesson navigation. Please retry.'}</p>}
       {/* Lesson Content */}
       <LessonViewer lesson={lesson} dictionary={dictionary} locale={locale} />
 
@@ -94,6 +100,9 @@ export default async function TesterLessonPage({
         isCompleted={lesson.is_completed}
         relatedChallengeId={lesson.related_challenge_id ?? null}
         nextLessonId={nextLessonId}
+        nextLessonAvailable={navigation?.next?.available ?? false}
+        nextModule={!!navigation?.next && navigation.next.module_id !== lesson.module_id}
+        pathId={lesson.learning_path_id}
         dictionary={dictionary}
         locale={locale}
       />

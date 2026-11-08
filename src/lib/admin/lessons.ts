@@ -3,12 +3,23 @@
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import type { LessonFormValues } from '@/lib/validations/lesson'
+import { lessonSchema } from '@/lib/validations/lesson'
 import { getLocalizedContent } from '@/lib/i18n/content'
 import { Locale } from '@/i18n/config'
+import { activitySchema, type Activity } from '@/lib/curriculum/content.schema'
 
 interface DataResult<T> {
   data: T | null
   error: string | null
+}
+
+export async function getAdminLessonPractice(id: string): Promise<DataResult<Activity[]>> {
+  await requireAdmin('en')
+  const db = await createClient()
+  const { data, error } = await db.from('lesson_activities').select('body').eq('lesson_id', id).eq('retired', false)
+  if (error) return { data: null, error: error.message }
+  const parsed = activitySchema.array().safeParse(data.map((a: { body: unknown }) => a.body))
+  return parsed.success ? { data: parsed.data.sort((a, b) => a.sort_order - b.sort_order), error: null } : { data: null, error: 'An existing exercise needs correction before editing.' }
 }
 
 export interface Lesson {
@@ -152,6 +163,7 @@ export async function getAdminLessonById(id: string, locale: Locale = 'en'): Pro
  */
 export async function createLesson(input: LessonFormValues): Promise<DataResult<Lesson>> {
   await requireAdmin('en')
+  input = lessonSchema.parse(input)
   const supabase = await createClient()
 
   let sortOrder = input.sort_order
@@ -214,6 +226,7 @@ export async function createLesson(input: LessonFormValues): Promise<DataResult<
  */
 export async function updateLesson(id: string, input: LessonFormValues): Promise<DataResult<Lesson>> {
   await requireAdmin('en')
+  input = lessonSchema.parse(input)
   const supabase = await createClient()
   const { data: current } = await supabase.from('lessons').select('is_published').eq('id',id).single()
   if (current?.is_published) return { data: null, error: 'Unpublish explicitly before editing this lesson.' }

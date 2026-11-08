@@ -1,9 +1,10 @@
 import { resolveLocale } from '@/lib/locale'
 import { requireAdmin } from '@/lib/auth/require-admin'
-import { CurriculumFactory } from '@/components/admin/curriculum/curriculum-factory'
+import { ImportCurriculum } from '@/components/admin/curriculum/import-curriculum'
 import { getDictionary } from '@/i18n/get-dictionary'
 import { getCurriculumTree } from '@/lib/admin/curriculum'
-import { CurriculumManager } from '@/components/admin/curriculum/CurriculumManager'
+import { CurriculumWorkspace } from '@/components/admin/curriculum/curriculum-workspace'
+import { CurriculumSetupNotice } from '@/components/admin/curriculum/curriculum-setup-notice'
 import type { Locale } from '@/i18n/config'
 
 export default async function CurriculumPage({
@@ -21,7 +22,7 @@ export default async function CurriculumPage({
   if (error || !data) {
     return (
       <div className="p-8 text-center text-destructive">
-        <CurriculumFactory dictionary={dictionary} locale={locale} />
+        <ImportCurriculum locale={locale} ready={false} />
         <p>{dictionary.factory.failed}: {error}</p>
       </div>
     )
@@ -35,17 +36,19 @@ export default async function CurriculumPage({
           {dictionary.curriculum?.title || 'Learning Management'}
         </h1>
         <p className="text-muted-foreground">
-          {dictionary.curriculum?.subtitle || 'Manage your learning paths, modules, lessons, and challenges all in one place.'}
+          {locale === 'ar' ? 'إدارة المسارات والوحدات والدروس باللغتين.' : 'Manage bilingual paths, modules, and lessons.'}
         </p>
       </div>
 
-      <CurriculumFactory dictionary={dictionary} locale={locale} />
+      {data.requiresMigration && <CurriculumSetupNotice locale={locale} />}
+      <ImportCurriculum locale={locale} ready={!data.requiresMigration} />
 
-      <CurriculumManager
-        initialPaths={data.paths}
-        initialStats={data.stats}
+      <CurriculumWorkspace
+        paths={data.paths}
+        stats={data.stats}
         dictionary={dictionary}
         locale={locale}
+        readOnly={data.requiresMigration}
       />
     </div>
   )

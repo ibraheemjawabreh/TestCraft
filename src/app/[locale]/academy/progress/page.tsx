@@ -23,6 +23,6 @@ export default async function AcademyProgressPage({
       <p className="text-muted-foreground">{dictionary.academy.failedToLoad}</p>
     </div>
   ) : (
-    <ProgressDashboard progress={progress} dictionary={dictionary} />
+    <ProgressDashboard progress={progress} dictionary={dictionary} locale={locale} />
   )
 }

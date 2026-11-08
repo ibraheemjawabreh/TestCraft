@@ -14,6 +14,9 @@ interface LessonActionsProps {
   isCompleted: boolean
   relatedChallengeId: string | null
   nextLessonId: string | null
+  nextLessonAvailable?: boolean
+  nextModule?: boolean
+  pathId?: string
   dictionary: Dictionary
   locale: Locale
 }
@@ -24,6 +27,9 @@ export function LessonActions({
   isCompleted,
   relatedChallengeId,
   nextLessonId,
+  nextLessonAvailable = true,
+  nextModule = false,
+  pathId,
   dictionary,
   locale,
 }: LessonActionsProps) {
@@ -88,16 +94,19 @@ export function LessonActions({
           </Link>
         )}
 
-        {nextLessonId && completed && !relatedChallengeId && (
+        {nextLessonId && completed && nextLessonAvailable && (
           <Link
             href={`/${locale}/academy/lessons/${nextLessonId}`}
             className="flex items-center justify-center gap-2 rounded-lg border border-border/50 bg-secondary/40 px-5 py-3 text-sm font-semibold text-foreground transition-all hover:bg-secondary/60"
           >
-            {dictionary.learning.nextLesson}
+            {nextModule ? (locale === 'ar' ? 'الوحدة التالية' : 'Next module') : dictionary.learning.nextLesson}
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         )}
       </div>
+
+      {completed && !nextLessonId && <Link className="inline-block text-sm text-primary hover:underline" href={`/${locale}/academy${pathId ? '?path=' + pathId : ''}`}>{locale === 'ar' ? 'العودة إلى مسار التعلم' : 'Back to learning path'}</Link>}
+      {completed && nextLessonId && !nextLessonAvailable && <p className="text-sm text-muted-foreground">{locale === 'ar' ? 'أكمل متطلبات الوحدة الحالية لفتح الوحدة التالية.' : 'Complete the current module requirements to unlock the next module.'}</p>}
 
       {relatedChallengeId && (
         <div className="rounded-xl border border-primary/15 bg-primary/5 p-5">

@@ -11,13 +11,23 @@ test('isolated PostgreSQL migration, RLS, import, review, publication, attempts 
  const actor=async(id,role='authenticated')=>db.exec("reset role;set role "+role+";set request.jwt.claim.sub='"+id+"'")
  try{
  await db.exec(fs.readFileSync('tests/fixtures/database.sql','utf8'))
- for(const migration of ['020_practical_challenge_security.sql','021_curriculum_factory.sql','022_curriculum_jobs.sql','023_practical_lab_sessions.sql','024_curriculum_backup_and_bug_history.sql','025_bug_report_context.sql','026_curriculum_assessment_review.sql','027_atomic_rewards_and_review_security.sql','028_report_review_security.sql','029_complete_module_progression.sql','030_admin_reward_inspection.sql','031_manifest_prerequisites.sql','032_private_review_metadata.sql','033_curriculum_revision_approval.sql'])
+ for(const migration of ['020_practical_challenge_security.sql','021_curriculum_factory.sql','022_curriculum_jobs.sql','023_practical_lab_sessions.sql','024_curriculum_backup_and_bug_history.sql','025_bug_report_context.sql','026_curriculum_assessment_review.sql','027_atomic_rewards_and_review_security.sql','028_report_review_security.sql','029_complete_module_progression.sql','030_admin_reward_inspection.sql','031_manifest_prerequisites.sql','032_private_review_metadata.sql','033_curriculum_revision_approval.sql','034_simple_curriculum.sql'])
   await db.exec(fs.readFileSync('supabase/migrations/'+migration,'utf8').replace(/^\uFEFF/,''))
  await actor(ADMIN)
  const load=async()=> (await q('select curriculum_import($1::jsonb,$2,$3::jsonb,$4::jsonb) result',
  [JSON.stringify(bundle.manifest),'verified-pilot',JSON.stringify(bundle.lessons),JSON.stringify(bundle.module_assessments)]))[0].result
  await t.test('import real authored pilot and repeat without duplicates',async()=>{
   const first=await load();assert.equal(first.inserted_lessons,9);assert.equal(first.published,0)
+  const {flattenManifest}=require('../src/lib/curriculum/curriculum-manifest.schema.ts')
+  const expectedKeys=flattenManifest(bundle.manifest).map(x=>x.key)
+  const actual=await q('select p.slug path_slug,m.slug module_slug,l.slug lesson_slug,l.sort_order lesson_order,l.is_published,l.learning_path_id::text lesson_path_id,m.learning_path_id::text module_path_id from lessons l join learning_modules m on m.id=l.module_id join learning_paths p on p.id=m.learning_path_id order by p.sort_order,m.sort_order,l.sort_order')
+  assert.deepEqual(actual.map(x=>[x.path_slug,x.module_slug,x.lesson_slug].join('/')),expectedKeys)
+  assert.equal(new Set(actual.map(x=>x.lesson_path_id)).size,1)
+  assert.ok(actual.every(x=>x.lesson_path_id===x.module_path_id&&!x.is_published))
+  assert.equal((await q('select count(*)::int n from learning_paths'))[0].n,1)
+  assert.equal((await q('select count(*)::int n from learning_modules'))[0].n,3)
+  assert.equal((await q('select count(*)::int n from lessons'))[0].n,9)
+  assert.equal((await q("select count(*)::int n from challenges where module_id is not null and learning_path_id is not null"))[0].n,0)
   const ids=await q('select id,slug from lessons order by slug')
   const second=await load();assert.equal(second.inserted_lessons,0)
   assert.deepEqual(await q('select id,slug from lessons order by slug'),ids)
@@ -183,7 +193,7 @@ test('isolated PostgreSQL migration, RLS, import, review, publication, attempts 
   const restored=new PGlite()
   try{
    await restored.exec(fs.readFileSync('tests/fixtures/database.sql','utf8'))
-   for(const m of ['020_practical_challenge_security.sql','021_curriculum_factory.sql','022_curriculum_jobs.sql','023_practical_lab_sessions.sql','024_curriculum_backup_and_bug_history.sql','025_bug_report_context.sql','026_curriculum_assessment_review.sql','027_atomic_rewards_and_review_security.sql','028_report_review_security.sql','029_complete_module_progression.sql','030_admin_reward_inspection.sql','031_manifest_prerequisites.sql','032_private_review_metadata.sql'])
+   for(const m of ['020_practical_challenge_security.sql','021_curriculum_factory.sql','022_curriculum_jobs.sql','023_practical_lab_sessions.sql','024_curriculum_backup_and_bug_history.sql','025_bug_report_context.sql','026_curriculum_assessment_review.sql','027_atomic_rewards_and_review_security.sql','028_report_review_security.sql','029_complete_module_progression.sql','030_admin_reward_inspection.sql','031_manifest_prerequisites.sql','032_private_review_metadata.sql','033_curriculum_revision_approval.sql','034_simple_curriculum.sql'])
     await restored.exec(fs.readFileSync('supabase/migrations/'+m,'utf8').replace(/^\uFEFF/,''))
    await restored.exec("set role authenticated;set request.jwt.claim.sub='"+ADMIN+"'")
    const restore=()=>restored.query('select curriculum_restore_test_backup($1::jsonb,$2) result',[JSON.stringify(payload),'RESTORE_EMPTY_TEST_DATABASE'])

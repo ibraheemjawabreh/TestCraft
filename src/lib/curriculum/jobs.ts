@@ -5,8 +5,14 @@ import { generateLesson, ProviderError, providerConfig, type ProviderConfig } fr
 import type { createClient } from '@/lib/supabase/server'
 type DB=Awaited<ReturnType<typeof createClient>>
 export const fingerprint=(v:unknown)=>createHash('sha256').update(JSON.stringify(v)).digest('hex')
-export function assertDB<T>(r:{data:T;error:{message:string}|null}):NonNullable<T> {
- if(r.error)throw Error(r.error.message)
+export function assertDB<T>(r:{data:T;error:{message:string;code?:string;details?:string;hint?:string}|null}):NonNullable<T> {
+ if(r.error) {
+  const error=Error(r.error.message) as Error & {code?:string;details?:string;hint?:string}
+  error.code=r.error.code
+  error.details=r.error.details
+  error.hint=r.error.hint
+  throw error
+ }
  return r.data as NonNullable<T>
 }
 export async function startJob(db:DB,userId:string,manifest:CurriculumManifest,keys:string[],maxRequests:number,maxCost:number,regenerate=false){

@@ -4,6 +4,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
 const {build}=require('esbuild')
 const {curriculumManifestSchema,flattenManifest,parseManifestCSV}=require('../src/lib/curriculum/curriculum-manifest.schema.ts')
 const {contentBundleSchema,lessonDraftSchema}=require('../src/lib/curriculum/content.schema.ts')
+const {previewCurriculum,prepareCurriculum,curriculumRPC}=require('../src/lib/curriculum/import-service.ts')
 const {simulate,initialState}=require('../src/lib/practical-challenges/simulator.ts')
 const {bugReportSchema}=require('../src/lib/validations/bug-report.ts')
 const bundle=contentBundleSchema.parse(JSON.parse(fs.readFileSync('content/pilot-bundle.json','utf8')))
@@ -15,8 +16,9 @@ const rpc=async(name,args)=>{const values=Object.values(args),params=Object.keys
 const actor=async(id,role='authenticated')=>db.exec("reset role;set role "+role+";set request.jwt.claim.sub='"+id+"'")
 const hash=v=>crypto.createHash('sha256').update(JSON.stringify(v)).digest('hex')
 async function init(){
- const {PGlite}=await import('@electric-sql/pglite');db=new PGlite()
+ const {PGlite}=require('@electric-sql/pglite');db=new PGlite({initialMemory:128*1024*1024})
  await db.exec(fs.readFileSync('tests/fixtures/database.sql','utf8'))
+ await db.exec(fs.readFileSync('tests/fixtures/curriculum-deletion-progress.sql','utf8'))
  for(const f of migrations)await db.exec(fs.readFileSync('supabase/migrations/'+f,'utf8').replace(/^\uFEFF/,''))
  await actor(ADMIN)
 }
@@ -93,16 +95,43 @@ async function dispatch(req,res){
  if(url.pathname==='/health'){res.end('ready');return}
  if(url.pathname==='/__fixture/reset'){await db.close();await init();json({ok:true});return}
  if(url.pathname==='/ui.js'||url.pathname==='/ui.css'){res.setHeader('Content-Type',url.pathname.endsWith('js')?'text/javascript':'text/css');res.end(fs.readFileSync('.test-output'+url.pathname));return}
+ if(url.pathname==='/curriculum/schema.json'||url.pathname==='/curriculum/example.json'){res.setHeader('Content-Type','application/json');res.end(fs.readFileSync('public'+url.pathname));return}
  await actor(uid)
  let body=null;if(req.method==='POST'){let raw='';for await(const chunk of req)raw+=chunk;body=JSON.parse(raw||'{}')}
  if(url.pathname==='/__fixture/seed-labs'){await actor(ADMIN);await seedLabs();json({ok:true});return}
  if(url.pathname==='/__fixture/state'){
   await actor(ADMIN)
-  json({lessons:await q('select id,slug,is_published from lessons'),attempts:await q('select * from challenge_attempts'),reports:await q('select id,title,status,environment from bug_reports'),xp:await q('select id,user_id,amount,reason from xp_transactions'),jobs:await q('select * from curriculum_jobs')});return
+  json({paths:await q('select id,slug from learning_paths'),modules:await q('select id,learning_path_id,slug from learning_modules'),lessons:await q('select id,slug,is_published,learning_path_id,module_id from lessons'),attempts:await q('select * from challenge_attempts'),reports:await q('select id,title,status,environment from bug_reports'),xp:await q('select id,user_id,amount,reason from xp_transactions'),jobs:await q('select * from curriculum_jobs')});return
  }
  if(url.pathname==='/api/admin/curriculum'){
   if(role!=='admin'){json({error:'Forbidden'},403);return}
   json({data:await adminAPI(url,body)});return
+ }
+ if(url.pathname==='/api/admin/curriculum/download'||url.pathname==='/api/admin/curriculum/delete'){
+  // Exercise the production HTTP handler against this isolated SQL database.
+  const Module=require('node:module'),auth=require('../src/lib/auth/api-auth.ts'),load=Module._load
+  const adapter={async rpc(name,args={}){try{return{data:await rpc(name,Object.fromEntries(Object.entries(args).map(([k,v])=>[k,v&&typeof v==='object'?JSON.stringify(v):v]))),error:null}}catch(e){return{data:null,error:{message:e.message,code:e.code}}}},
+   from(table){let id;const query={select(){return query},eq(key,value){if(key!=='id')throw Error('Unsupported fixture filter');id=value;return query},async single(){return{data:(await q('select payload from '+table+' where id=$1',[id]))[0],error:null}}};return query}}
+  Module._load=function(name,parent,...rest){if(name==='@/lib/auth/api-auth')return{...auth,async apiUser(){if(role!=='admin')throw new auth.ApiError(403,'Administrator required');return{db:adapter,user:{id:uid}}}};return load.call(this,name,parent,...rest)}
+  let handler
+  const routeFile=url.pathname.endsWith('/delete')?'../src/app/api/admin/curriculum/delete/route.ts':'../src/app/api/admin/curriculum/download/route.ts'
+  try{delete require.cache[require.resolve(routeFile)];handler=require(routeFile)}finally{Module._load=load}
+  const request=new Request(url,{method:req.method,headers:req.headers,...(req.method==='POST'&&url.pathname.endsWith('/delete')?{body:JSON.stringify(body)}:{})})
+  const response=await handler[req.method](request)
+  res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));return
+ }
+ if(url.pathname==='/api/admin/curriculum/import'){
+  if(role!=='admin'){json({error:'Forbidden'},403);return}
+  const adapter={async rpc(name,args={}){try{return{data:await rpc(name,Object.fromEntries(Object.entries(args).map(([k,v])=>[k,v&&typeof v==='object'?JSON.stringify(v):v]))),error:null}}catch(e){return{data:null,error:{message:e.message,code:e.code}}}}}
+  if(!body){json((await curriculumRPC(adapter,'curriculum_export_json')).document);return}
+  if(body.action==='preview'){json({data:await previewCurriculum(adapter,body.payload)});return}
+  if(body.action==='prepare'){json({data:await prepareCurriculum(adapter,body.payload,body.revision)});return}
+  if(body.action==='batch'){json({data:await curriculumRPC(adapter,'curriculum_import_json_batch',{p_source:body.source_id,p_offset:body.offset,p_limit:25})});return}
+  if(body.action==='backup'){const id=await rpc('curriculum_backup',{});json({data:(await q('select payload from curriculum_backups where id=$1',[id]))[0].payload});return}
+ }
+ if(url.pathname==='/api/admin/curriculum/practice'){
+  if(role!=='admin'){json({error:'Forbidden'},403);return}
+  json({data:await rpc('curriculum_save_practice',{p_lesson:body.lesson_id,p_expected_updated:body.expected_updated,p_practice:JSON.stringify(body.practice)})});return
  }
  if(url.pathname==='/api/academy/activities'){
   if(!body){
@@ -143,6 +172,17 @@ async function dispatch(req,res){
  }
  const view=url.searchParams.get('view')||'admin',locale=url.searchParams.get('locale')==='ar'?'ar':'en'
  const fixture={view,locale}
+ if(view==='delete'){
+  const kind=url.searchParams.get('kind')||'path',tables={path:'learning_paths',module:'learning_modules',lesson:'lessons'}
+  if(!tables[kind])throw Error('Invalid deletion fixture kind')
+  const target=(await q('select id,slug from '+tables[kind]+' where '+(kind==='path'?'slug=$1':'learning_path_id=(select id from learning_paths where slug=$1)')+' order by sort_order,slug limit 1',['qa-foundations']))[0]
+  fixture.target={kind,id:target.id};fixture.slug=target.slug
+ }
+ if(view==='practice'){
+  if(role!=='admin')throw Error('Administrator required')
+  fixture.lesson=(await q('select to_jsonb(l) body from lessons l order by sort_order,slug limit 1'))[0].body
+  fixture.practice=(await q('select body from lesson_activities where lesson_id=$1 and not retired order by (body->>\'sort_order\')::int',[fixture.lesson.id])).map(a=>a.body)
+ }
  if(view==='lesson'){
   const l=(await q("select * from lessons where is_published order by sort_order limit1".replace('limit1','limit 1')))[0]
   fixture.lesson={...l,title:l['title_'+locale],content:l['content_'+locale],summary:l['summary_'+locale],objectives:l['objectives_'+locale],is_completed:false,is_locked:false,learning_path_title:locale==='ar'?'أساسيات ضمان الجودة':'QA Foundations'}

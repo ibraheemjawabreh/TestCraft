@@ -38,7 +38,7 @@ export function LearningPathForm({ dictionary, locale, initialData, onSuccess }:
       description_en: '',
       description_ar: '',
       slug: '',
-      is_active: true,
+      is_active: false,
       sort_order: 0,
     },
   })

@@ -27,7 +27,7 @@ export const learningPathSchema = z.object({
     .max(140, 'slugMax')
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'slugInvalid')
     .trim(),
-  is_active: z.boolean().default(true),
+  is_active: z.boolean().default(false),
   // sort_order is auto-assigned server-side — optional here
   sort_order: z
     .number({ error: 'required' })

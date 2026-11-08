@@ -2,7 +2,7 @@
 import type { Activity } from '@/lib/curriculum/content.schema'
 import type { Dictionary } from '@/i18n/types'
 const field='w-full rounded-lg border border-border bg-background p-2 text-sm'
-export function ActivityEditor({value,onChange,dictionary,language}:{value:Activity[];onChange:(value:Activity[])=>void;dictionary:Dictionary;language:'en'|'ar'}){
+export function ActivityEditor({value,onChange,dictionary,language,maximum=3}:{value:Activity[];onChange:(value:Activity[])=>void;dictionary:Dictionary;language:'en'|'ar';maximum?:number}){
  const t=dictionary.factory
  const update=(i:number,part:Partial<Activity>)=>onChange(value.map((a,j)=>i===j?{...a,...part}:a))
  return <div className="space-y-4">
@@ -23,7 +23,7 @@ export function ActivityEditor({value,onChange,dictionary,language}:{value:Activ
   <label className="block text-sm">{t.explanation}<textarea className={field} rows={3} dir={language==='ar'?'rtl':'ltr'} value={a.explanation[language]} onChange={e=>update(i,{explanation:{...a.explanation,[language]:e.target.value}})}/></label>
   {a.kind==='short_answer'&&<label className="block text-sm">{t.rubric}<textarea className={field} rows={3} dir={language==='ar'?'rtl':'ltr'} value={a.rubric.map(r=>r[language]).join('\n')} onChange={e=>update(i,{rubric:e.target.value.split('\n').map((s,j)=>({...a.rubric[j]||{en:'',ar:''},[language]:s}))})}/></label>}
  </fieldset>)}
- {value.length<3&&<button type="button" className="rounded-lg border px-3 py-2 text-sm" onClick={()=>onChange([...value,{slug:'check-'+Date.now().toString(36),kind:'single_choice',prompt:{en:'',ar:''},options:[{id:'a',text:{en:'',ar:''}},{id:'b',text:{en:'',ar:''}}],answer:['a'],explanation:{en:'',ar:''},rubric:[],sort_order:value.length+1}])}>{t.addQuestion}</button>}
+ {value.length<maximum&&<button type="button" className="rounded-lg border px-3 py-2 text-sm" onClick={()=>onChange([...value,{slug:'check-'+Date.now().toString(36),kind:'single_choice',prompt:{en:'',ar:''},options:[{id:'a',text:{en:'',ar:''}},{id:'b',text:{en:'',ar:''}}],answer:['a'],explanation:{en:'',ar:''},rubric:[],sort_order:value.length+1}])}>{t.addQuestion}</button>}
  </div>
 }
 

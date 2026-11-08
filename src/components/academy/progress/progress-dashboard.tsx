@@ -10,13 +10,16 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import type { Dictionary } from '@/i18n/types'
+import type { Locale } from '@/i18n/config'
 import type { TesterProgressStats } from '@/lib/academy/progress'
 import { ProgressStatCard } from './progress-stat-card'
 import { EmptyState } from '@/components/ui/empty-state'
+import { FormattedDate } from '@/components/ui/formatted-date'
 
 interface ProgressDashboardProps {
   progress: TesterProgressStats
   dictionary: Dictionary
+  locale: Locale
 }
 
 function AttemptStatusBadge({ status }: { status: string }) {
@@ -35,12 +38,7 @@ function AttemptStatusBadge({ status }: { status: string }) {
   )
 }
 
-function formatDate(dateStr: string | null) {
-  if (!dateStr) return '—'
-  return new Date(dateStr).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
-}
-
-export function ProgressDashboard({ progress, dictionary }: ProgressDashboardProps) {
+export function ProgressDashboard({ progress, dictionary, locale }: ProgressDashboardProps) {
   const labels = dictionary.academy.progress
   const { rank, levelProgress, earnedBadges } = progress
 
@@ -133,7 +131,9 @@ export function ProgressDashboard({ progress, dictionary }: ProgressDashboardPro
                     )}
                   </div>
                   <span className="text-xs font-semibold leading-tight">{badge.name}</span>
-                  <span className="text-[10px] text-muted-foreground">{formatDate(badge.earned_at)}</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    <FormattedDate value={badge.earned_at} locale={locale} dateStyle="medium" />
+                  </span>
                 </div>
               ))}
             </div>
@@ -209,7 +209,9 @@ export function ProgressDashboard({ progress, dictionary }: ProgressDashboardPro
                 <div key={attempt.id} className="flex items-center justify-between gap-4 px-5 py-4">
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{attempt.challengeTitle}</p>
-                    <p className="text-xs text-muted-foreground">{formatDate(attempt.submittedAt)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      <FormattedDate value={attempt.submittedAt} locale={locale} dateStyle="medium" />
+                    </p>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     {attempt.earnedXp != null && attempt.earnedXp > 0 && (

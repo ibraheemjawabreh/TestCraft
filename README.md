@@ -2,7 +2,7 @@
 
 The integrated Curriculum Factory now provides verified JSON/CSV import, budgeted resumable draft generation, bilingual revision/activity editing, explicit publication and private backups in the existing admin workspace. Learners have persisted checks and controlled login, registration and storefront practice apps.
 
-Actual authored output: **1 path,3 modules,9 English/Arabic lesson drafts and36 question/practice items**. All remain unpublished. The original complete Master Curriculum is missing; no346-lesson coverage or live Supabase insertion is claimed.
+Actual authored pilot: **1 path, 3 modules, 9 English/Arabic lesson drafts, and 36 question/practice items**. The pilot is noncanonical and remains unpublished pending editorial approval. The approved Master Curriculum and live Supabase row counts are unavailable; no 273/73/346-lesson coverage or live insertion is claimed.
 
 - [Release audit and executed tests](docs/RELEASE_AUDIT.md)
 - [Migration, configuration and admin runbook](docs/TESTCRAFT_GO_LIVE.md)
@@ -10,6 +10,8 @@ Actual authored output: **1 path,3 modules,9 English/Arabic lesson drafts and36 
 - [Missing curriculum source](docs/CURRICULUM_SOURCE_MISSING.md)
 
 Use `npm ci`, `npm run content:validate`, `npm run type-check`, `npm test`, `npm run build` and `npm run test:ui`. Browser tests need `npx playwright install chromium`. The verified runtime is Next15.5.28 / React19 with Node24. Apply new migrations020–033 only after reconciling the existing database through019; historical base migrations002/003 are absent, so this checkout does not verify a fresh production bootstrap. Never replay the old attempt-rebuild migration on existing student data. Migration033 adds a separate admin approval step before a curriculum revision can replace an unpublished draft.
+
+`next dev` writes to `.next-dev`; `next build` and `next start` use `.next`. Separate output directories prevent development and production webpack chunks from overwriting one another. Restart development after changing this configuration. If older output is mixed, stop this project's Next processes and remove only the generated `.next` / `.next-dev` directories before regenerating them; source files and database data are not involved.
 
 ![TestCraft Platform](public/screenshots/hero-banner.png)
 

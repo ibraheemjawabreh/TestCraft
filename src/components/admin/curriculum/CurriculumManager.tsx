@@ -388,7 +388,7 @@ function ModuleCardComponent({
         <div className="border-t border-border/20 px-4 pb-4 pt-3 space-y-2">
           {/* Lessons with drag-and-drop */}
           {mod.lessons.length > 0 ? (
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleLessonDragEnd}>
+            <DndContext id={`curriculum-module-${mod.id}-lessons`} sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleLessonDragEnd}>
               <SortableContext items={lessonIds} strategy={verticalListSortingStrategy}>
                 <div className="space-y-1.5">
                   {mod.lessons.map((lesson) => (
@@ -551,7 +551,7 @@ function PathCard({
       {expanded && (
         <div className="border-t border-border/20 px-6 pb-6 pt-4 space-y-3">
           {path.modules.length > 0 ? (
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleModuleDragEnd}>
+            <DndContext id={`curriculum-path-${path.id}-modules`} sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleModuleDragEnd}>
               <SortableContext items={moduleIds} strategy={verticalListSortingStrategy}>
                 {path.modules.map((mod) => (
                   <SortableItem key={mod.id} id={mod.id}>
@@ -937,7 +937,7 @@ export function CurriculumManager({
 
       {/* Path List with DnD */}
       {filteredPaths.length > 0 ? (
-        <DndContext sensors={pathSensors} collisionDetection={closestCenter} onDragEnd={handlePathDragEnd}>
+        <DndContext id="curriculum-paths" sensors={pathSensors} collisionDetection={closestCenter} onDragEnd={handlePathDragEnd}>
           <SortableContext items={pathIds} strategy={verticalListSortingStrategy}>
             <div className="space-y-4">
               {filteredPaths.map((path) => (

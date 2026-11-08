@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import type { LearningPathFormValues } from '@/lib/validations/learning-path'
+import { learningPathSchema } from '@/lib/validations/learning-path'
 
 interface DataResult<T> {
   data: T | null
@@ -91,6 +92,7 @@ export async function getAdminLearningPathById(id: string): Promise<DataResult<L
  */
 export async function createLearningPath(input: LearningPathFormValues): Promise<DataResult<LearningPath>> {
   await requireAdmin('en')
+  input = learningPathSchema.parse(input)
   const supabase = await createClient()
 
   // Auto-assign sort_order as global max + 1
@@ -133,6 +135,7 @@ export async function createLearningPath(input: LearningPathFormValues): Promise
  */
 export async function updateLearningPath(id: string, input: LearningPathFormValues): Promise<DataResult<LearningPath>> {
   await requireAdmin('en')
+  input = learningPathSchema.parse(input)
   const supabase = await createClient()
 
   const { data, error } = await supabase

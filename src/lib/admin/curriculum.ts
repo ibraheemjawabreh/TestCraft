@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import type { Database } from '@/types/database.types'
+import { isCurriculumSchemaError } from '@/lib/curriculum/schema-status'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -24,6 +25,7 @@ export interface CurriculumChallenge {
 }
 
 export interface CurriculumLesson {
+  archived_at?: string | null
   id: string
   title_en: string | null
   title_ar: string | null
@@ -43,6 +45,7 @@ export interface CurriculumLesson {
 }
 
 export interface CurriculumModule {
+  archived_at?: string | null
   id: string
   title_en: string
   title_ar: string | null
@@ -57,6 +60,7 @@ export interface CurriculumModule {
 }
 
 export interface CurriculumPath {
+  archived_at?: string | null
   id: string
   title_en: string | null
   title_ar: string | null
@@ -85,23 +89,29 @@ interface Result<T> {
 
 // ── Fetch full curriculum tree ───────────────────────────────────────────────
 
-export async function getCurriculumTree(): Promise<Result<{ paths: CurriculumPath[]; stats: CurriculumStats }>> {
+export async function getCurriculumTree(): Promise<Result<{ paths: CurriculumPath[]; stats: CurriculumStats; requiresMigration: boolean }>> {
   await requireAdmin('en')
   try {
     const supabase = await createClient()
 
     // Fetch all data in parallel
-    const [pathsRes, modulesRes, lessonsRes, challengesRes] = await Promise.all([
+    const [pathsRes, modulesRes, lessonsRes, challengesRes, schemaRes] = await Promise.all([
       supabase.from('learning_paths').select('*').order('sort_order', { ascending: true }),
       supabase.from('learning_modules').select('*').order('sort_order', { ascending: true }),
-      supabase.from('lessons').select('id, title_en, title_ar, slug, summary_en, summary_ar, content_en, content_ar, objectives_en, objectives_ar, estimated_minutes, difficulty, sort_order, is_published, module_id, learning_path_id').order('sort_order', { ascending: true }),
+      // SELECT * works on both the legacy schema and migration 034. Archive
+      // metadata is optional until migration 034 has actually been applied.
+      supabase.from('lessons').select('*').order('sort_order', { ascending: true }).order('slug'),
       supabase.from('challenges').select('id, title, title_en, title_ar, difficulty, base_xp_reward, is_active, module_id, sort_order').order('sort_order', { ascending: true }),
+      // This stable RPC only reads an empty path; HEAD avoids downloading a
+      // second copy of all lesson content just to check database readiness.
+      supabase.rpc('curriculum_path_status', { p_path: '00000000-0000-0000-0000-000000000000' }, { head: true }),
     ])
 
     if (pathsRes.error) throw pathsRes.error
     if (modulesRes.error) throw modulesRes.error
     if (lessonsRes.error) throw lessonsRes.error
     if (challengesRes.error) throw challengesRes.error
+    if (schemaRes.error && !isCurriculumSchemaError(schemaRes.error)) throw schemaRes.error
 
     const allPaths = (pathsRes.data ?? []) as LearningPath[]
     const allModules = (modulesRes.data ?? []) as LearningModule[]
@@ -123,6 +133,7 @@ export async function getCurriculumTree(): Promise<Result<{ paths: CurriculumPat
         const list = lessonsByModule.get(lesson.module_id) ?? []
         list.push({
           id: lesson.id,
+          archived_at: lesson.archived_at ?? null,
           title_en: lesson.title_en,
           title_ar: lesson.title_ar,
           slug: lesson.slug,
@@ -168,6 +179,7 @@ export async function getCurriculumTree(): Promise<Result<{ paths: CurriculumPat
       const pathModules = modulesByPath.get(path.id) ?? []
       const modules: CurriculumModule[] = pathModules.map((mod) => ({
         id: mod.id,
+        archived_at: mod.archived_at ?? null,
         title_en: mod.title_en,
         title_ar: mod.title_ar,
         description_en: mod.description_en,
@@ -182,6 +194,7 @@ export async function getCurriculumTree(): Promise<Result<{ paths: CurriculumPat
 
       return {
         id: path.id,
+        archived_at: path.archived_at ?? null,
         title_en: path.title_en,
         title_ar: path.title_ar,
         description_en: path.description_en,
@@ -211,11 +224,18 @@ export async function getCurriculumTree(): Promise<Result<{ paths: CurriculumPat
       drafts: draftCount,
     }
 
-    return { data: { paths, stats }, error: null }
+    return { data: { paths, stats, requiresMigration: !!schemaRes.error }, error: null }
   } catch (err: any) {
     console.error('getCurriculumTree error:', err)
     return { data: null, error: err.message || 'Failed to load curriculum.' }
   }
+}
+
+export async function setCurriculumState(kind: 'path' | 'module' | 'lesson', id: string, state: 'draft' | 'published' | 'archived'): Promise<Result<null>> {
+  await requireAdmin('en')
+  const supabase = await createClient()
+  const { error } = await supabase.rpc('curriculum_set_state', { p_kind: kind, p_id: id, p_state: state })
+  return { data: null, error: error?.message ?? null }
 }
 
 // ── Reorder Actions ──────────────────────────────────────────────────────────
@@ -224,10 +244,8 @@ export async function reorderPaths(orderedIds: string[]): Promise<Result<null>> 
   await requireAdmin('en')
   try {
     const supabase = await createClient()
-    const updates = orderedIds.map((id, index) =>
-      supabase.from('learning_paths').update({ sort_order: index }).eq('id', id)
-    )
-    await Promise.all(updates)
+    const { error } = await supabase.rpc('curriculum_reorder', { p_kind: 'path', p_ids: orderedIds })
+    if (error) throw error
     return { data: null, error: null }
   } catch (err: any) {
     console.error('reorderPaths error:', err)
@@ -239,10 +257,8 @@ export async function reorderModules(orderedIds: string[]): Promise<Result<null>
   await requireAdmin('en')
   try {
     const supabase = await createClient()
-    const updates = orderedIds.map((id, index) =>
-      supabase.from('learning_modules').update({ sort_order: index }).eq('id', id)
-    )
-    await Promise.all(updates)
+    const { error } = await supabase.rpc('curriculum_reorder', { p_kind: 'module', p_ids: orderedIds })
+    if (error) throw error
     return { data: null, error: null }
   } catch (err: any) {
     console.error('reorderModules error:', err)
@@ -254,10 +270,8 @@ export async function reorderLessons(orderedIds: string[]): Promise<Result<null>
   await requireAdmin('en')
   try {
     const supabase = await createClient()
-    const updates = orderedIds.map((id, index) =>
-      supabase.from('lessons').update({ sort_order: index }).eq('id', id)
-    )
-    await Promise.all(updates)
+    const { error } = await supabase.rpc('curriculum_reorder', { p_kind: 'lesson', p_ids: orderedIds })
+    if (error) throw error
     return { data: null, error: null }
   } catch (err: any) {
     console.error('reorderLessons error:', err)

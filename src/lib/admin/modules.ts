@@ -2,6 +2,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import type { Database } from '@/types/database.types'
+import { moduleSchema } from '@/lib/validations/module'
 
 type LearningModule = Database['public']['Tables']['learning_modules']['Row']
 type InsertModule = Database['public']['Tables']['learning_modules']['Insert']
@@ -52,6 +53,7 @@ export async function getAdminModule(id: string): Promise<Result<LearningModule>
 export async function createAdminModule(moduleData: InsertModule): Promise<Result<LearningModule>> {
   await requireAdmin('en')
   try {
+    moduleData = moduleSchema.parse(moduleData)
     const supabase = await createClient()
 
     // Auto-assign sort_order as max within the same learning_path + 1
@@ -89,6 +91,7 @@ export async function createAdminModule(moduleData: InsertModule): Promise<Resul
 export async function updateAdminModule(id: string, moduleData: UpdateModule): Promise<Result<LearningModule>> {
   await requireAdmin('en')
   try {
+    moduleData = moduleSchema.partial().parse(moduleData)
     const supabase = await createClient()
     const { data, error } = await supabase
       .from('learning_modules')

@@ -1,0 +1,386 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "format": {
+      "type": "string",
+      "const": "testcraft-curriculum-v1"
+    },
+    "unassigned_lessons": {
+      "type": "array",
+      "items": {}
+    },
+    "paths": {
+      "minItems": 1,
+      "maxItems": 100,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "slug": {
+            "type": "string",
+            "maxLength": 140,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "title_en": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "title_ar": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "sort_order": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "status": {
+            "default": "draft",
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ]
+          },
+          "description_en": {
+            "default": "",
+            "type": "string",
+            "maxLength": 2000
+          },
+          "description_ar": {
+            "default": "",
+            "type": "string",
+            "maxLength": 2000
+          },
+          "modules": {
+            "maxItems": 1000,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "slug": {
+                  "type": "string",
+                  "maxLength": 140,
+                  "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                },
+                "title_en": {
+                  "type": "string",
+                  "minLength": 2,
+                  "maxLength": 120
+                },
+                "title_ar": {
+                  "type": "string",
+                  "minLength": 2,
+                  "maxLength": 120
+                },
+                "sort_order": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000
+                },
+                "status": {
+                  "default": "draft",
+                  "type": "string",
+                  "enum": [
+                    "draft",
+                    "published",
+                    "archived"
+                  ]
+                },
+                "description_en": {
+                  "default": "",
+                  "type": "string",
+                  "maxLength": 300
+                },
+                "description_ar": {
+                  "default": "",
+                  "type": "string",
+                  "maxLength": 300
+                },
+                "lessons": {
+                  "maxItems": 2000,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "slug": {
+                        "type": "string",
+                        "maxLength": 140,
+                        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                      },
+                      "title_en": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 120
+                      },
+                      "title_ar": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 120
+                      },
+                      "sort_order": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      "status": {
+                        "default": "draft",
+                        "type": "string",
+                        "enum": [
+                          "draft",
+                          "published",
+                          "archived"
+                        ]
+                      },
+                      "summary_en": {
+                        "default": "",
+                        "type": "string",
+                        "maxLength": 300
+                      },
+                      "summary_ar": {
+                        "default": "",
+                        "type": "string",
+                        "maxLength": 300
+                      },
+                      "content_en": {
+                        "type": "string",
+                        "maxLength": 200000
+                      },
+                      "content_ar": {
+                        "type": "string",
+                        "maxLength": 200000
+                      },
+                      "objectives_en": {
+                        "maxItems": 30,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 160
+                        }
+                      },
+                      "objectives_ar": {
+                        "maxItems": 30,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 160
+                        }
+                      },
+                      "estimated_minutes": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 240
+                      },
+                      "difficulty": {
+                        "default": "Beginner",
+                        "type": "string",
+                        "enum": [
+                          "Beginner",
+                          "Intermediate",
+                          "Advanced"
+                        ]
+                      },
+                      "practice": {
+                        "default": [],
+                        "maxItems": 30,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "slug": {
+                              "type": "string",
+                              "pattern": "^[a-z0-9-]+$"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "single_choice",
+                                "multi_select",
+                                "true_false",
+                                "scenario",
+                                "short_answer"
+                              ]
+                            },
+                            "prompt": {
+                              "type": "object",
+                              "properties": {
+                                "en": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "ar": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "en",
+                                "ar"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "options": {
+                              "maxItems": 6,
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "pattern": "^[a-z0-9-]+$"
+                                  },
+                                  "text": {
+                                    "type": "object",
+                                    "properties": {
+                                      "en": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      },
+                                      "ar": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "en",
+                                      "ar"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "text"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "answer": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "explanation": {
+                              "type": "object",
+                              "properties": {
+                                "en": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "ar": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "en",
+                                "ar"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "rubric": {
+                              "maxItems": 6,
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "en": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "ar": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "en",
+                                  "ar"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "sort_order": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "slug",
+                            "kind",
+                            "prompt",
+                            "options",
+                            "answer",
+                            "explanation",
+                            "rubric",
+                            "sort_order"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "slug",
+                      "title_en",
+                      "title_ar",
+                      "content_en",
+                      "content_ar",
+                      "objectives_en",
+                      "objectives_ar",
+                      "estimated_minutes"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "slug",
+                "title_en",
+                "title_ar",
+                "lessons"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "slug",
+          "title_en",
+          "title_ar",
+          "modules"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "format",
+    "paths"
+  ],
+  "additionalProperties": false,
+  "title": "TestCraft nested curriculum v1",
+  "description": "Arrays define ordering. Explicit sort orders must strictly increase in array order. Lesson slugs are path-scoped. Include practical examples in Markdown. Practice answer IDs must refer to existing options. Exports with unassigned legacy lessons require assignment to modules before re-import. See docs/CURRICULUM_IMPORT.md for semantic validation."
+}

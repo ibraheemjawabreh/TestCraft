@@ -1,62 +1,32 @@
-﻿export const runtime = 'nodejs'
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { z } from 'zod'
+import { apiUser, apiFailure, checkOrigin, ApiError } from '@/lib/auth/api-auth'
+
+export const runtime = 'nodejs'
+
+const inputSchema = z.object({ id: z.string().uuid() }).strict()
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile || profile.role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
-    const { id } = await request.json()
-
-    if (!id || typeof id !== 'string') {
-      return NextResponse.json({ error: 'Challenge ID is required' }, { status: 400 })
-    }
-
-    // Safety check: make sure the challenge exists
-    const { data: challenge } = await supabase
+    checkOrigin(request)
+    const { db } = await apiUser(true)
+    const { id } = inputSchema.parse(await request.json())
+    const { data: challenge, error: lookupError } = await db
       .from('challenges')
       .select('id, title')
       .eq('id', id)
       .single()
 
-    if (!challenge) {
-      return NextResponse.json({ error: 'Challenge not found' }, { status: 404 })
-    }
+    if (lookupError || !challenge) throw new ApiError(404, 'Challenge not found')
 
-    // Mark as archived (and inactive)
-    const { error } = await supabase
+    // Archive without deleting attempts, reports, or reward references.
+    const { error } = await db
       .from('challenges')
-      .update({
-        is_active: false,
-        // NOTE: Once migration 015 is applied, we can uncomment this:
-        // status: 'archived',
-      })
+      .update({ is_active: false, status: 'archived' })
       .eq('id', id)
 
-    if (error) {
-      console.error('Archive challenge error:', error)
-      return NextResponse.json({ error: `Failed to archive: ${error.message}` }, { status: 500 })
-    }
-
-    return NextResponse.json({ success: true, archived: challenge.title })
-  } catch (error: any) {
-    console.error('Archive challenge unexpected error:', error)
-    return NextResponse.json({ error: error?.message || 'Internal Server Error' }, { status: 500 })
+    if (error) throw error
+    return Response.json({ success: true, archived: challenge.title })
+  } catch (error) {
+    return apiFailure(error)
   }
 }
-

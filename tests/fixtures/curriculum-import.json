@@ -1,0 +1,289 @@
+{
+  "format": "testcraft-curriculum-v1",
+  "paths": [
+    {
+      "slug": "qa-foundations",
+      "title_en": "QA Foundations",
+      "title_ar": "أساسيات ضمان الجودة",
+      "description_en": "Foundational QA concepts, manual testing and defect reporting using controlled examples.",
+      "description_ar": "مفاهيم الجودة والاختبار اليدوي وكتابة البلاغات من خلال أمثلة محكومة.",
+      "modules": [
+        {
+          "slug": "intro-to-qa",
+          "title_en": "Introduction to Quality Assurance",
+          "title_ar": "مقدمة في ضمان الجودة",
+          "description_en": "Understand software testing basics, quality concepts, and the SDLC.",
+          "description_ar": "تعلم أساسيات اختبار البرمجيات ومفاهيم الجودة وتدفق دورة حياة تطوير البرمجيات.",
+          "lessons": [
+            {
+              "slug": "software-testing-fundamentals",
+              "title_en": "Software Testing Fundamentals",
+              "title_ar": "أساسيات اختبار البرمجيات",
+              "summary_en": "Use explicit expectations, controlled data and observable results to explain what software testing can and cannot tell a delivery team. Practice recording a delivery-date discrepancy.",
+              "summary_ar": "تعلم ربط الملاحظة بتوقع واضح وتوثيق بيانات الفحص وحدوده. تدرب على وصف فرق في موعد توصيل افتراضي دون تخمين سببه.",
+              "content_en": "## Start with a product decision\n\nWelcome to **Introduction to Quality Assurance**. Imagine a team preparing to release a delivery app. The screen looks polished, yet a customer can receive the wrong delivery date. Quality concerns whether a product satisfies relevant needs and requirements in its context. A tester helps the team make decisions using evidence about that product. Testing includes activities such as examining requirements, designing checks, executing software and evaluating results; it is more than clicking until something breaks.\n\n## What testing can tell a team\n\nA test compares an observation with a justified expectation, sometimes called a test oracle. A requirement, an agreed business rule or a known reference calculation can supply that expectation. Without one, “looks wrong” is an investigation lead rather than a complete defect finding. Testing can reveal failures and reduce uncertainty about risks. A passing set of checks does not prove there are no defects: the team has only examined selected conditions.\n\nTesting can begin before executable software exists. Reviewing “delivery is fast” exposes an unclear requirement; agreeing “orders confirmed before 14:00 arrive the next working day” makes later checks meaningful. Early feedback can prevent expensive misunderstandings. Running every combination of address, device, network and order time is rarely feasible, so choose checks according to impact, likelihood and available time.\n\n## Work example: delivery estimates\n\nUse a simulated shop with this rule: orders confirmed on Monday before 14:00 show Tuesday as the delivery day; orders at or after 14:00 show Wednesday. Assume no holidays and use the shop's configured local time.\n\n| Observation | Expected behavior | Recorded result |\n| --- | --- | --- |\n| Monday 13:59, confirmation screen | Tuesday | Tuesday: pass for this check |\n| Monday 14:00, confirmation screen | Wednesday | Tuesday: failure to investigate |\n\nKeep the inputs and environment fixed. Record the confirmation time, timezone, build and displayed date. A developer may investigate the implementation defect causing the failure; the tester's immediate contribution is a reproducible observation against the agreed rule. This example establishes the habit of comparing expected and actual behavior without assuming the cause.\n\n## A tester's next action\n\nAsk what would harm customers: an incorrect promise may matter more than a slightly misaligned icon. Select another useful condition, such as the next working day after a weekend, but clarify its expected behavior first. Share what was tested, the result and what remains unexamined. Avoid a release message saying simply “everything passed.” Report the scope: “These two cutoff-time checks ran on build D17; weekend rules remain untested.”\n\nA beginner misconception is that successful testing means finding many bugs. Useful work also includes clarifying an ambiguous rule or confirming a high-risk behavior. Another misconception is that a system with no observed failures is defect-free. Absence of observed failures is evidence limited by test coverage.\n\n## Try it: produce an observation\n\nIn the simulated shop, an order is confirmed Monday at 14:05 and the page promises Tuesday. Write the expected date, actual date and one piece of environment information needed to repeat the check. Then answer the scenario check below. Keep “the date calculator is broken” out of the observation unless you have investigated that cause.\n\n## Key takeaways\n\n- Compare behavior with an explicit, agreed expectation.\n- Record data and context so another person can reproduce your observation.\n- A passing check supports a limited claim about the tested conditions.\n- Prioritize evidence that reduces important product risks.\n\n## Next connection\n\nIn **Quality Assurance vs Quality Control**, you will distinguish activities that improve how the team works from activities that evaluate its product. Keep the unclear delivery rule in mind: quality work can start before a test is executed.",
+              "content_ar": "## البداية من قرار يخص المنتج\n\nمرحبًا بك في وحدة **مقدمة في ضمان الجودة**. تخيل فريقًا يستعد لإطلاق تطبيق لتوصيل الطلبات. قد تبدو الشاشة أنيقة، ومع ذلك تعرض موعد تسليم غير صحيح. ترتبط الجودة بتلبية احتياجات المستخدمين والمتطلبات ذات الصلة في سياق الاستخدام. ودور المختبِر هو تقديم أدلة تساعد الفريق على اتخاذ قرار واعٍ بشأن المنتج.\n\nيشمل اختبار البرمجيات مراجعة المتطلبات وتصميم الاختبارات وتنفيذها وتقييم نتائجها. فلا يبدأ العمل بالضرورة عند ظهور شاشة قابلة للنقر، ولا يقتصر على البحث العشوائي عن الأعطال.\n\n## ماذا نستنتج من الاختبار؟\n\nنقارن ما نلاحظه بتوقع يستند إلى مرجع واضح، مثل قاعدة عمل متفق عليها أو حساب موثوق. يسمى مرجع تحديد النتيجة المتوقعة أحيانًا **Test Oracle**. أما عبارة «أشعر أن النتيجة خطأ» فهي بداية للتحقيق، وليست وحدها دليلًا كافيًا على مخالفة محددة.\n\nتكشف الاختبارات عن حالات فشل وتقلل عدم اليقين بشأن مخاطر المنتج. لكن نجاح مجموعة اختبارات لا يثبت خلو النظام من العيوب، لأننا فحصنا ظروفًا محددة فقط. ومن الصعب عمليًا تجربة جميع تراكيب العناوين والأجهزة والشبكات ومواعيد الطلبات؛ لذلك نختار ما نختبره وفق أثر الخطر واحتماله والوقت المتاح.\n\nيمكن البدء مبكرًا بمراجعة عبارة غامضة مثل «التوصيل سريع». عندما يتفق الفريق على قاعدة قابلة للفحص، يصبح من الممكن تصميم اختبار له معنى قبل اكتمال البرمجة.\n\n## مثال من العمل: موعد التوصيل\n\nنستخدم متجرًا محاكى بهذه القاعدة: الطلب المؤكد يوم الاثنين قبل الساعة 14:00 يعرض الثلاثاء موعدًا للتوصيل، والطلب المؤكد من الساعة 14:00 فصاعدًا يعرض الأربعاء. نفترض عدم وجود عطلات، ونعتمد التوقيت المحلي المضبوط في المتجر.\n\n| بيانات الاختبار | النتيجة المتوقعة | ما ظهر بالفعل |\n| --- | --- | --- |\n| الاثنين 13:59، شاشة التأكيد | الثلاثاء | الثلاثاء: نجح هذا الفحص |\n| الاثنين 14:00، شاشة التأكيد | الأربعاء | الثلاثاء: حالة فشل تستحق التحقيق |\n\nثبّت المدخلات وسجل وقت التأكيد والمنطقة الزمنية ورقم الإصدار والتاريخ المعروض. قد يحقق المطور لاحقًا في العيب البرمجي المسبب للفشل. أما مساهمة المختبِر هنا فهي توثيق ملاحظة يمكن تكرارها ومقارنتها بقاعدة متفق عليها، دون القفز إلى استنتاج عن سببها الداخلي.\n\n## كيف يتصرف المختبِر؟\n\nابدأ بما قد يضر المستخدم: الوعد بموعد خاطئ قد يكون أهم من محاذاة أيقونة. اختر ظرفًا آخر مفيدًا للفحص، مثل طلب قريب من عطلة نهاية الأسبوع، بعد توضيح القاعدة الخاصة به. وعند مشاركة النتيجة، اذكر نطاق العمل وحدوده: «نفذنا فحصي موعد الإغلاق على الإصدار D17، ولم نفحص قواعد العطلات بعد».\n\nمن التصورات المضللة أن جودة عمل المختبِر تقاس بعدد البلاغات فقط. توضيح قاعدة غامضة أو تقديم دليل على سلوك عالي المخاطر عمل ذو قيمة أيضًا. ومن الخطأ كذلك اعتبار عدم ملاحظة فشل دليلًا على عدم وجود عيوب؛ فاستنتاجنا يظل مقيدًا بما اختبرناه.\n\n## جرّب: اكتب ملاحظة قابلة للتكرار\n\nتأكد طلب في المتجر المحاكى يوم الاثنين الساعة 14:05، وعرضت الصفحة الثلاثاء موعدًا للتوصيل. اكتب التاريخ المتوقع والتاريخ الفعلي ومعلومة واحدة عن البيئة تساعد زميلك على إعادة الفحص. ثم أجب عن سؤال الموقف أدناه. لا تجزم بأن «دالة حساب الموعد معطلة» دون دليل على السبب.\n\n## أهم ما تعلمته\n\n- اربط المقارنة بتوقع واضح ومتفق عليه.\n- سجل بيانات الاختبار وسياقه لتسهيل إعادة الملاحظة.\n- نجاح الفحص يدعم استنتاجًا محدودًا بالظروف التي جُرّبت.\n- وجّه جهدك إلى الأدلة التي تقلل مخاطر المنتج المهمة.\n\n## صلة الدرس التالي\n\nفي **ضمان الجودة مقابل ضبط الجودة** ستتعرف على الفرق بين تحسين طريقة عمل الفريق وتقييم المنتج نفسه. احتفظ بمثال قاعدة التوصيل الغامضة؛ فبعض أعمال الجودة تبدأ قبل تنفيذ أي اختبار.",
+              "objectives_en": [
+                "Distinguish observed behavior from a cause hypothesis.",
+                "Compare a delivery result with an agreed cutoff rule.",
+                "Describe one limitation of a passing test."
+              ],
+              "objectives_ar": [
+                "ميّز السلوك المرصود عن فرضية سببه.",
+                "قارن موعد التوصيل بقاعدة إغلاق متفق عليها.",
+                "صف حدًا واحدًا للاستنتاج من نجاح الاختبار."
+              ],
+              "estimated_minutes": 8,
+              "difficulty": "Beginner",
+              "practice": [
+                {
+                  "slug": "delivery-cutoff",
+                  "kind": "scenario",
+                  "prompt": {
+                    "en": "Monday 14:05 order shows Tuesday. Under the stated rule, what should you record?",
+                    "ar": "طلب الاثنين 14:05 يعرض الثلاثاء. ماذا تسجل وفق القاعدة؟"
+                  },
+                  "options": [
+                    {
+                      "id": "a",
+                      "text": {
+                        "en": "Expected Wednesday; actual Tuesday, with time/build evidence.",
+                        "ar": "المتوقع الأربعاء والفعلي الثلاثاء، مع توثيق الوقت والإصدار."
+                      }
+                    },
+                    {
+                      "id": "b",
+                      "text": {
+                        "en": "Expected Tuesday because the screen says Tuesday.",
+                        "ar": "المتوقع الثلاثاء لأن الشاشة تعرضه."
+                      }
+                    },
+                    {
+                      "id": "c",
+                      "text": {
+                        "en": "The database is definitely corrupt.",
+                        "ar": "قاعدة البيانات تالفة بالتأكيد."
+                      }
+                    }
+                  ],
+                  "answer": [
+                    "a"
+                  ],
+                  "explanation": {
+                    "en": "The cutoff makes Wednesday the expectation. Record context; the screen is not the oracle and the cause is unproven.",
+                    "ar": "تحدد قاعدة الإغلاق الأربعاء متوقعًا. وثق السياق؛ الشاشة ليست المرجع والسبب غير مثبت."
+                  },
+                  "rubric": [],
+                  "sort_order": 1
+                },
+                {
+                  "slug": "passing-evidence",
+                  "kind": "true_false",
+                  "prompt": {
+                    "en": "Passing two cutoff checks proves the feature has no defects.",
+                    "ar": "نجاح فحصين لموعد الإغلاق يثبت خلو الخاصية من العيوب."
+                  },
+                  "options": [
+                    {
+                      "id": "true",
+                      "text": {
+                        "en": "True",
+                        "ar": "صحيح"
+                      }
+                    },
+                    {
+                      "id": "false",
+                      "text": {
+                        "en": "False",
+                        "ar": "خطأ"
+                      }
+                    }
+                  ],
+                  "answer": [
+                    "false"
+                  ],
+                  "explanation": {
+                    "en": "Only two conditions were observed; weekend and timezone rules may remain untested.",
+                    "ar": "فُحص ظرفان فقط؛ قد تبقى قواعد العطلات والمناطق الزمنية دون فحص."
+                  },
+                  "rubric": [],
+                  "sort_order": 2
+                },
+                {
+                  "slug": "delivery-observation",
+                  "kind": "short_answer",
+                  "prompt": {
+                    "en": "Write expected/actual dates for Monday14:05 and context another tester needs.",
+                    "ar": "اكتب الموعد المتوقع والفعلي لطلب الاثنين 14:05 وسياقًا يحتاجه مختبر آخر."
+                  },
+                  "options": [],
+                  "answer": [],
+                  "explanation": {
+                    "en": "D17, Monday14:05 shop local time: expected Wednesday, actual Tuesday. This does not establish an implementation cause.",
+                    "ar": "D17 ، الاثنين 14:05 بتوقيت المتجر: المتوقع الأربعاء والفعلي الثلاثاء. لا يثبت ذلك السبب البرمجي."
+                  },
+                  "rubric": [
+                    {
+                      "en": "States Wednesday expected and Tuesday observed.",
+                      "ar": "يذكر الأربعاء متوقعًا والثلاثاء فعليًا."
+                    },
+                    {
+                      "en": "Includes build and time/timezone context.",
+                      "ar": "يحدد الإصدار والتوقيت والمنطقة الزمنية."
+                    },
+                    {
+                      "en": "Avoids an unsupported internal cause.",
+                      "ar": "يتجنب الجزم بسبب داخلي دون دليل."
+                    }
+                  ],
+                  "sort_order": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "slug": "manual-testing-fundamentals",
+          "title_en": "Manual Testing Fundamentals",
+          "title_ar": "أساسيات الاختبار اليدوي",
+          "description_en": "Master test case design, boundary value analysis, and equivalence partitioning.",
+          "description_ar": "إتقان تصميم حالات الاختبار وتحليل القيم الحدية وتقسيم التكافؤ.",
+          "lessons": [
+            {
+              "slug": "test-case-design",
+              "title_en": "Test Case Design & Execution",
+              "title_ar": "تصميم وتنفيذ حالات الاختبار",
+              "summary_en": "Design and execute a focused recovery test with explicit preconditions, data, steps and expected results. Separate the reusable case from build-specific execution evidence.",
+              "summary_ar": "صمم ونفذ فحص استعادة محددًا بشروط وبيانات وخطوات ونتائج واضحة، وافصل الحالة القابلة للتكرار عن دليل تنفيذها على إصدار معين.",
+              "content_en": "## Turn a requirement into repeatable evidence\n\nWelcome to **Manual Testing Fundamentals**. This module starts with **Test Case Design & Execution**. You do not need a special tool to write a useful test case: you need a clear purpose, controlled starting conditions, suitable inputs and a result you can judge. A test case describes a particular check so that execution produces evidence related to a test objective.\n\n## Separate design from execution\n\nDesign identifies what to check and why. Execution performs the check on a particular build and records what happened. Keep the expected result independent of the current implementation; copying what a faulty screen does into the expected result makes a broken feature appear correct.\n\nA useful case includes an identifier and purpose, a requirement reference, preconditions, test data, numbered actions and observable expected results. An execution record adds the environment, build, time, actual result, pass/fail or blocked status and supporting evidence. Formats vary across teams; the point is to remove uncertainty, not to maximize paperwork.\n\n## Worked case: password recovery\n\nThe simulated membership portal has this agreed rule: an active account may request a recovery message; the UI must show the same neutral confirmation for registered and unregistered addresses. No real email is sent in this exercise.\n\n**Case REC-01 — request recovery for an active account**\n\n- Requirement: REC-R1, neutral confirmation after a syntactically valid recovery request.\n- Preconditions: build R12; signed out; simulated account `member@example.test` is active; reset the lab first.\n- Data: email `member@example.test`.\n- Step 1: open the recovery panel from the sign-in screen. Expect a labeled email field and submit control.\n- Step 2: enter the address and submit once. Expect “If an account exists, recovery instructions will be sent.”\n- Step 3: inspect the visible result. Expect no account-existence disclosure and no real email or navigation to an external service.\n\nAn execution might record: “R12, desktop browser, 10:15; expected neutral confirmation, actual ‘Account exists: member@example.test’; failed; screenshot rec01.png.” That result contradicts the rule even if the user can continue. Link a defect report to this execution rather than rewriting the original expected result.\n\n## Keep the case focused\n\nTest a nonexistent but valid address in a separate case so its result is independently interpretable. A malformed address, network failure and repeated submissions are different conditions. They may deserve their own cases depending on the risk. Combining all of them into one long script makes it hard to tell which expectation failed and which later steps were affected.\n\nPreconditions must be achievable. “User exists” is weaker than naming the simulated account and its active status. Steps such as “test recovery thoroughly” do not describe an action. An expected result such as “works correctly” cannot guide a pass/fail decision.\n\n## Execution judgement\n\nMark a case blocked when an unmet dependency prevents meaningful execution, for example the recovery panel cannot be opened because the lab service is unavailable. Do not mark it passed merely because no failure was seen. If a result differs because the requirement changed, confirm the change and update the case through the team's review process; do not conceal the discrepancy.\n\n## Try it: write the companion case\n\nCreate REC-02 for `new.person@example.test`, which is not registered. Include a starting state, data, actions and the exact expected message. Explain why the expected UI confirmation should match REC-01. Submit the structured practice below for human review; it is not automatically marked correct.\n\n## Key takeaways\n\n- Derive an expected result from an agreed rule.\n- Make starting conditions and data specific.\n- Keep execution evidence separate from the reusable design.\n- Use blocked status when the check cannot be meaningfully performed.\n- Split independently useful conditions into focused cases.\n\n## Next connection\n\nIn **Equivalence Partitioning & Boundary Value Analysis**, you will choose input examples systematically instead of writing a separate case for every possible value.",
+              "content_ar": "## حوّل المتطلب إلى فحص قابل للتكرار\n\nمرحبًا بك في **أساسيات الاختبار اليدوي**. تبدأ الوحدة بدرس **تصميم وتنفيذ حالات الاختبار**. لا تحتاج إلى أداة خاصة لكتابة حالة مفيدة؛ تحتاج إلى هدف واضح، وبداية مضبوطة، ومدخلات مناسبة، ونتيجة تستطيع الحكم عليها. تصف حالة الاختبار فحصًا محددًا ينتج عنه دليل مرتبط بهدف الاختبار.\n\n## افصل التصميم عن التنفيذ\n\nيحدد التصميم ما الذي سنفحصه ولماذا، بينما ينفذ المختبِر الحالة على إصدار معين ويسجل ما حدث. استمد النتيجة المتوقعة من قاعدة معتمدة، لا من السلوك الحالي للشاشة؛ فنسخ سلوك خاطئ إلى خانة المتوقع يجعل الخاصية المعيبة تبدو ناجحة.\n\nتتضمن الحالة المفيدة معرفًا وهدفًا ومرجعًا للمتطلب وشروطًا مسبقة وبيانات وخطوات ونتائج قابلة للملاحظة. ويضيف سجل التنفيذ البيئة ورقم الإصدار والوقت والنتيجة الفعلية والحالة والدليل. قد تختلف النماذج بين الفرق، لكن الغرض واحد: تقليل الغموض بما يخدم الفحص.\n\n## مثال مكتمل: استعادة كلمة المرور\n\nتنص قاعدة بوابة عضوية محاكية على إتاحة طلب الاستعادة، مع عرض رسالة محايدة واحدة للبريد المسجل وغير المسجل. لا ترسل المحاكاة أي بريد حقيقي.\n\n**الحالة REC-01 — طلب الاستعادة لحساب نشط**\n\n- المرجع: REC-R1؛ تأكيد محايد بعد طلب استعادة ذي صيغة بريد صحيحة.\n- الشروط المسبقة: الإصدار R12، المستخدم خارج الحساب، والحساب الافتراضي `member@example.test` نشط، مع إعادة ضبط المعمل.\n- البيانات: عنوان البريد `member@example.test`.\n- الخطوة 1: افتح لوحة الاستعادة من شاشة الدخول. المتوقع ظهور حقل بريد ذي تسمية وزر إرسال.\n- الخطوة 2: أدخل العنوان واضغط إرسال مرة واحدة. المتوقع: «إذا كان الحساب موجودًا، فستُرسل تعليمات الاستعادة».\n- الخطوة 3: افحص النتيجة الظاهرة. المتوقع عدم كشف وجود الحساب وعدم إرسال بريد حقيقي أو الانتقال لخدمة خارجية.\n\nقد يسجل التنفيذ: «R12، متصفح سطح مكتب، الساعة 10:15؛ المتوقع تأكيد محايد، والفعلي رسالة تفصح عن وجود الحساب؛ فشل، مع لقطة rec01.png». النتيجة تخالف القاعدة حتى لو استطاع المستخدم متابعة العمل. اربط بلاغ العيب بهذا التنفيذ، ولا تغير المتوقع لمجرد موافقة ما فعلته الشاشة.\n\n## اجعل لكل حالة غرضًا واضحًا\n\nافحص عنوانًا صحيح الصيغة وغير مسجل في حالة مستقلة حتى يمكن تفسير نتيجته وحدها. أما الصيغة غير الصحيحة أو انقطاع الشبكة أو تكرار الإرسال فهي ظروف مختلفة، وقد تحتاج إلى حالات أخرى وفق الخطر. دمجها كلها في سيناريو طويل يجعل تحديد موضع الفشل وتأثيره على بقية الخطوات أصعب.\n\nيجب أن تكون الشروط قابلة للتحقيق. «يوجد مستخدم» أضعف من تحديد حساب افتراضي نشط معروف. و«اختبر الاستعادة جيدًا» ليست خطوة تنفيذية، مثلما أن «يعمل بصورة صحيحة» ليست نتيجة متوقعة دقيقة.\n\n## الحكم أثناء التنفيذ\n\nاستخدم حالة «متعذر التنفيذ» عندما يمنع اعتماد غير متاح إجراء الفحص بصورة ذات معنى، مثل تعطل خدمة المعمل قبل فتح لوحة الاستعادة. عدم رؤية فشل هنا لا يعني النجاح. وإذا تغير المتطلب، أكد التغيير وحدث الحالة عبر مراجعة الفريق، مع إبقاء السجل واضحًا.\n\n## جرّب: اكتب الحالة المكملة\n\nصمم REC-02 للعنوان `new.person@example.test` غير المسجل. حدد البداية والبيانات والخطوات ونص التأكيد المتوقع. وضح سبب تطابق رسالة الواجهة مع REC-01. أرسل الحل في نشاط الممارسة للمراجعة البشرية؛ لن يحصل النص المفتوح على حكم آلي تخميني.\n\n## أهم ما تعلمته\n\n- استمد المتوقع من قاعدة متفق عليها.\n- حدد حالة البداية وبيانات الاختبار بدقة.\n- افصل سجل التنفيذ عن التصميم القابل لإعادة الاستخدام.\n- استخدم «متعذر التنفيذ» إذا لم يكن إجراء الفحص ممكنًا.\n- افصل الظروف التي تحتاج إلى نتائج مستقلة.\n\n## صلة الدرس التالي\n\nفي **تقسيم التكافؤ وتحليل القيم الحدية** ستختار أمثلة المدخلات بأسلوب منظم، بدلًا من كتابة حالة لكل قيمة ممكنة.",
+              "objectives_en": [
+                "Write specific preconditions and recovery inputs.",
+                "Derive expected results from the neutral-confirmation rule.",
+                "Distinguish failed execution from blocked execution."
+              ],
+              "objectives_ar": [
+                "اكتب شروطًا ومدخلات محددة لفحص الاستعادة.",
+                "استمد المتوقع من قاعدة التأكيد المحايد.",
+                "ميّز فشل التنفيذ عن تعذر إجرائه."
+              ],
+              "estimated_minutes": 10,
+              "difficulty": "Intermediate",
+              "practice": [
+                {
+                  "slug": "recovery-expectation",
+                  "kind": "scenario",
+                  "prompt": {
+                    "en": "For a valid unregistered address, what confirmation follows REC-R1?",
+                    "ar": "ما التأكيد المتوقع لعنوان صحيح الصيغة وغير مسجل وفق REC-R1 ؟"
+                  },
+                  "options": [
+                    {
+                      "id": "a",
+                      "text": {
+                        "en": "The same neutral message used for registered addresses.",
+                        "ar": "الرسالة المحايدة نفسها للعناوين المسجلة."
+                      }
+                    },
+                    {
+                      "id": "b",
+                      "text": {
+                        "en": "Account not found; please register.",
+                        "ar": "الحساب غير موجود؛ سجل أولًا."
+                      }
+                    },
+                    {
+                      "id": "c",
+                      "text": {
+                        "en": "Whatever the current build shows.",
+                        "ar": "أي رسالة يعرضها الإصدار الحالي."
+                      }
+                    }
+                  ],
+                  "answer": [
+                    "a"
+                  ],
+                  "explanation": {
+                    "en": "The rule avoids disclosing account existence. Expected behavior comes from the requirement, not the current screen.",
+                    "ar": "تمنع القاعدة كشف وجود الحساب. نستمد المتوقع من المتطلب وليس الشاشة الحالية."
+                  },
+                  "rubric": [],
+                  "sort_order": 1
+                },
+                {
+                  "slug": "blocked-execution",
+                  "kind": "single_choice",
+                  "prompt": {
+                    "en": "The lab is unavailable before you can open recovery. Record the check as:",
+                    "ar": "المعمل غير متاح قبل فتح الاستعادة. تسجل الفحص بوصفه:"
+                  },
+                  "options": [
+                    {
+                      "id": "a",
+                      "text": {
+                        "en": "Blocked, documenting the dependency.",
+                        "ar": "متعذر التنفيذ مع توثيق الاعتماد."
+                      }
+                    },
+                    {
+                      "id": "b",
+                      "text": {
+                        "en": "Passed because no defect was seen.",
+                        "ar": "ناجح لعدم ملاحظة عيب."
+                      }
+                    },
+                    {
+                      "id": "c",
+                      "text": {
+                        "en": "Deleted because it cannot pass.",
+                        "ar": "محذوف لأنه لا ينجح."
+                      }
+                    }
+                  ],
+                  "answer": [
+                    "a"
+                  ],
+                  "explanation": {
+                    "en": "The check could not be meaningfully performed. Preserve the case and the reason for blocked execution.",
+                    "ar": "لم يكن إجراء الفحص ممكنًا بصورة مفيدة. احفظ الحالة وسبب تعذر التنفيذ."
+                  },
+                  "rubric": [],
+                  "sort_order": 2
+                },
+                {
+                  "slug": "recovery-case",
+                  "kind": "short_answer",
+                  "prompt": {
+                    "en": "Write REC-02 for unregistered new.person@example.test with preconditions, steps and exact neutral confirmation.",
+                    "ar": "اكتب REC-02 للعنوان غير المسجل new.person@example.test مع الشروط والخطوات والتأكيد المحايد."
+                  },
+                  "options": [],
+                  "answer": [],
+                  "explanation": {
+                    "en": "Reset R12; open recovery while signed out; submit the address once; expect “If an account exists, recovery instructions will be sent.”",
+                    "ar": "أعد ضبط R12 وافتح الاستعادة دون دخول وأرسل العنوان مرة؛ المتوقع «إذا كان الحساب موجودًا، فستُرسل تعليمات الاستعادة»."
+                  },
+                  "rubric": [
+                    {
+                      "en": "Uses reset signed-out state and synthetic unregistered data.",
+                      "ar": "يستخدم حالة خروج بعد الضبط وبيانات اصطناعية غير مسجلة."
+                    },
+                    {
+                      "en": "Provides ordered actions and observable outcomes.",
+                      "ar": "يقدم خطوات مرتبة ونتائج قابلة للملاحظة."
+                    },
+                    {
+                      "en": "Does not disclose account existence.",
+                      "ar": "لا يكشف وجود الحساب."
+                    }
+                  ],
+                  "sort_order": 3
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

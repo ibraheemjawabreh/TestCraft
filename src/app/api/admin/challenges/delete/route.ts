@@ -1,56 +1,32 @@
+import { z } from 'zod'
+import { apiUser, apiFailure, checkOrigin, ApiError } from '@/lib/auth/api-auth'
+
 export const runtime = 'nodejs'
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+
+const inputSchema = z.object({ id: z.string().uuid() }).strict()
 
 export async function DELETE(request: Request) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile || profile.role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
-    const { id } = await request.json()
-
-    if (!id || typeof id !== 'string') {
-      return NextResponse.json({ error: 'Challenge ID is required' }, { status: 400 })
-    }
-
-    // Safety check: make sure the challenge exists
-    const { data: challenge } = await supabase
+    checkOrigin(request)
+    const { db } = await apiUser(true)
+    const { id } = inputSchema.parse(await request.json())
+    const { data: challenge, error: lookupError } = await db
       .from('challenges')
       .select('id, title')
       .eq('id', id)
       .single()
 
-    if (!challenge) {
-      return NextResponse.json({ error: 'Challenge not found' }, { status: 404 })
-    }
+    if (lookupError || !challenge) throw new ApiError(404, 'Challenge not found')
 
-    // Archive instead of deleting historical reports, attempts or bug matches.
-    const { error } = await supabase.from('challenges')
-      .update({ is_active: false, status: 'archived' }).eq('id', id)
+    // This legacy DELETE endpoint archives; it preserves attempts and reports.
+    const { error } = await db
+      .from('challenges')
+      .update({ is_active: false, status: 'archived' })
+      .eq('id', id)
 
-    if (error) {
-      console.error('Delete challenge error:', error)
-      return NextResponse.json({ error: `Failed to delete: ${error.message}` }, { status: 500 })
-    }
-
-    return NextResponse.json({ success: true, deleted: challenge.title })
-  } catch (error: any) {
-    console.error('Delete challenge unexpected error:', error)
-    return NextResponse.json({ error: error?.message || 'Internal Server Error' }, { status: 500 })
+    if (error) throw error
+    return Response.json({ success: true, deleted: challenge.title })
+  } catch (error) {
+    return apiFailure(error)
   }
 }
-

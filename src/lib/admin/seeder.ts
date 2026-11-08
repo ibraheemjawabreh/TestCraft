@@ -339,7 +339,7 @@ export async function seedDemoData(locale: string = 'en'): Promise<SeedResult> {
             workflow_type: 'practical',
             practical_app_key: 'login_form',
             is_active: false,
-            status: 'published',
+            status: 'draft',
             is_required: true,
             sort_order: mData.sort_order,
           })

@@ -1,0 +1,148 @@
+{
+  "format": "testcraft-curriculum-v1",
+  "paths": [
+    {
+      "slug": "qa-foundations",
+      "title_en": "QA Foundations",
+      "title_ar": "أساسيات ضمان الجودة",
+      "description_en": "Foundational QA concepts, manual testing and defect reporting using controlled examples.",
+      "description_ar": "مفاهيم الجودة والاختبار اليدوي وكتابة البلاغات من خلال أمثلة محكومة.",
+      "modules": [
+        {
+          "slug": "intro-to-qa",
+          "title_en": "Introduction to Quality Assurance",
+          "title_ar": "مقدمة في ضمان الجودة",
+          "description_en": "Understand software testing basics, quality concepts, and the SDLC.",
+          "description_ar": "تعلم أساسيات اختبار البرمجيات ومفاهيم الجودة وتدفق دورة حياة تطوير البرمجيات.",
+          "lessons": [
+            {
+              "slug": "software-testing-fundamentals",
+              "title_en": "Software Testing Fundamentals",
+              "title_ar": "أساسيات اختبار البرمجيات",
+              "summary_en": "Use explicit expectations, controlled data and observable results to explain what software testing can and cannot tell a delivery team. Practice recording a delivery-date discrepancy.",
+              "summary_ar": "تعلم ربط الملاحظة بتوقع واضح وتوثيق بيانات الفحص وحدوده. تدرب على وصف فرق في موعد توصيل افتراضي دون تخمين سببه.",
+              "content_en": "## Start with a product decision\n\nWelcome to **Introduction to Quality Assurance**. Imagine a team preparing to release a delivery app. The screen looks polished, yet a customer can receive the wrong delivery date. Quality concerns whether a product satisfies relevant needs and requirements in its context. A tester helps the team make decisions using evidence about that product. Testing includes activities such as examining requirements, designing checks, executing software and evaluating results; it is more than clicking until something breaks.\n\n## What testing can tell a team\n\nA test compares an observation with a justified expectation, sometimes called a test oracle. A requirement, an agreed business rule or a known reference calculation can supply that expectation. Without one, “looks wrong” is an investigation lead rather than a complete defect finding. Testing can reveal failures and reduce uncertainty about risks. A passing set of checks does not prove there are no defects: the team has only examined selected conditions.\n\nTesting can begin before executable software exists. Reviewing “delivery is fast” exposes an unclear requirement; agreeing “orders confirmed before 14:00 arrive the next working day” makes later checks meaningful. Early feedback can prevent expensive misunderstandings. Running every combination of address, device, network and order time is rarely feasible, so choose checks according to impact, likelihood and available time.\n\n## Work example: delivery estimates\n\nUse a simulated shop with this rule: orders confirmed on Monday before 14:00 show Tuesday as the delivery day; orders at or after 14:00 show Wednesday. Assume no holidays and use the shop's configured local time.\n\n| Observation | Expected behavior | Recorded result |\n| --- | --- | --- |\n| Monday 13:59, confirmation screen | Tuesday | Tuesday: pass for this check |\n| Monday 14:00, confirmation screen | Wednesday | Tuesday: failure to investigate |\n\nKeep the inputs and environment fixed. Record the confirmation time, timezone, build and displayed date. A developer may investigate the implementation defect causing the failure; the tester's immediate contribution is a reproducible observation against the agreed rule. This example establishes the habit of comparing expected and actual behavior without assuming the cause.\n\n## A tester's next action\n\nAsk what would harm customers: an incorrect promise may matter more than a slightly misaligned icon. Select another useful condition, such as the next working day after a weekend, but clarify its expected behavior first. Share what was tested, the result and what remains unexamined. Avoid a release message saying simply “everything passed.” Report the scope: “These two cutoff-time checks ran on build D17; weekend rules remain untested.”\n\nA beginner misconception is that successful testing means finding many bugs. Useful work also includes clarifying an ambiguous rule or confirming a high-risk behavior. Another misconception is that a system with no observed failures is defect-free. Absence of observed failures is evidence limited by test coverage.\n\n## Try it: produce an observation\n\nIn the simulated shop, an order is confirmed Monday at 14:05 and the page promises Tuesday. Write the expected date, actual date and one piece of environment information needed to repeat the check. Then answer the scenario check below. Keep “the date calculator is broken” out of the observation unless you have investigated that cause.\n\n## Key takeaways\n\n- Compare behavior with an explicit, agreed expectation.\n- Record data and context so another person can reproduce your observation.\n- A passing check supports a limited claim about the tested conditions.\n- Prioritize evidence that reduces important product risks.\n\n## Next connection\n\nIn **Quality Assurance vs Quality Control**, you will distinguish activities that improve how the team works from activities that evaluate its product. Keep the unclear delivery rule in mind: quality work can start before a test is executed.",
+              "content_ar": "## البداية من قرار يخص المنتج\n\nمرحبًا بك في وحدة **مقدمة في ضمان الجودة**. تخيل فريقًا يستعد لإطلاق تطبيق لتوصيل الطلبات. قد تبدو الشاشة أنيقة، ومع ذلك تعرض موعد تسليم غير صحيح. ترتبط الجودة بتلبية احتياجات المستخدمين والمتطلبات ذات الصلة في سياق الاستخدام. ودور المختبِر هو تقديم أدلة تساعد الفريق على اتخاذ قرار واعٍ بشأن المنتج.\n\nيشمل اختبار البرمجيات مراجعة المتطلبات وتصميم الاختبارات وتنفيذها وتقييم نتائجها. فلا يبدأ العمل بالضرورة عند ظهور شاشة قابلة للنقر، ولا يقتصر على البحث العشوائي عن الأعطال.\n\n## ماذا نستنتج من الاختبار؟\n\nنقارن ما نلاحظه بتوقع يستند إلى مرجع واضح، مثل قاعدة عمل متفق عليها أو حساب موثوق. يسمى مرجع تحديد النتيجة المتوقعة أحيانًا **Test Oracle**. أما عبارة «أشعر أن النتيجة خطأ» فهي بداية للتحقيق، وليست وحدها دليلًا كافيًا على مخالفة محددة.\n\nتكشف الاختبارات عن حالات فشل وتقلل عدم اليقين بشأن مخاطر المنتج. لكن نجاح مجموعة اختبارات لا يثبت خلو النظام من العيوب، لأننا فحصنا ظروفًا محددة فقط. ومن الصعب عمليًا تجربة جميع تراكيب العناوين والأجهزة والشبكات ومواعيد الطلبات؛ لذلك نختار ما نختبره وفق أثر الخطر واحتماله والوقت المتاح.\n\nيمكن البدء مبكرًا بمراجعة عبارة غامضة مثل «التوصيل سريع». عندما يتفق الفريق على قاعدة قابلة للفحص، يصبح من الممكن تصميم اختبار له معنى قبل اكتمال البرمجة.\n\n## مثال من العمل: موعد التوصيل\n\nنستخدم متجرًا محاكى بهذه القاعدة: الطلب المؤكد يوم الاثنين قبل الساعة 14:00 يعرض الثلاثاء موعدًا للتوصيل، والطلب المؤكد من الساعة 14:00 فصاعدًا يعرض الأربعاء. نفترض عدم وجود عطلات، ونعتمد التوقيت المحلي المضبوط في المتجر.\n\n| بيانات الاختبار | النتيجة المتوقعة | ما ظهر بالفعل |\n| --- | --- | --- |\n| الاثنين 13:59، شاشة التأكيد | الثلاثاء | الثلاثاء: نجح هذا الفحص |\n| الاثنين 14:00، شاشة التأكيد | الأربعاء | الثلاثاء: حالة فشل تستحق التحقيق |\n\nثبّت المدخلات وسجل وقت التأكيد والمنطقة الزمنية ورقم الإصدار والتاريخ المعروض. قد يحقق المطور لاحقًا في العيب البرمجي المسبب للفشل. أما مساهمة المختبِر هنا فهي توثيق ملاحظة يمكن تكرارها ومقارنتها بقاعدة متفق عليها، دون القفز إلى استنتاج عن سببها الداخلي.\n\n## كيف يتصرف المختبِر؟\n\nابدأ بما قد يضر المستخدم: الوعد بموعد خاطئ قد يكون أهم من محاذاة أيقونة. اختر ظرفًا آخر مفيدًا للفحص، مثل طلب قريب من عطلة نهاية الأسبوع، بعد توضيح القاعدة الخاصة به. وعند مشاركة النتيجة، اذكر نطاق العمل وحدوده: «نفذنا فحصي موعد الإغلاق على الإصدار D17، ولم نفحص قواعد العطلات بعد».\n\nمن التصورات المضللة أن جودة عمل المختبِر تقاس بعدد البلاغات فقط. توضيح قاعدة غامضة أو تقديم دليل على سلوك عالي المخاطر عمل ذو قيمة أيضًا. ومن الخطأ كذلك اعتبار عدم ملاحظة فشل دليلًا على عدم وجود عيوب؛ فاستنتاجنا يظل مقيدًا بما اختبرناه.\n\n## جرّب: اكتب ملاحظة قابلة للتكرار\n\nتأكد طلب في المتجر المحاكى يوم الاثنين الساعة 14:05، وعرضت الصفحة الثلاثاء موعدًا للتوصيل. اكتب التاريخ المتوقع والتاريخ الفعلي ومعلومة واحدة عن البيئة تساعد زميلك على إعادة الفحص. ثم أجب عن سؤال الموقف أدناه. لا تجزم بأن «دالة حساب الموعد معطلة» دون دليل على السبب.\n\n## أهم ما تعلمته\n\n- اربط المقارنة بتوقع واضح ومتفق عليه.\n- سجل بيانات الاختبار وسياقه لتسهيل إعادة الملاحظة.\n- نجاح الفحص يدعم استنتاجًا محدودًا بالظروف التي جُرّبت.\n- وجّه جهدك إلى الأدلة التي تقلل مخاطر المنتج المهمة.\n\n## صلة الدرس التالي\n\nفي **ضمان الجودة مقابل ضبط الجودة** ستتعرف على الفرق بين تحسين طريقة عمل الفريق وتقييم المنتج نفسه. احتفظ بمثال قاعدة التوصيل الغامضة؛ فبعض أعمال الجودة تبدأ قبل تنفيذ أي اختبار.",
+              "objectives_en": [
+                "Distinguish observed behavior from a cause hypothesis.",
+                "Compare a delivery result with an agreed cutoff rule.",
+                "Describe one limitation of a passing test."
+              ],
+              "objectives_ar": [
+                "ميّز السلوك المرصود عن فرضية سببه.",
+                "قارن موعد التوصيل بقاعدة إغلاق متفق عليها.",
+                "صف حدًا واحدًا للاستنتاج من نجاح الاختبار."
+              ],
+              "estimated_minutes": 8,
+              "difficulty": "Beginner",
+              "practice": [
+                {
+                  "slug": "delivery-cutoff",
+                  "kind": "scenario",
+                  "prompt": {
+                    "en": "Monday 14:05 order shows Tuesday. Under the stated rule, what should you record?",
+                    "ar": "طلب الاثنين 14:05 يعرض الثلاثاء. ماذا تسجل وفق القاعدة؟"
+                  },
+                  "options": [
+                    {
+                      "id": "a",
+                      "text": {
+                        "en": "Expected Wednesday; actual Tuesday, with time/build evidence.",
+                        "ar": "المتوقع الأربعاء والفعلي الثلاثاء، مع توثيق الوقت والإصدار."
+                      }
+                    },
+                    {
+                      "id": "b",
+                      "text": {
+                        "en": "Expected Tuesday because the screen says Tuesday.",
+                        "ar": "المتوقع الثلاثاء لأن الشاشة تعرضه."
+                      }
+                    },
+                    {
+                      "id": "c",
+                      "text": {
+                        "en": "The database is definitely corrupt.",
+                        "ar": "قاعدة البيانات تالفة بالتأكيد."
+                      }
+                    }
+                  ],
+                  "answer": [
+                    "a"
+                  ],
+                  "explanation": {
+                    "en": "The cutoff makes Wednesday the expectation. Record context; the screen is not the oracle and the cause is unproven.",
+                    "ar": "تحدد قاعدة الإغلاق الأربعاء متوقعًا. وثق السياق؛ الشاشة ليست المرجع والسبب غير مثبت."
+                  },
+                  "rubric": [],
+                  "sort_order": 1
+                },
+                {
+                  "slug": "passing-evidence",
+                  "kind": "true_false",
+                  "prompt": {
+                    "en": "Passing two cutoff checks proves the feature has no defects.",
+                    "ar": "نجاح فحصين لموعد الإغلاق يثبت خلو الخاصية من العيوب."
+                  },
+                  "options": [
+                    {
+                      "id": "true",
+                      "text": {
+                        "en": "True",
+                        "ar": "صحيح"
+                      }
+                    },
+                    {
+                      "id": "false",
+                      "text": {
+                        "en": "False",
+                        "ar": "خطأ"
+                      }
+                    }
+                  ],
+                  "answer": [
+                    "false"
+                  ],
+                  "explanation": {
+                    "en": "Only two conditions were observed; weekend and timezone rules may remain untested.",
+                    "ar": "فُحص ظرفان فقط؛ قد تبقى قواعد العطلات والمناطق الزمنية دون فحص."
+                  },
+                  "rubric": [],
+                  "sort_order": 2
+                },
+                {
+                  "slug": "delivery-observation",
+                  "kind": "short_answer",
+                  "prompt": {
+                    "en": "Write expected/actual dates for Monday14:05 and context another tester needs.",
+                    "ar": "اكتب الموعد المتوقع والفعلي لطلب الاثنين 14:05 وسياقًا يحتاجه مختبر آخر."
+                  },
+                  "options": [],
+                  "answer": [],
+                  "explanation": {
+                    "en": "D17, Monday14:05 shop local time: expected Wednesday, actual Tuesday. This does not establish an implementation cause.",
+                    "ar": "D17 ، الاثنين 14:05 بتوقيت المتجر: المتوقع الأربعاء والفعلي الثلاثاء. لا يثبت ذلك السبب البرمجي."
+                  },
+                  "rubric": [
+                    {
+                      "en": "States Wednesday expected and Tuesday observed.",
+                      "ar": "يذكر الأربعاء متوقعًا والثلاثاء فعليًا."
+                    },
+                    {
+                      "en": "Includes build and time/timezone context.",
+                      "ar": "يحدد الإصدار والتوقيت والمنطقة الزمنية."
+                    },
+                    {
+                      "en": "Avoids an unsupported internal cause.",
+                      "ar": "يتجنب الجزم بسبب داخلي دون دليل."
+                    }
+                  ],
+                  "sort_order": 3
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

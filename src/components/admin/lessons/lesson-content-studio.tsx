@@ -471,7 +471,7 @@ export function LessonContentStudio({
               onChange={e => { (activeLang === 'en' ? setObjectivesEn : setObjectivesAr)(e.target.value.split('\n')); setHasUnsavedChanges(true) }} />
           </label>
         </div>
-        {currentId && <Link className="text-sm text-primary underline" href={'/'+locale+'/admin/curriculum?lesson='+currentId}>{factory.reviewQuestions}</Link>}
+        {currentId && <Link className="text-sm text-primary underline" href={`/${locale}/admin/lessons/${currentId}#practice`}>{factory.reviewQuestions}</Link>}
         {/* Studio Content Grid */}
         <div
           className={cn(
