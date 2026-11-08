@@ -5,10 +5,6 @@ import { getLocalizedContent } from '@/lib/i18n/content'
 import type { Locale } from '@/i18n/config'
 
 type LearningModule = Database['public']['Tables']['learning_modules']['Row']
-type Lesson = Database['public']['Tables']['lessons']['Row']
-type Challenge = Database['public']['Tables']['challenges']['Row']
-type ModuleProgress = Database['public']['Tables']['module_progress']['Row']
-type LessonProgress = Database['public']['Tables']['lesson_progress']['Row']
 
 export type ModuleStatus = 'locked' | 'available' | 'in_progress' | 'completed'
 export type LessonStatus = 'not_started' | 'in_progress' | 'completed'
@@ -55,9 +51,13 @@ export interface LearningPathWithModules {
   completion_percentage: number
   completed_modules: number
   total_modules: number
-  current_module_id: string | null
-  current_lesson_id: string | null
   modules: ModuleWithProgress[]
+}
+
+interface PathSummary { id: string; title: string; slug: string; description: string }
+const pathFields = 'id,title,title_en,title_ar,slug,description,description_en,description_ar'
+function localizePath(row: Record<string, unknown> & { id: string; slug: string }, locale: Locale): PathSummary {
+  return { id: row.id, slug: row.slug, title: getLocalizedContent(row, 'title', locale), description: getLocalizedContent(row, 'description', locale) }
 }
 
 interface Result<T> {
@@ -72,17 +72,22 @@ interface Result<T> {
 export async function getLearningPathWithProgress(
   pathId: string,
   userId: string,
-  locale: Locale
+  locale: Locale,
+  summary?: PathSummary | Promise<PathSummary | null>
 ): Promise<Result<LearningPathWithModules>> {
   try {
     const supabase = await createClient()
+    const pathPromise = summary
+      ? Promise.resolve(summary).then(path => path?.id === pathId ? path : null)
+      : Promise.resolve(supabase.from('learning_paths').select(pathFields).eq('id', pathId).single())
+        .then(({ data, error }) => data && !error ? localizePath(data, locale) : null)
 
     // Batch fetch all required data in parallel
-    const [pathResult, modulesResult, lessonsResult, challengesResult,
-           modProgressResult, lessonProgressResult, attemptResult, lppResult] = await Promise.all([
-      supabase.from('learning_paths').select('*').eq('id', pathId).single(),
+    const [path, modulesResult, lessonsResult, challengesResult,
+           modProgressResult, lessonProgressResult, accessResult] = await Promise.all([
+      pathPromise,
       supabase.from('learning_modules')
-        .select('*')
+        .select('id,learning_path_id,slug,title_en,title_ar,description_en,description_ar,sort_order,is_published')
         .eq('learning_path_id', pathId)
         .eq('is_published', true)
         .order('sort_order', { ascending: true }).order('slug'),
@@ -92,50 +97,46 @@ export async function getLearningPathWithProgress(
         .eq('is_published', true)
         .order('sort_order', { ascending: true }).order('slug'),
       supabase.from('challenges')
-        .select('id, title_en, title_ar, module_id, is_active')
+        .select('id,title_en,title_ar,module_id,learning_modules!inner(),latest:challenge_attempts(id,status,is_passed),passed:challenge_attempts(id,status,is_passed)')
         .eq('is_active', true)
-        .not('module_id', 'is', null),
+        .eq('learning_modules.learning_path_id', pathId)
+        .eq('learning_modules.is_published', true)
+        .eq('latest.user_id', userId)
+        .order('created_at', { referencedTable: 'latest', ascending: false })
+        .limit(1, { referencedTable: 'latest' })
+        .eq('passed.user_id', userId)
+        .eq('passed.is_passed', true)
+        // Preserve the prior selection of the oldest successful attempt.
+        .order('created_at', { referencedTable: 'passed', ascending: true })
+        .limit(1, { referencedTable: 'passed' }),
       supabase.from('module_progress')
-        .select('*')
-        .eq('user_id', userId),
+        .select('module_id,status,learning_modules!inner()')
+        .eq('user_id', userId)
+        .eq('learning_modules.learning_path_id', pathId)
+        .eq('learning_modules.is_published', true),
       supabase.from('lesson_progress')
-        .select('lesson_id, status, completed_at')
-        .eq('user_id', userId),
-      supabase.from('challenge_attempts')
-        .select('id, challenge_id, status, is_passed')
+        .select('lesson_id,completed_at,lessons!inner()')
         .eq('user_id', userId)
-        .order('created_at', { ascending: false }),
-      supabase.from('learning_path_progress')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('learning_path_id', pathId)
-        .maybeSingle(),
+        .eq('lessons.learning_path_id', pathId)
+        .eq('lessons.is_published', true),
+      supabase.rpc('curriculum_path_status', { p_path: pathId }),
     ])
 
-    if (pathResult.error || !pathResult.data) {
+    if (!path) {
       return { data: null, error: 'Learning path not found.' }
     }
 
-    const path = pathResult.data
+    if ([modulesResult, lessonsResult, challengesResult, modProgressResult, lessonProgressResult].some(result => result.error)) {
+      return { data: null, error: 'Failed to load learning path.' }
+    }
     const modules = modulesResult.data ?? []
     const lessons = lessonsResult.data ?? []
     const challenges = challengesResult.data ?? []
     const modProgress = modProgressResult.data ?? []
     const lessonProgress = lessonProgressResult.data ?? []
-    const attempts = attemptResult.data ?? []
-    const lpp = lppResult.data
-
     // Build lookup maps for O(1) access
     const modProgressMap = new Map(modProgress.map(mp => [mp.module_id, mp]))
     const lessonProgressMap = new Map(lessonProgress.map(lp => [lp.lesson_id, lp]))
-    const challengeAttemptMap = new Map<string, typeof attempts[0]>()
-    // For each challenge, get the most relevant attempt (approved > submitted > latest)
-    for (const attempt of attempts) {
-      const existing = challengeAttemptMap.get(attempt.challenge_id)
-      if (!existing || attempt.is_passed) {
-        challengeAttemptMap.set(attempt.challenge_id, attempt)
-      }
-    }
     const challengesByModule = new Map<string, typeof challenges[0]>()
     for (const ch of challenges) {
       if (ch.module_id) challengesByModule.set(ch.module_id, ch)
@@ -148,7 +149,6 @@ export async function getLearningPathWithProgress(
       lessonsByModule.set(lesson.module_id, list)
     }
 
-    const accessResult = await supabase.rpc('curriculum_path_status', { p_path: pathId })
     // If the RPC doesn't exist yet (migration 034 not applied), fall back to open access
     // so the page renders instead of showing a generic error. Apply the educational engine
     // migrations (supabase/apply_educational_engine_migrations.sql) to enable proper gates.
@@ -207,7 +207,7 @@ export async function getLearningPathWithProgress(
       // Determine challenge status for this module
       let challengeStatus: ModuleChallengeStatus | null = null
       if (moduleChallenge) {
-        const attempt = challengeAttemptMap.get(moduleChallenge.id)
+        const attempt = moduleChallenge.passed?.[0] ?? moduleChallenge.latest?.[0]
         let cStatus: ModuleChallengeStatus['status']
 
         if (!isModuleUnlocked) {
@@ -292,15 +292,10 @@ export async function getLearningPathWithProgress(
 
     return {
       data: {
-        id: path.id,
-        title: getLocalizedContent(path, 'title', locale),
-        description: getLocalizedContent(path, 'description', locale),
-        slug: path.slug,
+        ...path,
         completion_percentage: pathCompletionPct,
         completed_modules: completedModulesCount,
         total_modules: totalModules,
-        current_module_id: lpp?.current_module_id ?? null,
-        current_lesson_id: lpp?.current_lesson_id ?? null,
         modules: enrichedModules,
       },
       error: null,
@@ -314,13 +309,13 @@ export async function getLearningPathWithProgress(
 /**
  * Fetch all active learning paths with basic info for dashboard.
  */
-export async function getAllLearningPaths(locale: Locale): Promise<Result<{ id: string; title: string; slug: string }[]>> {
+export async function getAllLearningPaths(locale: Locale): Promise<Result<PathSummary[]>> {
   try {
     const supabase = await createClient()
     // is_active is added by migration 034. Fall back to is_published for older schemas.
     let { data, error } = await supabase
       .from('learning_paths')
-      .select('id, title_en, title_ar, slug')
+      .select(pathFields)
       .eq('is_active', true)
       .order('sort_order', { ascending: true })
 
@@ -328,7 +323,7 @@ export async function getAllLearningPaths(locale: Locale): Promise<Result<{ id: 
       // Migration 034 not applied yet – fall back to is_published
       ;({ data, error } = await supabase
         .from('learning_paths')
-        .select('id, title_en, title_ar, slug')
+        .select(pathFields)
         .eq('is_published', true)
         .order('sort_order', { ascending: true }))
     }
@@ -336,11 +331,7 @@ export async function getAllLearningPaths(locale: Locale): Promise<Result<{ id: 
     if (error) return { data: null, error: 'Failed to fetch learning paths.' }
 
     return {
-      data: (data ?? []).map(p => ({
-        id: p.id,
-        title: getLocalizedContent(p, 'title', locale),
-        slug: p.slug,
-      })),
+      data: (data ?? []).map(p => localizePath(p, locale)),
       error: null,
     }
   } catch {

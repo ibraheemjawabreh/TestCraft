@@ -1,5 +1,3 @@
-'use client'
-
 import Link from 'next/link'
 import {
   CheckCircle2, Lock, BookOpen, ChevronRight,
@@ -48,7 +46,7 @@ function LessonRow({ lesson, locale, isModuleLocked }: {
         {locked ? (
           <span className="text-sm font-medium text-muted-foreground/60">{lesson.title}</span>
         ) : (
-          <Link
+          <Link prefetch={false}
             href={`/${locale}/academy/lessons/${lesson.id}`}
             className={`text-sm font-medium ${completed ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground hover:text-primary transition-colors'}`}
           >
@@ -97,7 +95,7 @@ function ChallengeRow({ challenge, locale, isModuleLocked }: {
             {challenge.title}
           </span>
         ) : (
-          <Link
+          <Link prefetch={false}
             href={`/${locale}/academy/challenges/${challenge.id}`}
             className="text-sm font-semibold text-foreground hover:text-primary transition-colors"
           >
@@ -240,7 +238,7 @@ export function ModuleView({ pathData, dictionary, locale, username }: ModuleVie
             <p className="font-heading font-bold text-lg text-foreground">{currentLesson.title}</p>
             <p className="text-sm text-muted-foreground">{activeModule.title}</p>
           </div>
-          <Link
+          <Link prefetch={false}
             href={`/${locale}/academy/lessons/${currentLesson.id}`}
             className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-all duration-300 ease-smooth hover:scale-[1.03] hover:shadow-lg active:scale-[0.98] shrink-0"
           >

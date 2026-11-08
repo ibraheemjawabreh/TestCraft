@@ -29,8 +29,8 @@ export function TesterHeader({ dictionary, locale, username }: TesterHeaderProps
         <div className="flex items-center justify-between gap-4">
           <Logo locale={locale} href={`/${locale}/academy`} />
           <div className="flex items-center gap-2 lg:hidden">
-            <ThemeToggle dictionary={dictionary} />
-            <LanguageSwitcher dictionary={dictionary} locale={locale} />
+            <ThemeToggle dictionary={{ theme: dictionary.theme }} />
+            <LanguageSwitcher dictionary={{ language: dictionary.language }} locale={locale} />
           </div>
         </div>
 
@@ -47,8 +47,8 @@ export function TesterHeader({ dictionary, locale, username }: TesterHeaderProps
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <ThemeToggle dictionary={dictionary} />
-          <LanguageSwitcher dictionary={dictionary} locale={locale} />
+          <ThemeToggle dictionary={{ theme: dictionary.theme }} />
+          <LanguageSwitcher dictionary={{ language: dictionary.language }} locale={locale} />
 
           <div className="flex items-center gap-2 rounded-lg border border-[#fbbf24]/25 bg-[#f97316]/10 px-3 py-1.5">
             <User className="h-3.5 w-3.5 text-[#fbbf24]" aria-hidden="true" />

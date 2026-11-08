@@ -1,11 +1,11 @@
 import { resolveLocale } from '@/lib/locale'
-import { AcademyLayout } from '@/components/academy/academy-layout'
 import { ModuleView } from '@/components/academy/home/module-view'
 import { getLearningPathWithProgress, getAllLearningPaths } from '@/lib/academy/services/ModuleService'
 import { requireTester } from '@/lib/auth/require-tester'
 import { getDictionary } from '@/i18n/get-dictionary'
-import { type Locale } from '@/i18n/config'
 import Link from 'next/link'
+
+const pathIdPattern = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i
 
 export default async function AcademyPage({
   params,
@@ -20,9 +20,15 @@ export default async function AcademyPage({
   const dictionary = await getDictionary(locale)
   const { user, profile } = await requireTester(locale)
 
-  const pathsResult = await getAllLearningPaths(locale)
-  const paths = pathsResult.data ?? []
   const selected = (await searchParams)?.path
+  const pathsPromise = getAllLearningPaths(locale)
+  // On a path switch the ID is already known. Start the scoped reads while
+  // validating that the path is still in the student's visible catalog.
+  const selectedData = typeof selected === 'string' && pathIdPattern.test(selected)
+    ? getLearningPathWithProgress(selected, user.id, locale,
+      pathsPromise.then(({ data }) => data?.find(path => path.id === selected) ?? null))
+    : null
+  const paths = (await pathsPromise).data ?? []
   const activePath = paths.find(p => p.id === selected) ?? paths[0]
 
   if (!activePath) {
@@ -33,7 +39,9 @@ export default async function AcademyPage({
     )
   }
 
-  const { data: pathData, error } = await getLearningPathWithProgress(activePath.id, user.id, locale)
+  const { data: pathData, error } = await (selectedData && activePath.id === selected
+    ? selectedData
+    : getLearningPathWithProgress(activePath.id, user.id, locale, activePath))
 
   return error || !pathData ? (
     <div className="flex flex-col items-center justify-center py-24 text-center">

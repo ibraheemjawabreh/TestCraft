@@ -36,7 +36,7 @@ export interface TesterChallenge {
   sort_order: number
 }
 
-export interface ChallengeWithStatus extends TesterChallenge {
+export interface ChallengeWithStatus extends Pick<TesterChallenge, 'id' | 'title' | 'description' | 'difficulty' | 'base_xp_reward'> {
   userStatus: ChallengeStatus
   activeAttemptId: string | null
 }
@@ -65,90 +65,32 @@ export async function getActiveChallengesForTester(
   locale: Locale,
 ): Promise<Result<ChallengeWithStatus[]>> {
   try {
-    const supabase = await createClient()
-
-    const { data: challenges, error: challengesError } = await supabase
-      .from('challenges')
-      .select(`
-        id,
-        title,
-        title_en,
-        title_ar,
-        description,
-        description_en,
-        description_ar,
-        difficulty,
-        base_xp_reward,
-        is_active,
-        lesson_id,
-        module_id,
-        challenge_type,
-        lab_template,
-        lab_template_id,
-        scenario,
-        scenario_en,
-        scenario_ar,
-        instructions,
-        instructions_en,
-        instructions_ar,
-        sort_order,
-        is_required,
-        practical_app_key,
-        workflow_type,
-        status
-      `)
+    const db = await createClient()
+    const { data, error } = await db.from('challenges')
+      .select('id,title,title_en,title_ar,description,description_en,description_ar,difficulty,base_xp_reward,latest:challenge_attempts(id,status)')
       .eq('is_active', true)
       .order('sort_order', { ascending: true })
+      .eq('latest.user_id', userId)
+      .order('updated_at', { referencedTable: 'latest', ascending: false })
+      .limit(1, { referencedTable: 'latest' })
 
-    if (challengesError || !challenges) {
-      return { data: [], error: null }
+    if (error || !data) return { data: null, error: 'Failed to load challenges.' }
+
+    return {
+      data: data.map(ch => {
+        const attempt = ch.latest?.[0]
+        return {
+          id: ch.id,
+          title: localizedString(ch, locale, 'title', 'title'),
+          description: localizedString(ch, locale, 'description', 'description'),
+          difficulty: ch.difficulty as Difficulty,
+          base_xp_reward: ch.base_xp_reward ?? 100,
+          userStatus: deriveStatus(attempt?.status ?? null),
+          activeAttemptId: attempt?.id ?? null,
+        }
+      }),
+      error: null,
     }
-
-    const challengeIds = challenges.map((c) => c.id)
-
-    const { data: attempts } = challengeIds.length > 0
-      ? await supabase
-          .from('challenge_attempts')
-          .select('id, challenge_id, status, updated_at')
-          .eq('user_id', userId)
-          .in('challenge_id', challengeIds)
-          .order('updated_at', { ascending: true })
-      : { data: [] }
-
-    const attemptStatusMap = new Map<string, string>()
-    const activeAttemptMap = new Map<string, string>()
-
-    for (const a of (attempts ?? [])) {
-      if (a.challenge_id && a.status) {
-        attemptStatusMap.set(a.challenge_id, a.status)
-        if (a.id) activeAttemptMap.set(a.challenge_id, a.id)
-      }
-    }
-
-    const list: ChallengeWithStatus[] = challenges.map((ch) => {
-      const row = ch as Record<string, unknown>
-      return {
-        id: ch.id,
-        title: localizedString(row, locale, 'title', 'title'),
-        description: localizedString(row, locale, 'description', 'description'),
-        difficulty: ch.difficulty as ChallengeWithStatus['difficulty'],
-        base_xp_reward: ch.base_xp_reward ?? 100,
-        is_active: ch.is_active,
-        lesson_id: ch.lesson_id,
-        challenge_type: ch.challenge_type ?? 'bug_hunt',
-        workflow_type: (ch as any).workflow_type ?? 'legacy',
-        practical_app_key: (ch as any).practical_app_key ?? null,
-        lab_template: ch.lab_template,
-        lab_template_id: ch.lab_template_id,
-        scenario: localizedString(row, locale, 'scenario', 'scenario') || null,
-        instructions: localizedString(row, locale, 'instructions', 'instructions') || null,
-        sort_order: ch.sort_order ?? 0,
-        userStatus: deriveStatus(attemptStatusMap.get(ch.id) ?? null),
-        activeAttemptId: activeAttemptMap.get(ch.id) ?? null,
-      }
-    })
-
-    return { data: list, error: null }
   } catch {
     return { data: null, error: 'An unexpected error occurred.' }
   }

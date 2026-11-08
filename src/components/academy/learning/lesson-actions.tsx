@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useTransition, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { CheckCircle2, ArrowRight, Sword, Loader2 } from 'lucide-react'
 import { actionCompleteLesson } from '@/lib/academy/actions/progress-actions'
@@ -17,7 +16,7 @@ interface LessonActionsProps {
   nextLessonAvailable?: boolean
   nextModule?: boolean
   pathId?: string
-  dictionary: Dictionary
+  dictionary: Pick<Dictionary, 'learning'> & { factory: Pick<Dictionary['factory'], 'failed'> }
   locale: Locale
 }
 
@@ -33,20 +32,9 @@ export function LessonActions({
   dictionary,
   locale,
 }: LessonActionsProps) {
-  const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [completed, setCompleted] = useState(isCompleted)
   const [error,setError] = useState<string | null>(null)
-
-  // Prefetch next destinations so navigation is instant
-  useEffect(() => {
-    if (relatedChallengeId) {
-      router.prefetch(`/${locale}/academy/challenges/${relatedChallengeId}`)
-    }
-    if (nextLessonId) {
-      router.prefetch(`/${locale}/academy/lessons/${nextLessonId}`)
-    }
-  }, [relatedChallengeId, nextLessonId, locale, router])
 
   const handleMarkComplete = () => {
     setError(null)
@@ -55,8 +43,6 @@ export function LessonActions({
       const result = await actionCompleteLesson(userId, lessonId, locale)
       if (result.error) { setError(dictionary.factory.failed); return }
       setCompleted(true)
-      // Refresh in background so academy page is up-to-date when user navigates back
-      router.refresh()
     })
   }
 
@@ -85,7 +71,7 @@ export function LessonActions({
         )}
 
         {relatedChallengeId && completed && (
-          <Link
+          <Link prefetch={false}
             href={`/${locale}/academy/challenges/${relatedChallengeId}`}
             className="flex items-center justify-center gap-2 rounded-lg border border-primary/20 bg-primary/10 px-5 py-3 text-sm font-semibold text-primary transition-all hover:bg-primary/20"
           >

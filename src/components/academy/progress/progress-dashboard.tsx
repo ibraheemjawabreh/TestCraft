@@ -1,5 +1,3 @@
-'use client'
-
 import Image from 'next/image'
 import {
   Award, Bot, CheckCircle2, Clock, FileText,

@@ -13,9 +13,16 @@ export async function apiUser(admin=false) {
   }
   return {db,user}
 }
-export function checkOrigin(request:Request) {
+export function checkOrigin(request:Request, options?: { allowIncomingHost: boolean }) {
   const origin = request.headers.get('origin')
-  if (origin && origin!==new URL(request.url).origin) throw new ApiError(403,'Cross-origin mutation rejected')
+  if (!origin) return
+  const url = new URL(request.url)
+  if (origin === url.origin) return
+  // Next can normalize a loopback URL to localhost even when the browser
+  // used 127.0.0.1. Match the actual Host; do not trust forwarded-host input.
+  const host = options?.allowIncomingHost && request.headers.get('host')
+  if (host && origin === url.protocol + '//' + host) return
+  throw new ApiError(403,'Cross-origin mutation rejected')
 }
 export function apiFailure(error:unknown) {
   if (error instanceof ApiError) return Response.json({error:error.message},{status:error.status})

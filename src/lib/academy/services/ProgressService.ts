@@ -1,6 +1,6 @@
 import 'server-only'
 import { createClient } from '@/lib/supabase/server'
-import { awardLessonXp } from '@/lib/gamification/engine'
+import { LESSON_OPEN_INTERVAL_MS } from '@/lib/academy/lesson-open'
 
 interface Result<T> {
   data: T | null
@@ -8,16 +8,26 @@ interface Result<T> {
 }
 
 /**
- * Mark a lesson as opened (in_progress). Idempotent.
- * Called automatically when a tester opens a lesson page.
+ * Insert once, or touch an existing visit only after the cooldown. Never
+ * overwrite completion or started_at, even with concurrent opens/completion.
  */
 export async function markLessonInProgress(
   userId: string,
-  lessonId: string
+  lessonId: string,
+  hasProgress = false,
+  client?: Awaited<ReturnType<typeof createClient>>,
 ): Promise<Result<boolean>> {
   try {
-    const supabase = await createClient()
-    const now = new Date().toISOString()
+    const supabase = client ?? await createClient()
+    const clock = Date.now()
+    const now = new Date(clock).toISOString()
+
+    if (hasProgress) {
+      const { error } = await supabase.from('lesson_progress').update({ last_opened_at: now })
+        .eq('user_id', userId).eq('lesson_id', lessonId)
+        .lt('last_opened_at', new Date(clock - LESSON_OPEN_INTERVAL_MS).toISOString())
+      return error ? { data: null, error: 'Failed to update lesson activity.' } : { data: true, error: null }
+    }
 
     const { error } = await supabase.from('lesson_progress').upsert(
       {
@@ -33,11 +43,7 @@ export async function markLessonInProgress(
       }
     )
 
-    if(error)return {data:null,error:'Failed to track lesson progress.'}
-    const {error:touchError}=await supabase.from('lesson_progress').update({last_opened_at:now}).eq('user_id',userId).eq('lesson_id',lessonId)
-    if(touchError)return {data:null,error:'Failed to update lesson activity.'}
-
-    return { data: true, error: null }
+    return error ? { data: null, error: 'Failed to track lesson progress.' } : { data: true, error: null }
   } catch (err) {
     console.error('markLessonInProgress error:', err)
     return { data: null, error: 'Failed to track lesson progress.' }
@@ -57,9 +63,10 @@ export async function completeLessonAndSync(
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user || user.id !== userId) return { data: null, error: 'Unauthorized' }
-    const { data: accessible, error: accessError } = await supabase.from('lessons').select('id,module_id').eq('id',lessonId).eq('is_published',true).single()
-    if (accessError || !accessible) return { data: null, error: 'Lesson unavailable' }
-    if (accessible.module_id) {
+    const { data: lesson, error: accessError } = await supabase.from('lessons')
+      .select('module_id,learning_path_id').eq('id',lessonId).eq('is_published',true).single()
+    if (accessError || !lesson) return { data: null, error: 'Lesson unavailable' }
+    if (lesson.module_id) {
       const { data: allowed, error: gateError } = await supabase.rpc('curriculum_can_read_lesson', { p_lesson:lessonId })
       if (gateError || !allowed) return { data: null, error: 'Module locked' }
     }
@@ -79,23 +86,22 @@ export async function completeLessonAndSync(
       return { data: null, error: 'Failed to complete lesson.' }
     }
 
-    // Award lesson XP and badges atomically before reporting success.
-    await awardLessonXp(userId, lessonId)
+    // The verified client can call the same atomic reward RPC directly. The
+    // module reads need the saved lesson, but do not depend on the XP result.
+    const moduleId = lesson.module_id
+    const [reward, moduleTotals, moduleChallenge] = await Promise.all([
+      supabase.rpc('curriculum_award_lesson', { p_lesson: lessonId }),
+      moduleId ? supabase.rpc('curriculum_module_completion', { p_module: moduleId }) : null,
+      moduleId ? supabase.from('challenges').select('id').eq('module_id', moduleId).eq('is_active', true).maybeSingle() : null,
+    ])
+    if (reward.error) throw new Error(reward.error.message)
 
-    const lessonResult = await supabase.from('lessons').select('module_id, learning_path_id').eq('id', lessonId).single()
-
-    const lesson = lessonResult.data
-    if (!lesson?.module_id) {
-      // No module — return immediately, sync in background
-      await syncLearningPathProgress(userId, lesson?.learning_path_id ?? '')
+    if (!moduleId || !moduleTotals || !moduleChallenge) {
+      await syncLearningPathProgress(userId, lesson.learning_path_id, supabase)
       return { data: { moduleCompleted: false, challengeUnlocked: false }, error: null }
     }
 
     // Draft rows are hidden by learner RLS; aggregate counters come from SQL.
-    const [moduleTotals, moduleChallenge] = await Promise.all([
-      supabase.rpc('curriculum_module_completion', { p_module: lesson.module_id }),
-      supabase.from('challenges').select('id').eq('module_id', lesson.module_id).eq('is_active', true).maybeSingle(),
-    ])
     if (moduleTotals.error || moduleChallenge.error) return { data: null, error: 'Failed to check module completion.' }
     const totalCount = Number(moduleTotals.data.total)
     const completedCount = Number(moduleTotals.data.completed)
@@ -112,7 +118,7 @@ export async function completeLessonAndSync(
     const moduleProgressWrite = supabase.from('module_progress').upsert(
       {
         user_id: userId,
-        module_id: lesson.module_id,
+        module_id: moduleId,
         status: moduleStatus,
         completion_percentage: pct,
         completed_lessons: completedCount,
@@ -124,7 +130,7 @@ export async function completeLessonAndSync(
 
     const { error: moduleError } = await moduleProgressWrite
     if (moduleError) return { data: null, error: 'Failed to update module progress.' }
-    await syncLearningPathProgress(userId, lesson.learning_path_id)
+    await syncLearningPathProgress(userId, lesson.learning_path_id, supabase)
 
     return {
       data: { moduleCompleted: allCompleted && !challenge, challengeUnlocked },
@@ -224,64 +230,46 @@ export async function completeChallengeAndUnlockNext(
  */
 export async function syncLearningPathProgress(
   userId: string,
-  pathId: string
+  pathId: string,
+  client?: Awaited<ReturnType<typeof createClient>>,
 ): Promise<void> {
   try {
-    const supabase = await createClient()
+    const supabase = client ?? await createClient()
     const now = new Date().toISOString()
 
-    const modulesRes = await supabase.from('learning_modules').select('id').eq('learning_path_id', pathId).eq('is_published', true)
-    if (modulesRes.error) throw modulesRes.error
-    const moduleIds = (modulesRes.data ?? []).map(m => m.id)
-    const [lessonsRes, challengesRes] = await Promise.all([
-      supabase.from('lessons').select('id').in('module_id', moduleIds),
-      supabase.from('challenges').select('id').in('module_id', moduleIds),
+    // Empty inner embeds scope the child rows to the same published modules
+    // that were previously read into ID lists. Counts and pointers can now be
+    // requested together, without shipping completed lesson rows.
+    const [modules, moduleDone, lessonDone, passed, currentModule, currentLesson] = await Promise.all([
+      supabase.from('learning_modules').select('id', { count: 'exact', head: true })
+        .eq('learning_path_id', pathId).eq('is_published', true),
+      supabase.from('module_progress').select('module_id,learning_modules!inner()', { count: 'exact', head: true })
+        .eq('user_id', userId).eq('status', 'completed')
+        .eq('learning_modules.learning_path_id', pathId).eq('learning_modules.is_published', true),
+      supabase.from('lesson_progress').select('lesson_id,lessons!inner(learning_modules!inner())', { count: 'exact', head: true })
+        .eq('user_id', userId).eq('status', 'completed')
+        .eq('lessons.learning_modules.learning_path_id', pathId).eq('lessons.learning_modules.is_published', true),
+      supabase.from('challenge_attempts').select('challenge_id,challenges!inner(learning_modules!inner())')
+        .eq('user_id', userId).eq('is_passed', true)
+        .eq('challenges.learning_modules.learning_path_id', pathId).eq('challenges.learning_modules.is_published', true),
+      supabase.from('module_progress').select('module_id,learning_modules!inner()')
+        .eq('user_id', userId).in('status', ['available', 'in_progress'])
+        .eq('learning_modules.learning_path_id', pathId).eq('learning_modules.is_published', true)
+        .limit(1).maybeSingle(),
+      supabase.from('lesson_progress').select('lesson_id,lessons!inner(learning_modules!inner())')
+        .eq('user_id', userId).eq('status', 'in_progress')
+        .eq('lessons.learning_modules.learning_path_id', pathId).eq('lessons.learning_modules.is_published', true)
+        .limit(1).maybeSingle(),
     ])
-    if (lessonsRes.error || challengesRes.error) throw lessonsRes.error || challengesRes.error
-    const [modProgressRes, lessonProgressRes, challengeRes] = await Promise.all([
-      supabase.from('module_progress').select('module_id, status').eq('user_id', userId).in('module_id', moduleIds),
-      supabase.from('lesson_progress').select('lesson_id, status').eq('user_id', userId).in('lesson_id', (lessonsRes.data ?? []).map(l => l.id)),
-      supabase.from('challenge_attempts')
-        .select('challenge_id, is_passed')
-        .eq('user_id', userId)
-        .in('challenge_id', (challengesRes.data ?? []).map(c => c.id))
-        .eq('is_passed', true),
-    ])
-    if (modProgressRes.error || lessonProgressRes.error || challengeRes.error) throw modProgressRes.error || lessonProgressRes.error || challengeRes.error
-
-    const allModuleIds = new Set((modulesRes.data ?? []).map(m => m.id))
-    const modProgressMap = new Map((modProgressRes.data ?? []).map(mp => [mp.module_id, mp.status]))
-
-    const completedModules = Array.from(allModuleIds).filter(id => modProgressMap.get(id) === 'completed').length
-    const totalModules = allModuleIds.size
-
-    const completedLessons = (lessonProgressRes.data ?? []).filter(lp => lp.status === 'completed').length
-    const completedChallenges = new Set((challengeRes.data ?? []).map(ca => ca.challenge_id)).size
-
-    const pct = totalModules > 0 ? Math.round((completedModules / totalModules) * 100) : 0
-
-    // Get current pointers for navigation
-    const { data: inProgressModProgress } = await supabase
-      .from('module_progress')
-      .select('module_id')
-      .eq('user_id', userId)
-      .in('module_id', moduleIds)
-      .in('status', ['available', 'in_progress'])
-      .limit(1)
-      .maybeSingle()
-
-    let currentLessonId: string | null = null
-    if (inProgressModProgress?.module_id) {
-      const { data: currentLesson } = await supabase
-        .from('lesson_progress')
-        .select('lesson_id')
-        .eq('user_id', userId)
-        .in('lesson_id', (lessonsRes.data ?? []).map(l => l.id))
-        .in('status', ['in_progress'])
-        .limit(1)
-        .maybeSingle()
-      currentLessonId = currentLesson?.lesson_id ?? null
+    for (const result of [modules, moduleDone, lessonDone, passed, currentModule, currentLesson]) {
+      if (result.error) throw result.error
     }
+    const totalModules = modules.count ?? 0
+    const completedModules = moduleDone.count ?? 0
+    const completedLessons = lessonDone.count ?? 0
+    const completedChallenges = new Set((passed.data ?? []).map(attempt => attempt.challenge_id)).size
+    const pct = totalModules > 0 ? Math.round((completedModules / totalModules) * 100) : 0
+    const currentModuleId = currentModule.data?.module_id ?? null
 
     const { error: pathError } = await supabase.from('learning_path_progress').upsert(
       {
@@ -291,8 +279,8 @@ export async function syncLearningPathProgress(
         completed_modules: completedModules,
         completed_lessons: completedLessons,
         completed_challenges: completedChallenges,
-        current_module_id: inProgressModProgress?.module_id ?? null,
-        current_lesson_id: currentLessonId,
+        current_module_id: currentModuleId,
+        current_lesson_id: currentModuleId ? currentLesson.data?.lesson_id ?? null : null,
         last_activity_at: now,
       },
       { onConflict: 'user_id,learning_path_id', ignoreDuplicates: false }

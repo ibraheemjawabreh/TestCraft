@@ -24,98 +24,99 @@ export interface TesterLessonFull {
   related_challenge_id: string | null
 }
 
-/**
- * Fetch a lesson with full module-aware access gate.
- * Replaces the old getTesterLesson from lib/academy/lessons.ts
- */
+interface LessonNavigation {
+  previous: { id: string; title_en: string; title_ar: string; module_id: string } | null
+  next: { id: string; title_en: string; title_ar: string; module_id: string; available: boolean } | null
+  completed: number
+  total: number
+  position: number | null
+}
+
+interface LessonPageData {
+  lesson: TesterLessonFull
+  navigation: Result<LessonNavigation>
+  progress: { last_opened_at: string; completed_at: string | null } | null
+}
+
+const lessonColumns = 'id,module_id,learning_path_id,title,title_en,title_ar,slug,summary,summary_en,summary_ar,objectives_en,objectives_ar,estimated_minutes,difficulty,sort_order,learning_modules(title_en,title_ar)'
+
 export async function getLessonWithModuleGate(
   userId: string,
   lessonId: string,
-  locale: Locale
-): Promise<Result<TesterLessonFull>> {
+  locale: Locale,
+): Promise<Result<LessonPageData>> {
   try {
-    const supabase = await createClient()
+    const db = await createClient()
+    const contentField = locale === 'ar' ? 'content_ar' : 'content_en'
+    const [lessonResult, progressResult, navigationResult] = await Promise.all([
+      db.from('lessons').select(`${lessonColumns},${contentField}` as const)
+        .eq('id', lessonId).eq('is_published', true).single(),
+      db.from('lesson_progress').select('completed_at,last_opened_at')
+        .eq('user_id', userId).eq('lesson_id', lessonId).maybeSingle(),
+      db.rpc('curriculum_lesson_navigation', { p_lesson: lessonId }),
+    ])
+    if (lessonResult.error || !lessonResult.data) return { data: null, error: 'Lesson not found or not published.' }
+    const lesson = lessonResult.data
 
-    const { data: lesson, error } = await supabase
-      .from('lessons')
-      .select(`
-        *,
-        learning_modules ( title_en, title_ar )
-      `)
-      .eq('id', lessonId)
-      .eq('is_published', true)
-      .single()
-
-    if (error || !lesson) {
-      return { data: null, error: 'Lesson not found or not published.' }
+    // This RPC already calls curriculum_can_read_lesson(). On failure, use
+    // the gate to distinguish a locked lesson from a navigation outage.
+    const navigation: Result<LessonNavigation> = {
+      data: navigationResult.error ? null : navigationResult.data,
+      error: navigationResult.error?.message ?? null,
+    }
+    if (lesson.module_id && !navigation.data) {
+      const { data: allowed, error: gateError } = await db.rpc('curriculum_can_read_lesson', { p_lesson: lessonId })
+      if (gateError || !allowed) return { data: null, error: 'module_locked' }
     }
 
-    // Check module access
-    if (lesson.module_id) {
-      const { data: allowed, error: gateError } = await supabase.rpc('curriculum_can_read_lesson', { p_lesson: lesson.id })
-      if (gateError || !allowed) {
-        return { data: null, error: 'module_locked' }
+    async function findChallenge() {
+      let isLastInModule = !lesson.module_id ||
+        (navigation.data?.position != null && navigation.data.next?.module_id !== lesson.module_id)
+      if (lesson.module_id && navigation.data?.position == null) {
+        const { data: lastLesson } = await db.from('lessons').select('id')
+          .eq('module_id', lesson.module_id).eq('is_published', true)
+          .order('sort_order', { ascending: false }).order('slug', { ascending: false }).limit(1).maybeSingle()
+        isLastInModule = lastLesson?.id === lesson.id
       }
+      if (!isLastInModule) return null
+      const query = db.from('challenges').select('id').eq('is_active', true)
+      const { data } = await (lesson.module_id ? query.eq('module_id', lesson.module_id) : query.eq('lesson_id', lesson.id)).maybeSingle()
+      return data?.id ?? null
     }
 
-    // Get completion status
-    const { data: progress } = await supabase
-      .from('lesson_progress')
-      .select('completed_at, status')
-      .eq('user_id', userId)
-      .eq('lesson_id', lessonId)
-      .maybeSingle()
-
-    const is_completed = !!progress?.completed_at
-
-    let isLastInModule = true
-    if (lesson.module_id) {
-      const { data: lastLesson } = await supabase
-        .from('lessons')
-        .select('id')
-        .eq('module_id', lesson.module_id)
-        .eq('is_published', true)
-        .order('sort_order', { ascending: false })
-        .order('slug', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-      isLastInModule = lastLesson?.id === lesson.id
+    async function readContent() {
+      const localized = (lesson as Record<string, unknown>)[contentField]
+      if (typeof localized === 'string' && localized.trim()) return localized
+      // Legacy lessons may need the other language or the old content column.
+      const { data } = await db.from('lessons').select('content,content_en,content_ar').eq('id', lessonId).single()
+      return data ? getLocalizedContent(data, 'content', locale) : ''
     }
 
-    let challengeId = null
-    if (isLastInModule) {
-      let query = supabase.from('challenges').select('id').eq('is_active', true)
-
-      if (lesson.module_id) {
-        query = query.eq('module_id', lesson.module_id)
-      } else {
-        query = query.eq('lesson_id', lesson.id)
-      }
-
-      const { data: challenge } = await query.maybeSingle()
-      challengeId = challenge?.id ?? null
-    }
-
-    const moduleData = lesson.learning_modules as any
-
+    const [challengeId, content] = await Promise.all([findChallenge(), readContent()])
+    const moduleData = Array.isArray(lesson.learning_modules) ? lesson.learning_modules[0] : lesson.learning_modules
+    const progress = progressResult.data
     return {
       data: {
-        id: lesson.id,
-        module_id: lesson.module_id ?? null,
-        module_title: moduleData ? getLocalizedContent(moduleData, 'title', locale) : null,
-        learning_path_id: lesson.learning_path_id,
-        title: getLocalizedContent(lesson, 'title', locale),
-        slug: lesson.slug,
-        summary: getLocalizedContent(lesson, 'summary', locale),
-        content: getLocalizedContent(lesson, 'content', locale),
-        objectives: getLocalizedArray(lesson, 'objectives', locale),
-        estimated_minutes: lesson.estimated_minutes,
-        difficulty: lesson.difficulty,
-        sort_order: lesson.sort_order,
-        is_completed,
-        is_locked: false,
-        lock_reason: 'unlocked',
-        related_challenge_id: challengeId,
+        navigation,
+        progress,
+        lesson: {
+          id: lesson.id,
+          module_id: lesson.module_id ?? null,
+          module_title: moduleData ? getLocalizedContent(moduleData, 'title', locale) : null,
+          learning_path_id: lesson.learning_path_id,
+          title: getLocalizedContent(lesson, 'title', locale),
+          slug: lesson.slug,
+          summary: getLocalizedContent(lesson, 'summary', locale),
+          content,
+          objectives: getLocalizedArray(lesson, 'objectives', locale),
+          estimated_minutes: lesson.estimated_minutes,
+          difficulty: lesson.difficulty,
+          sort_order: lesson.sort_order,
+          is_completed: !!progress?.completed_at,
+          is_locked: false,
+          lock_reason: 'unlocked',
+          related_challenge_id: challengeId,
+        },
       },
       error: null,
     }
@@ -123,18 +124,4 @@ export async function getLessonWithModuleGate(
     console.error('getLessonWithModuleGate error:', err)
     return { data: null, error: 'Failed to load lesson.' }
   }
-}
-
-
-export interface LessonNavigation {
-  previous: { id: string; title_en: string; title_ar: string; module_id: string } | null
-  next: { id: string; title_en: string; title_ar: string; module_id: string; available: boolean } | null
-  completed: number
-  total: number
-  position: number
-}
-export async function getLessonNavigation(lessonId: string): Promise<Result<LessonNavigation>> {
-  const db = await createClient()
-  const { data, error } = await db.rpc('curriculum_lesson_navigation', { p_lesson: lessonId })
-  return { data: error ? null : data, error: error?.message ?? null }
 }

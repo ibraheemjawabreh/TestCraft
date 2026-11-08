@@ -53,17 +53,33 @@ test('real import HTTP handlers and PostgreSQL RPCs: batches, safe re-import, pu
  let uid=ADMIN,role='admin',guest=false
  const db={auth:{getUser:async()=>({data:{user:guest?null:{id:uid}},error:null})},
   async rpc(name,args={}){try{const values=Object.values(args).map(v=>v&&typeof v==='object'?JSON.stringify(v):v),params=Object.keys(args).map((k,i)=>k+'=> $'+(i+1)).join(',');return{data:(await q('select public.'+name+'('+params+') result',values))[0].result,error:null}}catch(e){return{data:null,error:{message:e.message,code:e.code}}}},
-  from(table){const filters={};let patch=null,conflict=null,ignore=false
-   const query={select(){return query},limit(){return query},order(){return query},not(){return query},eq(k,v){filters[k]=v;return query},in(k,v){filters[k]=v;return query},
+  from(table){const filters={};let patch=null,conflict=null,ignore=false,head=false
+   const query={select(_columns,options){head=!!options?.head;return query},limit(){return query},order(){return query},not(){return query},eq(k,v){filters[k]=v;return query},in(k,v){filters[k]=v;return query},
     upsert(v,o){patch=v;conflict=o.onConflict;ignore=o.ignoreDuplicates;return query},update(v){patch=v;return query},
     single:async()=>{const r=await query;return{data:r.data?.[0]??null,error:r.error}},maybeSingle:async()=>query.single(),
     then(resolve,reject){return(async()=>{try{
      if(table==='profiles')return{data:[{role}],error:null}
-     const keys=Object.keys(filters),params=keys.map((k,i)=>Array.isArray(filters[k])?k+'=any($'+(i+1)+')':k+'=$'+(i+1)).join(' and '),vals=Object.values(filters)
+     const scopeFK={module_progress:{learning_modules:'module_id'},lesson_progress:{lessons:'lesson_id'},
+      challenges:{learning_modules:'module_id'},lessons:{learning_modules:'module_id'},challenge_attempts:{challenges:'challenge_id'}}
+     const column=k=>{
+      if(!k.includes('.'))return k
+      const chain=k.split('.'),field=chain.pop()
+      const follow=(parent,alias,index)=>{
+       if(index===chain.length)return alias+'.'+field
+       const relation=chain[index],fk=scopeFK[parent]?.[relation],next='related'+index
+       if(!fk)throw Error('Unsupported fixture filter '+k)
+       return '(select '+follow(relation,next,index+1)+' from '+relation+' '+next+' where '+next+'.id='+alias+'.'+fk+')'
+      }
+      return follow(table,table,0)
+     }
+     // This import fixture seeds no attempts for embedded challenge selections.
+     // The production-browser fixture exercises both embedded attempt filters.
+     const keys=Object.keys(filters).filter(k=>!['latest','passed'].includes(k.split('.')[0])),params=keys.map((k,i)=>Array.isArray(filters[k])?column(k)+'=any($'+(i+1)+')':column(k)+'=$'+(i+1)).join(' and '),vals=keys.map(k=>filters[k])
      if(patch){const ks=Object.keys(patch),vs=Object.values(patch);if(conflict)await q('insert into '+table+'('+ks.join(',')+') values('+ks.map((_,i)=>'$'+(i+1)).join(',')+') on conflict('+conflict+') '+(ignore?'do nothing':'do update set '+ks.filter(k=>!conflict.split(',').includes(k)).map(k=>k+'=excluded.'+k).join(',')),vs)
       else await q('update '+table+' set '+ks.map((k,i)=>k+'=$'+(i+1)).join(',')+(params?' where '+keys.map((k,i)=>k+'=$'+(ks.length+i+1)).join(' and '):''),[...vs,...vals])
       return{data:null,error:null}}
-     return{data:await q('select * from '+table+(params?' where '+params:''),vals),error:null}
+     const data=await q('select * from '+table+(params?' where '+params:''),vals)
+     return head?{data:null,count:data.length,error:null}:{data,error:null}
     }catch(e){return{data:null,error:{message:e.message}}}})().then(resolve,reject)}
    };return query
   }}

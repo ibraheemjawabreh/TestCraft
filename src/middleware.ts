@@ -5,6 +5,10 @@ import { i18n } from './i18n/config'
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl
+  // These handlers validate the user and can refresh cookies themselves.
+  if (pathname === '/api/academy/activities' || pathname === '/api/academy/lesson-open') {
+    return NextResponse.next()
+  }
 
   // These public JSON assets are files, not localized pages. Never redirect them
   // through locale/auth routing (which would turn a download into an HTML 404).
@@ -79,10 +83,21 @@ async function handleSupabaseAuth(
     },
   })
 
-  const { data: { user } } = await supabase.auth.getUser()
-
   const { pathname } = request.nextUrl
   const prefix = locale ? `/${locale}` : ''
+
+  if (locale && (pathname === `${prefix}/academy` || pathname.startsWith(`${prefix}/academy/`))) {
+    // Read/refresh the cookie here. The layout and pages verify the user with
+    // Auth and check the database role in requireTester() before serving data.
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session) return finalResponse
+    const loginUrl = request.nextUrl.clone()
+    loginUrl.pathname = `${prefix}/login`
+    loginUrl.searchParams.set('redirectTo', pathname)
+    return NextResponse.redirect(loginUrl)
+  }
+
+  const { data: { user } } = await supabase.auth.getUser()
 
   // Protected routes require authentication
   const isProtected = pathname.startsWith(`${prefix}/academy`) || pathname.startsWith(`${prefix}/dashboard`)

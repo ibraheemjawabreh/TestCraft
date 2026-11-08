@@ -6,10 +6,9 @@ import { ArrowLeft, ArrowRight } from 'lucide-react'
 
 import { requireTester } from '@/lib/auth/require-tester'
 import { getDictionary } from '@/i18n/get-dictionary'
-import { type Locale } from '@/i18n/config'
-import { getLessonWithModuleGate, getLessonNavigation } from '@/lib/academy/services/LessonService'
-import { markLessonInProgress } from '@/lib/academy/services/ProgressService'
-import { AcademyLayout } from '@/components/academy/academy-layout'
+import { getLessonWithModuleGate } from '@/lib/academy/services/LessonService'
+import { wasLessonOpenedRecently } from '@/lib/academy/lesson-open'
+import { LessonOpenTracker } from '@/components/academy/learning/lesson-open-tracker'
 import { LessonViewer } from '@/components/academy/learning/lesson-viewer'
 import { LessonActions } from '@/components/academy/learning/lesson-actions'
 
@@ -22,7 +21,7 @@ export default async function TesterLessonPage({
   const locale = resolveLocale(routeLocale)
 
   const dictionary = await getDictionary(locale)
-  const { user, profile } = await requireTester(locale)
+  const { user } = await requireTester(locale)
   const isRtl = locale === 'ar'
 
   const lessonResult = await getLessonWithModuleGate(user.id, id, locale)
@@ -54,17 +53,13 @@ export default async function TesterLessonPage({
     redirect(`/${locale}/academy`)
   }
 
-  const lesson = lessonResult.data
-
-  // Track that the user opened this lesson (mark in_progress)
-  await markLessonInProgress(user.id, id)
-
-  const navigationResult = await getLessonNavigation(id)
+  const { lesson, progress, navigation: navigationResult } = lessonResult.data
   const navigation = navigationResult.data
   const nextLessonId = navigation?.next?.id ?? null
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
+      {!wasLessonOpenedRecently(progress?.last_opened_at) && <LessonOpenTracker key={lesson.id} lessonId={lesson.id} hasProgress={!!progress} />}
       {/* Breadcrumb: Back + Module name */}
       <div className="flex items-center gap-2">
         <Link
@@ -91,7 +86,7 @@ export default async function TesterLessonPage({
       {/* Lesson Content */}
       <LessonViewer lesson={lesson} dictionary={dictionary} locale={locale} />
 
-      <LessonActivities lessonId={lesson.id} locale={locale} dictionary={dictionary} />
+      <LessonActivities lessonId={lesson.id} locale={locale} dictionary={{ factory: dictionary.factory }} />
 
       {/* Actions */}
       <LessonActions
@@ -103,7 +98,7 @@ export default async function TesterLessonPage({
         nextLessonAvailable={navigation?.next?.available ?? false}
         nextModule={!!navigation?.next && navigation.next.module_id !== lesson.module_id}
         pathId={lesson.learning_path_id}
-        dictionary={dictionary}
+        dictionary={{ learning: dictionary.learning, factory: { failed: dictionary.factory.failed } }}
         locale={locale}
       />
     </div>

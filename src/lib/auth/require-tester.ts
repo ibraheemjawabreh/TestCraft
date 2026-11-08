@@ -1,11 +1,12 @@
 import { redirect } from 'next/navigation'
+import { cache } from 'react'
 import type { User } from '@supabase/supabase-js'
 
 import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/types/database.types'
 import { type Locale } from '@/i18n/config'
 
-type Profile = Database['public']['Tables']['profiles']['Row']
+type Profile = Pick<Database['public']['Tables']['profiles']['Row'], 'username' | 'role' | 'avatar_url' | 'total_xp'>
 
 export interface TesterAuthContext {
   user: User
@@ -25,7 +26,8 @@ export interface TesterAuthContext {
  *
  * @param locale Current route locale for correct redirects.
  */
-export async function requireTester(locale: Locale): Promise<TesterAuthContext> {
+// One verified identity/profile per React server render, never shared across users.
+export const requireTester = cache(async (locale: Locale): Promise<TesterAuthContext> => {
   const supabase = await createClient()
 
   const {
@@ -38,7 +40,7 @@ export async function requireTester(locale: Locale): Promise<TesterAuthContext> 
 
   const { data: profile, error } = await supabase
     .from('profiles')
-    .select('*')
+    .select('username,role,avatar_url,total_xp')
     .eq('id', user.id)
     .single()
 
@@ -51,4 +53,4 @@ export async function requireTester(locale: Locale): Promise<TesterAuthContext> 
   }
 
   return { user, profile }
-}
+})

@@ -114,7 +114,7 @@ export function ChallengeCard({ challenge, dictionary, locale }: ChallengeCardPr
 
       {/* CTA */}
       <div className="mt-4">
-        <Link
+        <Link prefetch={false}
           href={href}
           className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#f97316]/10 px-4 py-2 text-sm font-medium text-[#c2410c] transition-all hover:bg-[#ea580c] hover:text-white group-hover:shadow-sm"
         >

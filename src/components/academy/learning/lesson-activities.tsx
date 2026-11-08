@@ -5,7 +5,8 @@ type Pair={en:string;ar:string}
 type Question={id:string;version:number;kind:string;prompt:Pair;options:{id:string;text:Pair}[];module_assessment:boolean}
 type Attempt={id:string;activity_id:string;status:string;score:number|null;feedback:{explanation?:Pair;rubric?:Pair[]};review_feedback?:string;created_at?:string}
 const button='rounded-lg border border-primary/40 px-4 py-2 text-sm font-medium hover:bg-primary/10 disabled:opacity-40'
-export function LessonActivities({lessonId,locale,dictionary}:{lessonId:string;locale:'en'|'ar';dictionary:Dictionary}){
+type ActivityDictionary = Pick<Dictionary, 'factory'>
+export function LessonActivities({lessonId,locale,dictionary}:{lessonId:string;locale:'en'|'ar';dictionary:ActivityDictionary}){
  const [questions,setQuestions]=useState<Question[]>([]),[attempts,setAttempts]=useState<Attempt[]>([]),[error,setError]=useState(''),[loading,setLoading]=useState(true)
  const t=dictionary.factory
  const load=useCallback(async()=>{
@@ -23,7 +24,7 @@ export function LessonActivities({lessonId,locale,dictionary}:{lessonId:string;l
   {questions.map(q=><KnowledgeCheck key={q.id} question={q} attempts={attempts.filter(a=>a.activity_id===q.id)} dictionary={dictionary} locale={locale} onSubmitted={a=>setAttempts(prev=>[a,...prev.filter(x=>x.id!==a.id)])}/>)}
  </section>
 }
-function KnowledgeCheck({question:q,attempts,dictionary,locale,onSubmitted}:{question:Question;attempts:Attempt[];dictionary:Dictionary;locale:'en'|'ar';onSubmitted:(a:Attempt)=>void}){
+function KnowledgeCheck({question:q,attempts,dictionary,locale,onSubmitted}:{question:Question;attempts:Attempt[];dictionary:ActivityDictionary;locale:'en'|'ar';onSubmitted:(a:Attempt)=>void}){
  const t=dictionary.factory
  const [selected,setSelected]=useState<string[]>([]),[text,setText]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('')
  const [result,setResult]=useState<Attempt|null>(attempts[0]||null)
