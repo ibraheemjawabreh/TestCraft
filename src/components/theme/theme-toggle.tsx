@@ -1,40 +1,24 @@
 'use client'
 
-import * as React from 'react'
+import { useSyncExternalStore } from 'react'
 import { Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
+import { HeaderSelect } from '@/components/layout/header-select'
+import type { Dictionary } from '@/i18n/types'
 
-import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+const subscribe = () => () => {}
+const clientSnapshot = () => true
+const serverSnapshot = () => false
 
-export function ThemeToggle({ dictionary }: { dictionary: any }) {
-  const { setTheme } = useTheme()
+export function ThemeToggle({ dictionary }: { dictionary: Pick<Dictionary, 'theme'> }) {
+  const { theme, setTheme } = useTheme()
+  const mounted = useSyncExternalStore(subscribe, clientSnapshot, serverSnapshot)
+  const t = dictionary.theme
 
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" aria-label={dictionary.theme.toggleTheme}>
-          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">{dictionary.theme.toggleTheme}</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme('light')}>
-          {dictionary.theme.light}
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('dark')}>
-          {dictionary.theme.dark}
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('system')}>
-          {dictionary.theme.system}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  )
+  return <HeaderSelect label={t.toggleTheme} value={mounted ? theme ?? 'dark' : 'dark'} onChange={setTheme}
+    icon={<><Sun className="size-4 dark:hidden" /><Moon className="hidden size-4 dark:block" /></>}>
+    <option value="light">{t.light}</option>
+    <option value="dark">{t.dark}</option>
+    <option value="system">{t.system}</option>
+  </HeaderSelect>
 }

@@ -20,20 +20,22 @@ export function SettingsSidebar({ activeTab, onChangeTab, dictionary }: Settings
   ]
 
   return (
-    <nav className="flex flex-row overflow-x-auto pb-4 md:pb-0 md:flex-col gap-2 md:w-64 shrink-0">
+    <nav aria-label={dictionary.settings.title} className="grid w-full shrink-0 grid-cols-2 gap-2 md:flex md:w-56 md:flex-col">
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id
         return (
           <button
             key={tab.id}
+            type="button"
+            aria-pressed={isActive}
             onClick={() => onChangeTab(tab.id)}
-            className={`flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors text-start whitespace-nowrap ${
+            className={`flex min-h-11 min-w-0 items-center gap-2 rounded-lg px-2.5 py-2 text-start text-sm font-medium transition-colors sm:px-4 ${
               isActive
                 ? 'bg-primary/10 text-primary border border-primary/20'
                 : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground border border-transparent'
             }`}
           >
-            <tab.icon className={`h-4 w-4 ${isActive ? 'text-primary' : ''}`} aria-hidden="true" />
+            <tab.icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-primary' : ''}`} aria-hidden="true" />
             {tab.label}
           </button>
         )

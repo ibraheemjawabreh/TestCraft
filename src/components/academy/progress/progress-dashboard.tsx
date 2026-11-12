@@ -65,7 +65,7 @@ export function ProgressDashboard({ progress, dictionary, locale, displayName }:
                   className="h-[72px] w-[72px] rounded-xl object-cover ring-2 ring-[#f97316]/30"
                 />
               ) : (
-                <div className="flex h-[72px] w-[72px] items-center justify-center rounded-xl bg-cyber-gradient text-2xl font-bold text-white">
+                <div className="flex h-[72px] w-[72px] items-center justify-center rounded-xl bg-primary text-2xl font-bold text-primary-foreground">
                   {Array.from(displayName)[0]?.toUpperCase()}
                 </div>
               )}
@@ -86,7 +86,7 @@ export function ProgressDashboard({ progress, dictionary, locale, displayName }:
 
             <div className="w-full max-w-xl space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="font-semibold text-[#ea580c]">
+                <span className="font-semibold text-primary">
                   {progress.totalXp.toLocaleString('en-US')} {dictionary.academy.xp}
                 </span>
                 <span className="text-muted-foreground">
@@ -95,7 +95,7 @@ export function ProgressDashboard({ progress, dictionary, locale, displayName }:
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
                 <div
-                  className="h-full rounded-full bg-cyber-gradient transition-all duration-700"
+                  className="h-full rounded-full bg-primary transition-all duration-700"
                   style={{ width: `${Math.max(levelProgress.levelProgressPercentage, 3)}%` }}
                 />
               </div>

@@ -24,11 +24,11 @@ export function MainLearningCard({ overview, dictionary, locale }: MainLearningC
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-center">
           <div className="space-y-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f97316]/15">
-                <Sparkles className="h-5 w-5 text-[#f97316]" aria-hidden="true" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent">
+                <Sparkles className="h-5 w-5 text-primary" aria-hidden="true" />
               </div>
               <div>
-                <p className="text-sm font-medium text-[#ea580c]">{home.currentPath}</p>
+                <p className="text-sm font-medium text-primary">{home.currentPath}</p>
                 <h2 className="mt-1 font-heading text-2xl font-bold text-foreground">
                   {overview.currentPathTitle ?? dictionary.academy.title}
                 </h2>
@@ -44,7 +44,7 @@ export function MainLearningCard({ overview, dictionary, locale }: MainLearningC
             {overview.nextLessonTitle && (
               <div className="academy-inset rounded-xl p-4">
                 <div className="flex items-start gap-3">
-                  <BookOpen className="mt-0.5 h-5 w-5 shrink-0 text-[#f97316]" aria-hidden="true" />
+                  <BookOpen className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
                   <div className="min-w-0">
                     <p className="text-xs font-medium uppercase text-muted-foreground">
                       {home.nextLesson}
@@ -73,7 +73,7 @@ export function MainLearningCard({ overview, dictionary, locale }: MainLearningC
               </div>
               <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-secondary">
                 <div
-                  className="h-full rounded-full bg-cyber-gradient transition-all"
+                  className="h-full rounded-full bg-primary transition-all"
                   style={{ width: `${overview.progressPercent}%` }}
                 />
               </div>

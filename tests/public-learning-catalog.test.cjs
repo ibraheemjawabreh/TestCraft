@@ -5,7 +5,13 @@ const fs = require('node:fs')
 const { PGlite } = require('@electric-sql/pglite')
 
 test('learning handoff only accepts same-locale app destinations', () => {
-  const { safeLearningRedirect, withLearningRedirect } = require('../src/lib/auth/learning-redirect.ts')
+  const { safeLearningRedirect, studentHomePath, withLearningRedirect } = require('../src/lib/auth/learning-redirect.ts')
+  const path = '/ar/academy?path=00000000-0000-4000-8000-000000000001'
+  assert.equal(safeLearningRedirect(path,'ar'),path)
+  assert.equal(safeLearningRedirect(path + '&next=//example.test','ar'),undefined)
+  assert.equal(safeLearningRedirect(studentHomePath('ar'),'ar'),'/ar/academy/home')
+  assert.equal(safeLearningRedirect('/en/learning-paths/bench-1','en'),'/en/learning-paths/bench-1')
+  assert.equal(safeLearningRedirect('/en/admin','en'),undefined)
   assert.equal(safeLearningRedirect('/en/learning-paths/bench-1/start','en'),'/en/learning-paths/bench-1/start')
   assert.equal(safeLearningRedirect('/ar/learn','ar'),'/ar/learn')
   assert.equal(withLearningRedirect('/auth/post-login?locale=en','/en/learn'),'/auth/post-login?locale=en&redirectTo=%2Fen%2Flearn')

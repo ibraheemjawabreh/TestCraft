@@ -117,7 +117,7 @@ async function main() {
       await p.goto(origin+fresh.replace('/en/','/ar/'))
       await p.getByRole('heading',{name:'الدرس 1.7'}).waitFor()
       assert.equal(await p.locator('html').getAttribute('dir'),'rtl')
-      await p.getByRole('banner').getByRole('link',{name:'English',exact:true}).click()
+      await p.getByRole('banner').getByRole('combobox',{name:'تغيير اللغة',exact:true}).selectOption('en')
       await p.getByRole('heading',{name:'Benchmark lesson 1.7'}).waitFor()
       await p.locator('header a[href="'+progressPath+'"]').click()
       await p.getByText('Completed Lessons',{exact:true}).waitFor()

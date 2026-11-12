@@ -1,6 +1,10 @@
 import Link from 'next/link'
-import { FlaskConical } from 'lucide-react'
-import { HeaderLinks, HeaderLocaleLink } from './header-links'
+import { HeaderLinks } from './header-links'
+import { Logo } from '@/components/brand/Logo'
+import { ThemeToggle } from '@/components/theme/theme-toggle'
+import { LanguageSwitcher } from '@/components/language/language-switcher'
+import { getDictionary } from '@/i18n/get-dictionary'
+import { studentHomePath } from '@/lib/auth/learning-redirect'
 import { marketingCopy } from '@/components/marketing/copy'
 import type { ReactNode } from 'react'
 import type { Locale } from '@/i18n/config'
@@ -10,42 +14,44 @@ type Props = {
   locale: Locale
   accountMenu?: ReactNode
   role?: string
-  controls?: ReactNode
+  publicOnly?: boolean
+  hideAuthActions?: boolean
 }
 
-export function SiteHeader({ locale, accountMenu, role, controls }: Props) {
+export async function SiteHeader({ locale, accountMenu, role, publicOnly, hideAuthActions }: Props) {
   const t = marketingCopy(locale)
-  const home = '/' + locale
-  const paths = home + '/learning-paths'
+  const dictionary = await getDictionary(locale)
+  const prefix = '/' + locale
+  const student = role === 'tester' && !publicOnly
+  const home = student ? studentHomePath(locale) : prefix
   const ar = locale === 'ar'
   const links = [
     { label: t.home, href: home },
-    { label: t.paths, href: paths, children: true },
+    { label: t.paths, href: prefix + '/learning-paths', children: true },
   ]
-  if (role === 'tester') {
+  if (student) {
     links.push(
-      { label: ar ? 'التقدّم' : 'Progress', href: home + '/academy/progress' },
-      { label: ar ? 'التحدّيات' : 'Challenges', href: home + '/academy/challenges', children: true },
+      { label: ar ? 'التقدّم' : 'Progress', href: prefix + '/academy/progress' },
+      { label: ar ? 'التحدّيات' : 'Challenges', href: prefix + '/academy/challenges', children: true },
     )
+  } else if (role === 'tester') {
+    links.push({ label: ar ? 'رئيسية الطالب' : 'Student Home', href: studentHomePath(locale) })
   }
 
   return (
     <header className={s.header}>
       <div className={s.headerInner}>
-        <Link href={home} prefetch={false} className={s.brand} aria-label={'TestCraft — ' + t.home}>
-          <span className={s.brandMark}><FlaskConical size={18} aria-hidden="true" /></span>
-          <span dir="ltr">Test<span>Craft</span></span>
-        </Link>
+        <Logo locale={locale} href={home} className={s.brand} />
         <HeaderLinks label={t.nav} links={links} />
         <div className={s.headerActions}>
-          {controls}
-          <HeaderLocaleLink locale={locale} />
-          {accountMenu ?? (
+          <LanguageSwitcher locale={locale} dictionary={{ language: dictionary.language }} />
+          <ThemeToggle dictionary={{ theme: dictionary.theme }} />
+          {accountMenu ?? (!hideAuthActions && (
             <>
-              <Link href={home + '/login'} prefetch={false} className={s.login}>{t.login}</Link>
-              <Link href={home + '/register'} prefetch={false} className={s.signup}>{t.signup}</Link>
+              <Link href={prefix + '/login'} prefetch={false} className={s.login}>{t.login}</Link>
+              <Link href={prefix + '/register'} prefetch={false} className={s.signup}>{t.signup}</Link>
             </>
-          )}
+          ))}
         </div>
       </div>
     </header>

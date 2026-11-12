@@ -141,7 +141,7 @@ export function ReportsTable({ reports, dictionary, locale }: ReportsTableProps)
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#f97316]/15 bg-[#f97316]/5 dark:bg-white/[0.03]">
+                <tr className="border-b border-border bg-secondary">
                   <th className="px-4 py-3 text-start text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     {dictionary.academy.reportTitle}
                   </th>
@@ -163,7 +163,7 @@ export function ReportsTable({ reports, dictionary, locale }: ReportsTableProps)
                 {filtered.map((report) => (
                   <tr
                     key={report.id}
-                    className="hover:bg-[#fff7ed]/70 dark:hover:bg-white/[0.03] transition-colors"
+                    className="hover:bg-secondary transition-colors"
                   >
                     <td className="px-4 py-3.5 max-w-[220px]">
                       <span className="block font-medium text-foreground truncate">

@@ -12,11 +12,14 @@ const uid = index => '00000000-0000-4000-8000-00000000000' + index
 const id = name => { const h = createHash('md5').update(name).digest('hex'); return [h.slice(0,8),h.slice(8,12),h.slice(12,16),h.slice(16,20),h.slice(20)].join('-') }
 const encode = value => Buffer.from(JSON.stringify(value)).toString('base64url')
 const users = new Map()
+const passwords = new Map([[2, 'Fixture!1234'], [3, 'Fixture!1234']])
+let recovery
 const relations = {
   lessons: { learning_modules: 'module_id', learning_paths: 'learning_path_id' },
   learning_modules: { learning_paths: 'learning_path_id' },
   challenges: { learning_modules: 'module_id' },
   lesson_progress: { lessons: 'lesson_id' },
+  learning_path_progress: { learning_paths: 'learning_path_id' },
   module_progress: { learning_modules: 'module_id' },
   challenge_attempts: { challenges: 'challenge_id' },
   bug_reports: { challenges: 'challenge_id' },
@@ -161,6 +164,7 @@ async function main() {
         const { rows:[account] } = await pg.query('select p.username,p.role,p.total_xp,u.raw_user_meta_data as metadata from public.profiles p join auth.users u using(id) where p.id=$1',[uid(Number(u.searchParams.get('user') || 2))])
         return send(200,account ?? null)
       }
+      if (u.pathname === '/__recovery') return send(200, recovery ? { redirectTo: recovery.redirectTo } : null)
       if (u.pathname === '/__events') return send(200,events.splice(0))
       if (u.pathname === '/__progress') {
         const result = await pg.query('select * from lesson_progress where lesson_id=$1 and user_id=$2',[u.searchParams.get('id'),uid(Number(u.searchParams.get('user') || 2))])
@@ -183,10 +187,24 @@ async function main() {
         const input = await readBody(req)
         if (u.searchParams.get('grant_type') === 'password') {
           const tester = /^fixture([23])@example\.test$/.exec(input.email)
-          return tester && input.password === 'Fixture!1234' ? send(200,await session(Number(tester[1]))) : send(400,{message:'Invalid fixture credentials'})
+          return tester && input.password === passwords.get(Number(tester[1])) ? send(200,await session(Number(tester[1]))) : send(400,{message:'Invalid fixture credentials'})
+        }
+        if (u.searchParams.get('grant_type') === 'pkce') {
+          const valid = recovery && input.auth_code === 'fixture-recovery-code' && typeof input.code_verifier === 'string'
+            && createHash('sha256').update(input.code_verifier).digest('base64url') === recovery.challenge
+          if (!valid) return send(400,{message:'Invalid fixture recovery code'})
+          recovery = undefined
+          return send(200,await session(3))
         }
         const match = /^fixture-refresh-([1234])$/.exec(input.refresh_token)
         return match && !revoked.has(Number(match[1])) ? send(200,await session(Number(match[1]))) : send(401,{message:'Invalid fixture refresh token'})
+      }
+      if (u.pathname === '/auth/v1/recover' && method === 'POST') {
+        const input = await readBody(req)
+        if (input.email === 'fixture3@example.test' && typeof input.code_challenge === 'string') {
+          recovery = { redirectTo: u.searchParams.get('redirect_to'), challenge: input.code_challenge }
+        }
+        return send(200,{})
       }
       if (u.pathname === '/auth/v1/signup' && method === 'POST') {
         const input = await readBody(req)
@@ -199,6 +217,10 @@ async function main() {
       if (u.pathname === '/auth/v1/user' && method === 'GET') return send(200,user)
       if (u.pathname === '/auth/v1/user' && method === 'PUT') {
         const input = await readBody(req)
+        if (typeof input.password === 'string') {
+          passwords.set(Number(user.id.slice(-1)), input.password)
+          return send(200,user)
+        }
         const { rows:[account] } = await pg.query("update auth.users set raw_user_meta_data=raw_user_meta_data||$2::jsonb where id=$1 returning raw_user_meta_data",[user.id,JSON.stringify(input.data)])
         for (const current of users.values()) if (current.id === user.id) current.user_metadata = account.raw_user_meta_data
         return send(200,user)

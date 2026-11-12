@@ -49,3 +49,13 @@ where badge_key='first_lesson_completed';
 update public.badges set name='First bug report', name_ar='أول تقرير خطأ',
   description='Awarded for submitting your first bug report.', description_ar='تُمنح عند إرسال تقرير الخطأ الأول.'
 where badge_key='first_bug_report';
+
+-- A stored path summary for the learner with seeded lesson history.
+insert into public.learning_path_progress(user_id,learning_path_id,completion_percentage,last_activity_at)
+values('00000000-0000-4000-8000-000000000002',md5('path1')::uuid,25,now())
+on conflict(user_id,learning_path_id) do nothing;
+
+-- Columns used by the existing Activity screen.
+alter table public.ai_evaluations add column earned_xp integer,
+  add column quality_feedback text, add column evaluated_at timestamptz;
+grant select(earned_xp,quality_feedback,evaluated_at) on public.ai_evaluations to authenticated;

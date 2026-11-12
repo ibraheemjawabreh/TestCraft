@@ -1,8 +1,7 @@
 import Link from 'next/link'
 import { ArrowLeft, ArrowRight, Mail } from 'lucide-react'
 
-import { MarketingFooter } from '@/components/marketing/marketing-footer'
-import { MarketingHeader } from '@/components/marketing/marketing-header'
+import { MarketingShell } from '@/components/marketing/marketing-shell'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { siteConfig } from '@/config/site'
 import type { LegalDocument, LegalDocumentKind } from '@/content/legal'
@@ -29,38 +28,37 @@ export function LegalPageLayout({
   const BackIcon = isArabic ? ArrowRight : ArrowLeft
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-[#f8fafc]">
-      <MarketingHeader locale={locale} />
-      <main className="px-4 py-10 sm:px-6 sm:py-14">
+    <MarketingShell locale={locale} publicOnly>
+      <div className="px-4 py-10 sm:px-6 sm:py-14">
         <div className="mx-auto max-w-5xl space-y-8">
           <Link
-            href={`/${locale}/academy`}
-            className="inline-flex items-center gap-2 rounded-md text-sm font-medium text-[#cbd5e1] transition-colors hover:text-[#fbbf24] focus-visible:text-[#fbbf24]"
+            href={`/${locale}`}
+            className="inline-flex items-center gap-2 rounded-md text-sm font-medium text-muted-foreground transition-colors hover:text-primary focus-visible:text-primary"
           >
             <BackIcon className="h-4 w-4" aria-hidden="true" />
-            {dictionary.legal.backToAcademy}
+            {isArabic ? 'العودة إلى الرئيسية' : 'Back to Home'}
           </Link>
 
           <section className="space-y-4">
-            <div className="inline-flex rounded-full border border-[#f97316]/30 bg-[#f97316]/10 px-3 py-1 text-xs font-semibold text-[#fbbf24]">
+            <div className="inline-flex rounded-full border border-border bg-accent px-3 py-1 text-xs font-semibold text-primary">
               {siteConfig.name}
             </div>
             <div className="max-w-3xl space-y-3">
-              <h1 className="font-heading text-4xl font-extrabold tracking-tight text-[#f8fafc] sm:text-5xl">
+              <h1 className="font-heading text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
                 {title}
               </h1>
-              <p className="text-base leading-7 text-[#cbd5e1] sm:text-lg">
+              <p className="text-base leading-7 text-muted-foreground sm:text-lg">
                 {subtitle}
               </p>
-              <p className="text-sm text-[#94a3b8]">
+              <p className="text-sm text-muted-foreground">
                 {dictionary.legal.lastUpdated}: {document.updatedAt}
               </p>
             </div>
           </section>
 
           <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
-            <aside className="lg:sticky lg:top-6 lg:self-start">
-              <Card className="border-white/10 bg-[#17233a]/80 text-[#f8fafc] shadow-[0_20px_50px_-30px_rgba(0,0,0,0.9)] backdrop-blur-xl">
+            <aside className="lg:sticky lg:top-24 lg:self-start">
+              <Card className="academy-surface">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base">{dictionary.legal.tableOfContents}</CardTitle>
                 </CardHeader>
@@ -71,7 +69,7 @@ export function LegalPageLayout({
                         <li key={section.id}>
                           <a
                             href={`#${section.id}`}
-                          className="block rounded-md text-sm leading-5 text-[#cbd5e1] transition-colors hover:text-[#fbbf24] focus-visible:text-[#fbbf24]"
+                          className="block rounded-md text-sm leading-5 text-muted-foreground transition-colors hover:text-primary focus-visible:text-primary"
                           >
                             {section.title}
                           </a>
@@ -83,14 +81,14 @@ export function LegalPageLayout({
               </Card>
             </aside>
 
-            <Card className="border-white/10 bg-[#17233a]/80 text-[#f8fafc] shadow-[0_20px_50px_-30px_rgba(0,0,0,0.9)] backdrop-blur-xl">
+            <Card className="academy-surface">
               <CardContent className="space-y-8 p-6 sm:p-8">
                 {document.sections.map((section) => (
-                  <section key={section.id} id={section.id} className="scroll-mt-8 space-y-3">
-                    <h2 className="font-heading text-xl font-bold text-[#f8fafc]">
+                  <section key={section.id} id={section.id} className="scroll-mt-32 space-y-3">
+                    <h2 className="font-heading text-xl font-bold text-foreground">
                       {section.title}
                     </h2>
-                    <div className="space-y-3 text-sm leading-7 text-[#cbd5e1] sm:text-base">
+                    <div className="space-y-3 text-sm leading-7 text-muted-foreground sm:text-base">
                       {section.body.map((paragraph) => (
                         <p key={paragraph}>{paragraph}</p>
                       ))}
@@ -98,11 +96,11 @@ export function LegalPageLayout({
                   </section>
                 ))}
 
-                <div className="rounded-lg border border-[#f97316]/25 bg-[#f97316]/10 p-4 text-sm leading-6 text-[#cbd5e1]">
+                <div className="rounded-lg border border-border bg-accent p-4 text-sm leading-6 text-muted-foreground">
                   <p>{document.disclaimer}</p>
                   <a
                     href={`mailto:${siteConfig.creator.email}`}
-                    className="mt-3 inline-flex items-center gap-2 rounded-md font-medium text-[#fbbf24] transition-colors hover:text-[#fde68a] focus-visible:text-[#fde68a]"
+                    className="mt-3 break-all inline-flex items-center gap-2 rounded-md font-medium text-primary transition-colors hover:text-primary focus-visible:text-primary"
                   >
                     <Mail className="h-4 w-4" aria-hidden="true" />
                     {siteConfig.creator.email}
@@ -112,9 +110,7 @@ export function LegalPageLayout({
             </Card>
           </div>
         </div>
-      </main>
-
-      <MarketingFooter locale={locale} />
-    </div>
+      </div>
+    </MarketingShell>
   )
 }

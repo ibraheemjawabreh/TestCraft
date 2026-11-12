@@ -1,14 +1,22 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PHASE_DEVELOPMENT_SERVER } from 'next/constants.js'
+
+const hydrationEntry = fileURLToPath(new URL('./src/lib/next/deferred-app-hydration.cjs', import.meta.url))
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   outputFileTracingRoot: path.dirname(fileURLToPath(import.meta.url)),
   // Strict mode catches potential issues during development
   reactStrictMode: true,
   // Useful for verification on machines with limited free disk space.
-  webpack(config) {
+  webpack(config, { isServer, webpack }) {
     if (process.env.TESTCRAFT_NO_BUILD_CACHE === '1') config.cache = false
+    if (!isServer) {
+      // Next 15's App Router bootstrap imports this entry before the HTML may be complete.
+      config.plugins.push(new webpack.NormalModuleReplacementPlugin(/^\.\/app-index(?:\.js)?$/, resource => {
+        if (/[\\/]next[\\/]dist[\\/]client$/.test(resource.context)) resource.request = hydrationEntry
+      }))
+    }
     return config
   },
 

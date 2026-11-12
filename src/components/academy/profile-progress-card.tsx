@@ -48,14 +48,14 @@ export function ProfileProgressCard({
               className="h-16 w-16 rounded-2xl object-cover ring-2 ring-primary/30"
             />
           ) : (
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-cyber-gradient ring-2 ring-primary/30">
-              <span className="text-xl font-bold text-white">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary ring-2 ring-primary/30">
+              <span className="text-xl font-bold text-primary-foreground">
                 {profile.username.charAt(0).toUpperCase()}
               </span>
             </div>
           )}
           {/* Level badge */}
-          <div className="absolute -bottom-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white shadow-md">
+          <div className="absolute -bottom-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shadow-md">
             {level}
           </div>
         </div>
@@ -77,7 +77,7 @@ export function ProfileProgressCard({
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-secondary/60">
               <div
-                className="h-full rounded-full bg-cyber-gradient transition-all duration-700"
+                className="h-full rounded-full bg-primary transition-all duration-700"
                 style={{ width: `${Math.max(xpProgress * 100, 3)}%` }}
               />
             </div>

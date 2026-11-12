@@ -80,7 +80,7 @@ export function ChallengeCard({ challenge, dictionary, locale }: ChallengeCardPr
       {/* Decorative top glow */}
       <div
         aria-hidden="true"
-        className="absolute -top-10 -right-10 h-24 w-24 rounded-full bg-[#f97316]/15 blur-[40px] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        className="absolute -top-10 -right-10 h-24 w-24 rounded-full bg-accent blur-[40px] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
       />
 
       {/* Header row */}
@@ -96,7 +96,7 @@ export function ChallengeCard({ challenge, dictionary, locale }: ChallengeCardPr
             {statusConf.label(dictionary)}
           </span>
         </div>
-        <div className="flex shrink-0 items-center gap-1 text-xs font-semibold text-[#ea580c]">
+        <div className="flex shrink-0 items-center gap-1 text-xs font-semibold text-primary">
           <Zap className="h-3.5 w-3.5" aria-hidden="true" />
           {challenge.base_xp_reward} {dictionary.academy.xp}
         </div>
@@ -104,7 +104,7 @@ export function ChallengeCard({ challenge, dictionary, locale }: ChallengeCardPr
 
       {/* Title & description */}
       <div className="mt-3 flex-1">
-        <h3 className="font-heading text-base font-semibold text-foreground group-hover:text-[#ea580c] transition-colors line-clamp-2">
+        <h3 className="font-heading text-base font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">
           {challenge.title}
         </h3>
         <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
@@ -116,7 +116,7 @@ export function ChallengeCard({ challenge, dictionary, locale }: ChallengeCardPr
       <div className="mt-4">
         <Link prefetch={false}
           href={href}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#f97316]/10 px-4 py-2 text-sm font-medium text-[#c2410c] transition-all hover:bg-[#ea580c] hover:text-white group-hover:shadow-sm"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-primary transition-all hover:bg-primary hover:text-primary-foreground group-hover:shadow-sm"
         >
           {ctaLabel}
           <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />

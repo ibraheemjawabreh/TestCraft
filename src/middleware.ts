@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import type { CookieOptions } from '@supabase/ssr'
 import { i18n, type Locale } from './i18n/config'
-import { safeLearningRedirect } from './lib/auth/learning-redirect'
+import { safeLearningRedirect, studentHomePath } from './lib/auth/learning-redirect'
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl
@@ -39,12 +39,11 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   if (pathnameIsMissingLocale) {
     // Redirect to default locale if missing
-    return NextResponse.redirect(
-      new URL(
-        `/${i18n.defaultLocale}${pathname.startsWith('/') ? '' : '/'}${pathname}`,
-        request.url
-      )
-    )
+    const savedLocale = request.cookies.get('testcraft-locale')?.value as Locale | undefined
+    const locale = savedLocale && i18n.locales.includes(savedLocale) ? savedLocale : i18n.defaultLocale
+    const localized = request.nextUrl.clone()
+    localized.pathname = '/' + locale + (pathname === '/' ? '' : pathname)
+    return NextResponse.redirect(localized)
   }
 
   // Extract the locale for auth checks
@@ -92,15 +91,17 @@ async function handleSupabaseAuth(
   const marketing = !!locale && (pathname === prefix || pathname === `${prefix}/learning-paths` ||
     /^\/learning-paths\/[^/]+$/.test(pathname.slice(prefix.length)) ||
     pathname === `${prefix}/privacy` || pathname === `${prefix}/terms`)
+  const recovery = pathname === prefix + '/forgot-password' || pathname === prefix + '/update-password'
   const accountPage = pathname === `${prefix}/profile` || pathname === `${prefix}/settings`
-  if (locale && (marketing || learningStart || accountPage || pathname === `${prefix}/academy` || pathname.startsWith(`${prefix}/academy/`))) {
+  if (locale && (marketing || learningStart || recovery || accountPage || pathname === `${prefix}/academy` || pathname.startsWith(`${prefix}/academy/`))) {
     // Read/refresh the cookie here. The layout and pages verify the user with
     // Auth and check the database role in requireTester() before serving data.
     const { data: { session } } = await supabase.auth.getSession()
-    if (session || marketing || learningStart) return finalResponse
-    const loginUrl = request.nextUrl.clone()
-    loginUrl.pathname = `${prefix}/login`
-    loginUrl.searchParams.set('redirectTo', pathname)
+    if (session || marketing || learningStart || recovery) return finalResponse
+    const loginUrl = new URL(`${prefix}/login`, request.url)
+    const destination = safeLearningRedirect(pathname + request.nextUrl.search, locale as Locale) ??
+      safeLearningRedirect(pathname, locale as Locale)
+    if (destination) loginUrl.searchParams.set('redirectTo', destination)
     return NextResponse.redirect(loginUrl)
   }
 
@@ -116,13 +117,15 @@ async function handleSupabaseAuth(
     return NextResponse.redirect(loginUrl)
   }
 
-  // Auth routes redirect to academy if already logged in
+  // Auth routes redirect verified users to their requested page or Student Home.
   const authPaths = [`${prefix}/login`, `${prefix}/register`]
   const isAuthPage = authPaths.some((p) => pathname === p || pathname.startsWith(`${p}/`))
 
-  if (user && isAuthPage) {
+  if (user && locale && isAuthPage && request.nextUrl.searchParams.get('error') !== 'profile_unavailable') {
     const destination = locale && safeLearningRedirect(request.nextUrl.searchParams.get('redirectTo'), locale as Locale)
-    return NextResponse.redirect(new URL(destination || `${prefix}/academy`, request.url))
+    const redirect = NextResponse.redirect(new URL(destination || studentHomePath(locale as Locale), request.url))
+    for (const cookie of finalResponse.cookies.getAll()) redirect.cookies.set(cookie)
+    return redirect
   }
 
   return finalResponse

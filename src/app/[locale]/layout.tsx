@@ -43,6 +43,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'TestCraft' }],
   creator: 'TestCraft',
+  icons: { icon: '/TestCraft_logo.webp' },
   robots: {
     index: true,
     follow: true,
@@ -51,8 +52,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f8fafc' },
-    { media: '(prefers-color-scheme: dark)', color: '#050510' }
+    { media: '(prefers-color-scheme: light)', color: '#faf8f4' },
+    { media: '(prefers-color-scheme: dark)', color: '#171412' }
   ],
   width: 'device-width',
   initialScale: 1,

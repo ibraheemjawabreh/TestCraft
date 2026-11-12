@@ -31,7 +31,8 @@ export interface TesterAuthContext {
 export const requireTester = cache(async (locale: Locale, destination?: string): Promise<TesterAuthContext> => {
   const viewer = await getViewerProfile()
   if (!viewer?.profile) {
-    redirect(withLearningRedirect(`/${locale}/login`, safeLearningRedirect(destination, locale)))
+    const login = `/${locale}/login` + (viewer ? '?error=profile_unavailable' : '')
+    redirect(withLearningRedirect(login, safeLearningRedirect(destination, locale)))
   }
 
   if (viewer.profile.role === 'admin') {

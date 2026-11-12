@@ -1,9 +1,8 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import type { Locale } from '@/i18n/config'
 
 /**
- * TestCraft brand logo — uses TestCraft_logo.png + high-contrast Wordmark.
+ * TestCraft_logo.webp is the size-optimized original TestCraft_logo.png.
  * Server Component — zero client bundle cost.
  */
 interface LogoProps {
@@ -19,22 +18,24 @@ export function Logo({ locale, href, className, textClassName }: LogoProps) {
     <Link
       href={linkHref}
       className={`inline-flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg ${className ?? ''}`}
-      aria-label="TestCraft — go to home"
+      prefetch={false}
+      aria-label={locale === 'ar' ? 'TestCraft — الرئيسية' : 'TestCraft — Home'}
     >
-      <Image
-        src="/TestCraft_logo.png"
-        alt="TestCraft Logo"
-        width={160}
-        height={40}
-        priority
-        className="h-10 w-auto object-contain"
+      {/* eslint-disable-next-line @next/next/no-img-element -- The original mark is already resized and WebP-encoded. */}
+      <img
+        src="/TestCraft_logo.webp"
+        alt=""
+        decoding="async"
+        width={36}
+        height={36}
+        className="size-9 shrink-0 object-contain"
       />
       {/* ── Wordmark ──────────────────────────────────────────────────── */}
-      <span className="font-heading text-xl font-bold tracking-tight select-none flex items-center">
-        <span className={textClassName ?? 'text-foreground dark:text-white'}>
+      <span dir="ltr" className="site-brand-word font-heading text-lg font-bold tracking-tight select-none">
+        <span className={textClassName ?? 'text-foreground'}>
           Test
         </span>
-        <span className="bg-gradient-to-r from-[#f97316] via-[#fb923c] to-[#fbbf24] bg-clip-text text-transparent font-extrabold ms-0.5 drop-shadow-sm">
+        <span className="font-extrabold text-primary">
           Craft
         </span>
       </span>

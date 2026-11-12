@@ -44,7 +44,13 @@ const AUTH_ERROR_MAP: Readonly<Record<string, string>> = {
     'Invalid email or password. Please double-check and try again.',
 } as const
 
-function mapAuthError(message: string): string {
+function mapAuthError(message: string, locale: string): string {
+  if (locale === 'ar') {
+    if (message === 'Email not confirmed') return 'تحقّق من بريدك لتأكيد الحساب أولًا.'
+    if (message === 'Too many requests') return 'تكررت المحاولات. انتظر قليلًا ثم حاول مجددًا.'
+    if (message === 'Invalid login credentials' || message === 'Invalid email or password' || message === 'User not found') return 'البريد أو كلمة المرور غير صحيحة.'
+    return 'تعذّر تسجيل الدخول. حاول مجددًا.'
+  }
   return (
     AUTH_ERROR_MAP[message] ??
     'Something went wrong. Please try again or contact support.'
@@ -97,7 +103,7 @@ export function LoginForm({ dictionary, locale, destination }: { dictionary: any
     })
 
     if (error) {
-      setAuthError(mapAuthError(error.message))
+      setAuthError(mapAuthError(error.message, locale))
       return
     }
 
@@ -112,7 +118,7 @@ export function LoginForm({ dictionary, locale, destination }: { dictionary: any
         onSubmit={form.handleSubmit(onSubmit)}
         noValidate // Let Zod handle validation, not the browser
         className="auth-form space-y-5"
-        aria-label="Sign in form"
+        aria-label={locale === 'ar' ? 'نموذج تسجيل الدخول' : 'Sign in form'}
       >
         {/* ── Auth error banner ──────────────────────────────────────────── */}
         {authError !== null && (
@@ -144,7 +150,7 @@ export function LoginForm({ dictionary, locale, destination }: { dictionary: any
                 <Input
                   {...field}
                   id="email"
-                  type="email"
+                  type="email" dir="ltr"
                   placeholder="you@example.com"
                   autoComplete="email"
                   autoCapitalize="none"
@@ -155,7 +161,7 @@ export function LoginForm({ dictionary, locale, destination }: { dictionary: any
                   aria-required="true"
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage errorText={field.value ? dictionary.validation.invalidEmail : dictionary.validation.required} />
             </FormItem>
           )}
         />
@@ -188,7 +194,7 @@ export function LoginForm({ dictionary, locale, destination }: { dictionary: any
                   <Input
                     {...field}
                     id="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? 'text' : 'password'} dir="ltr"
                     placeholder="••••••••"
                     autoComplete="current-password"
                     disabled={isSubmitting}
@@ -208,7 +214,7 @@ export function LoginForm({ dictionary, locale, destination }: { dictionary: any
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm',
                       'disabled:pointer-events-none',
                     ].join(' ')}
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-label={showPassword ? (locale === 'ar' ? 'إخفاء كلمة المرور' : 'Hide password') : (locale === 'ar' ? 'إظهار كلمة المرور' : 'Show password')}
                     aria-pressed={showPassword}
                   >
                     {showPassword ? (
@@ -219,7 +225,7 @@ export function LoginForm({ dictionary, locale, destination }: { dictionary: any
                   </button>
                 </div>
               </FormControl>
-              <FormMessage />
+              <FormMessage errorText={field.value ? dictionary.validation.passwordTooShort : dictionary.validation.required} />
             </FormItem>
           )}
         />
@@ -257,7 +263,7 @@ export function LoginForm({ dictionary, locale, destination }: { dictionary: any
         {/* ── Submit button ─────────────────────────────────────────────── */}
         <Button
           type="submit"
-          variant="gradient"
+          variant="default"
           size="xl"
           className="w-full mt-2"
           disabled={isSubmitting}

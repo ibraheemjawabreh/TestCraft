@@ -4,11 +4,11 @@ import { accountIdentity } from '@/lib/auth/account-identity'
 import { SiteHeader } from '@/components/layout/site-header'
 import { HeaderAccountMenu } from '@/components/layout/header-links'
 
-export async function MarketingHeader({ locale }: { locale: Locale }) {
+export async function MarketingHeader({ locale, publicOnly }: { locale: Locale; publicOnly?: boolean }) {
   const viewer = await getViewerProfile()
   const account = viewer ? accountIdentity(viewer.user, viewer.profile, locale) : undefined
   const role = viewer?.profile?.role
-  return <SiteHeader locale={locale} role={role} accountMenu={
+  return <SiteHeader locale={locale} role={role} publicOnly={publicOnly} accountMenu={
     account ? <HeaderAccountMenu account={account} locale={locale} admin={role === 'admin'} /> : undefined
   } />
 }

@@ -115,7 +115,7 @@ async function browserChecks(browser) {
     await p.getByRole('heading',{name:'Benchmark lesson 1.2',exact:true}).waitFor()
     await p.goBack()
     await p.getByRole('heading',{name:'Benchmark path 1',exact:true}).waitFor()
-    await p.getByRole('link',{name:'العربية',exact:true}).click()
+    await p.getByRole('combobox',{name:/Switch language/}).selectOption('ar')
     await p.getByRole('heading',{name:'المسار 1',exact:true}).waitFor()
     assert.equal(await p.locator('html').getAttribute('dir'),'rtl')
     console.log('PASS: signed-in home, private progress, locked lessons, read-only prefetch and real resume, back navigation and locale')

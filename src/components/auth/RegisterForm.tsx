@@ -118,8 +118,8 @@ function SuccessCard({ dictionary, locale, destination }: SuccessCardProps) {
       role="status"
       aria-live="polite"
     >
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-cyber-gradient shadow-glow-primary">
-        <Mail className="h-7 w-7 text-white" aria-hidden="true" />
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary">
+        <Mail className="h-7 w-7 text-primary-foreground" aria-hidden="true" />
       </div>
 
       <div className="space-y-2.5">
@@ -257,7 +257,7 @@ export function RegisterForm({ dictionary, locale, destination }: { dictionary: 
         onSubmit={form.handleSubmit(onSubmit)}
         noValidate
         className="auth-form space-y-4"
-        aria-label="Create account form"
+        aria-label={locale === 'ar' ? 'نموذج إنشاء الحساب' : 'Create account form'}
       >
         {/* ── Auth error banner ──────────────────────────────────────────── */}
         {status === 'error' && errorMessage && (
@@ -305,7 +305,7 @@ export function RegisterForm({ dictionary, locale, destination }: { dictionary: 
                   <Input
                     {...field}
                     id="email"
-                    type="email"
+                    type="email" dir="ltr"
                     placeholder="you@example.com"
                     autoComplete="email"
                     autoCapitalize="none"
@@ -323,7 +323,7 @@ export function RegisterForm({ dictionary, locale, destination }: { dictionary: 
                   />
                 </div>
               </FormControl>
-              <FormMessage />
+              <FormMessage errorText={field.value ? dictionary.validation.invalidEmail : dictionary.validation.required} />
             </FormItem>
           )}
         />
@@ -350,7 +350,7 @@ export function RegisterForm({ dictionary, locale, destination }: { dictionary: 
               {!fieldState.error && (
                 <PasswordStrengthBar password={watchedPassword} />
               )}
-              <FormMessage />
+              <FormMessage errorText={locale === 'ar' ? 'استخدم 8 أحرف على الأقل، بينها حرف كبير وآخر صغير ورقم ورمز.' : undefined} />
             </FormItem>
           )}
         />
@@ -380,7 +380,7 @@ export function RegisterForm({ dictionary, locale, destination }: { dictionary: 
                   Passwords match
                 </p>
               )}
-              <FormMessage />
+              <FormMessage errorText={locale === 'ar' ? 'أكّد كلمة المرور المطابقة.' : undefined} />
             </FormItem>
           )}
         />
@@ -445,7 +445,7 @@ export function RegisterForm({ dictionary, locale, destination }: { dictionary: 
         {/* ── Submit button ─────────────────────────────────────────────── */}
         <Button
           type="submit"
-          variant="gradient"
+          variant="default"
           size="xl"
           className="w-full mt-2"
           disabled={isDisabled}

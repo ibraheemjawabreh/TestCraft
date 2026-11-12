@@ -2,77 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Cyber Violet CSS Custom Properties ─────────────────────────────────────
-   These tokens feed shadcn/ui components. Values are in HSL (without "hsl()").
-   Background: #050510  ≈ hsl(240, 52%, 4%)
-   Surface:    #0f0f1f  ≈ hsl(240, 35%, 9%)
-   Primary:    #7c3aed  ≈ hsl(263, 83%, 58%)
-   Accent:     #22d3ee  ≈ hsl(189, 85%, 53%)
-   Glow:       #f0abfc  ≈ hsl(293, 92%, 83%)
-   ─────────────────────────────────────────────────────────────────────────── */
+/* Shared TestCraft palette, including portalled controls. */
 @layer base {
   :root {
-    /* Light Mode */
-    --background: 210 40% 98%; /* #f8fafc */
-    --foreground: 222 47% 11%; /* #0f172a */
-
-    --card: 0 0% 100%; /* #ffffff */
-    --card-foreground: 222 47% 11%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-
-    --primary: 263 83% 58%; /* #7c3aed */
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 25% 47%; /* #64748b */
-
-    --accent: 191 91% 36%; /* #0891b2 */
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214 32% 91%; /* #e2e8f0 */
-    --input: 214 32% 91%;
-    --ring: 263 83% 58%;
-
-    --radius: 0.75rem;
+    --background: 38 37% 97%;
+    --foreground: 27 20% 13%;
+    --card: 36 56% 99%;
+    --card-foreground: var(--foreground);
+    --popover: var(--card);
+    --popover-foreground: var(--foreground);
+    --primary: 23 84% 33%;
+    --primary-foreground: 36 65% 99%;
+    --secondary: 36 32% 92%;
+    --secondary-foreground: var(--foreground);
+    --muted: 36 26% 93%;
+    --muted-foreground: 28 13% 35%;
+    --accent: 34 58% 90%;
+    --accent-foreground: 24 67% 22%;
+    --destructive: 0 73% 40%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 32 24% 83%;
+    --input: 30 22% 72%;
+    --ring: var(--primary);
+    --radius: .75rem;
+    --brand-positive: 153 48% 28%;
+    --brand-positive-surface: 148 37% 89%;
+    --brand-negative-surface: 13 58% 92%;
+    --surface-shadow: 0 16px 42px -30px hsl(24 35% 22% / .38);
   }
-
   .dark {
-    /* Dark Mode (Cyber Violet) */
-    --background: 240 52% 4%; /* #050510 */
-    --foreground: 220 20% 96%;
-
-    --card: 240 35% 9%; /* #0f0f1f */
-    --card-foreground: 220 20% 96%;
-
-    --popover: 240 35% 9%;
-    --popover-foreground: 220 20% 96%;
-
-    --primary: 263 83% 58%; /* #7c3aed */
-    --primary-foreground: 220 20% 98%;
-
-    --secondary: 240 25% 14%;
-    --secondary-foreground: 220 20% 85%;
-
-    --muted: 240 25% 14%;
-    --muted-foreground: 220 14% 55%;
-
-    --accent: 189 85% 53%; /* #22d3ee */
-    --accent-foreground: 240 52% 4%;
-
-    --destructive: 0 72% 55%;
-    --destructive-foreground: 220 20% 98%;
-
-    --border: 263 30% 18%;
-    --input: 263 25% 14%;
-    --ring: 263 83% 58%;
+    --background: 24 12% 8%;
+    --foreground: 38 37% 95%;
+    --card: 25 12% 12%;
+    --primary: 32 100% 72%;
+    --primary-foreground: 27 47% 10%;
+    --secondary: 27 12% 18%;
+    --muted: 26 11% 17%;
+    --muted-foreground: 33 16% 72%;
+    --accent: 25 27% 21%;
+    --accent-foreground: 34 90% 81%;
+    --destructive: 6 94% 77%;
+    --destructive-foreground: 6 52% 12%;
+    --border: 27 14% 25%;
+    --input: 27 15% 37%;
+    --brand-positive: 153 62% 75%;
+    --brand-positive-surface: 155 25% 18%;
+    --brand-negative-surface: 13 33% 22%;
+    --surface-shadow: 0 18px 48px -30px hsl(0 0% 0% / .8);
   }
 }
 
@@ -109,265 +85,46 @@
 
 /* ─── Selection Styling ──────────────────────────────────────────────────── */
 ::selection {
-  background-color: rgba(124, 58, 237, 0.35);
-  color: #ffffff;
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
 }
 
 /* ─── Focus Ring Styling ─────────────────────────────────────────────────── */
 :focus-visible {
-  outline: 2px solid hsl(263 83% 58%);
+  outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
 }
 
-/* Authentication pages adapt to both application themes while keeping the warm brand palette. */
-.auth-page {
-  background:
-    radial-gradient(circle at 12% 15%, rgba(249, 115, 22, 0.18), transparent 30%),
-    radial-gradient(circle at 88% 82%, rgba(251, 191, 36, 0.16), transparent 28%),
-    linear-gradient(145deg, #fff7ed 0%, #fffbeb 45%, #eff6ff 100%);
+/* Shared authentication and learning surfaces. */
+.site-control { border-color: hsl(var(--input)); background: hsl(var(--card)); color: hsl(var(--foreground)); }
+.site-control:focus-within { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+.site-control:hover, .site-control:focus-within {
+  border-color: hsl(var(--primary));
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
 }
-
-.auth-card {
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  background: rgba(255, 255, 255, 0.86);
-  box-shadow: 0 28px 80px -32px rgba(15, 23, 42, 0.3), 0 0 48px -30px rgba(249, 115, 22, 0.4);
+.auth-card, .academy-surface, .academy-data-surface, .academy-challenge-card {
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  box-shadow: var(--surface-shadow);
 }
-
-.auth-controls {
-  border: 1px solid rgba(148, 163, 184, 0.28);
-  background: rgba(255, 255, 255, 0.72);
-}
-
-.auth-heading {
-  color: #0f172a;
-}
-
-.auth-subtitle {
-  color: #475569;
-}
-
-.auth-form input {
-  border-color: rgba(148, 163, 184, 0.48);
-  background-color: rgba(255, 255, 255, 0.88);
-  color: #0f172a;
-}
-
-.auth-form input::placeholder {
-  color: #64748b;
-}
-
-.auth-form input:hover {
-  border-color: rgba(251, 191, 36, 0.38);
-}
-
-.auth-form input:focus-visible {
-  border-color: #ea580c;
-  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.16);
-}
-
-.auth-form label {
-  color: #334155;
-}
-
-.auth-social-button {
-  border-color: rgba(148, 163, 184, 0.48) !important;
-  background-color: rgba(255, 255, 255, 0.9) !important;
-  color: #0f172a !important;
-}
-
-.auth-social-button:hover {
-  border-color: rgba(234, 88, 12, 0.6) !important;
-  background-color: #fff7ed !important;
-}
-
-.dark .auth-page {
-  background:
-    radial-gradient(circle at 12% 15%, rgba(249, 115, 22, 0.22), transparent 30%),
-    radial-gradient(circle at 88% 82%, rgba(251, 191, 36, 0.16), transparent 28%),
-    linear-gradient(145deg, #0b1220 0%, #111c31 48%, #0f172a 100%);
-}
-
-.dark .auth-card {
-  border-color: rgba(255, 255, 255, 0.15);
-  background: rgba(22, 34, 56, 0.9);
-  box-shadow: 0 28px 80px -28px rgba(0, 0, 0, 0.9), 0 0 50px -25px rgba(249, 115, 22, 0.55);
-}
-
-.dark .auth-controls {
-  border-color: rgba(255, 255, 255, 0.1);
-  background: rgba(2, 6, 23, 0.35);
-}
-
-.dark .auth-heading {
-  color: #f8fafc;
-}
-
-.dark .auth-subtitle {
-  color: #cbd5e1;
-}
-
-.dark .auth-form input {
-  border-color: rgba(148, 163, 184, 0.28);
-  background-color: rgba(15, 23, 42, 0.72);
-  color: #f8fafc;
-}
-
-.dark .auth-form input::placeholder {
-  color: #94a3b8;
-}
-
-.dark .auth-form input:focus-visible {
-  border-color: #fbbf24;
-  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.16);
-}
-
-.dark .auth-form label {
-  color: #e2e8f0;
-}
-
-.dark .auth-social-button {
-  border-color: rgba(148, 163, 184, 0.35) !important;
-  background-color: rgba(15, 23, 42, 0.68) !important;
-  color: #f8fafc !important;
-}
-
-.dark .auth-social-button:hover {
-  border-color: rgba(251, 191, 36, 0.55) !important;
-  background-color: rgba(30, 41, 59, 0.95) !important;
-}
-
-/* Tester academy: the homepage palette, adapted for both theme preferences. */
 .academy-shell {
-  background:
-    radial-gradient(circle at 8% 5%, rgba(249, 115, 22, 0.12), transparent 26%),
-    radial-gradient(circle at 90% 20%, rgba(251, 191, 36, 0.12), transparent 25%),
-    #fffaf5;
+  background: radial-gradient(ellipse at 15% 0%, hsl(var(--primary) / .085), transparent 42rem), hsl(var(--background));
 }
+.academy-hero, .academy-page-heading, .academy-practice-card {
+  border: 1px solid hsl(var(--border));
+  background: linear-gradient(130deg, hsl(var(--accent)), hsl(var(--card)) 68%);
+}
+.academy-inset, .academy-filter {
+  border: 1px solid hsl(var(--input));
+  background-color: hsl(var(--background));
+}
+.academy-challenge-card:hover { border-color: hsl(var(--primary)); }
+.academy-filter:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+.academy-header { border-color: hsl(var(--border)); background: hsl(var(--card)); }
 
-.academy-header {
-  border-color: rgba(148, 163, 184, 0.28);
-  background: rgba(255, 255, 255, 0.92);
-}
-
-.academy-footer {
-  --foreground: 220 20% 96%;
-  --muted-foreground: 215 20% 72%;
-  --border: 215 20% 28%;
-  --primary: 24 95% 53%;
-  border-color: rgba(255, 255, 255, 0.1);
-  background: rgba(15, 23, 42, 0.96);
-}
-
-.academy-hero {
-  border: 1px solid rgba(249, 115, 22, 0.18);
-  background: linear-gradient(135deg, rgba(255, 247, 237, 0.94), rgba(255, 251, 235, 0.78));
-  position: relative;
-  overflow: hidden;
-}
-.academy-hero::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -20%;
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(249,115,22,0.08), transparent 70%);
-  pointer-events: none;
-}
-
-.academy-surface {
-  border: 1px solid rgba(148, 163, 184, 0.28);
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 20px 50px -32px rgba(15, 23, 42, 0.28);
-  backdrop-filter: blur(18px);
-}
-
-.academy-inset {
-  border: 1px solid rgba(148, 163, 184, 0.24);
-  background: rgba(248, 250, 252, 0.72);
-}
-
-.academy-practice-card {
-  border: 1px solid rgba(249, 115, 22, 0.24);
-  background: linear-gradient(120deg, rgba(255, 237, 213, 0.72), rgba(255, 251, 235, 0.82));
-  box-shadow: 0 18px 45px -35px rgba(234, 88, 12, 0.45);
-}
-
-.dark .academy-shell {
-  background:
-    radial-gradient(circle at 8% 5%, rgba(249, 115, 22, 0.16), transparent 26%),
-    radial-gradient(circle at 90% 20%, rgba(251, 191, 36, 0.12), transparent 25%),
-    #0b1220;
-}
-
-.dark .academy-hero {
-  border-color: rgba(249, 115, 22, 0.22);
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.82));
-}
-
-.dark .academy-surface {
-  border-color: rgba(255, 255, 255, 0.1);
-  background: rgba(22, 34, 56, 0.78);
-  box-shadow: 0 20px 50px -32px rgba(0, 0, 0, 0.8);
-}
-
-.dark .academy-inset {
-  border-color: rgba(148, 163, 184, 0.22);
-  background: rgba(15, 23, 42, 0.62);
-}
-
-.dark .academy-practice-card {
-  border-color: rgba(249, 115, 22, 0.25);
-  background: linear-gradient(120deg, rgba(124, 45, 18, 0.28), rgba(15, 23, 42, 0.82));
-  box-shadow: 0 18px 45px -35px rgba(249, 115, 22, 0.7);
-}
-
-.academy-page-heading {
-  border: 1px solid rgba(249, 115, 22, 0.18);
-  background: linear-gradient(135deg, rgba(255, 247, 237, 0.9), rgba(255, 251, 235, 0.7));
-}
-
-.academy-filter {
-  border: 1px solid rgba(148, 163, 184, 0.38);
-  background: rgba(255, 255, 255, 0.84);
-}
-
-.academy-filter:focus {
-  border-color: rgba(234, 88, 12, 0.75);
-  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.14);
-  outline: none;
-}
-
-.academy-challenge-card,
-.academy-data-surface {
-  border: 1px solid rgba(148, 163, 184, 0.28);
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 18px 45px -35px rgba(15, 23, 42, 0.32);
-  backdrop-filter: blur(18px);
-}
-
-.academy-challenge-card:hover {
-  border-color: rgba(249, 115, 22, 0.42);
-  box-shadow: 0 20px 46px -30px rgba(234, 88, 12, 0.22);
-  transform: translateY(-2px);
-}
-
-.dark .academy-page-heading {
-  border-color: rgba(249, 115, 22, 0.22);
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.78));
-}
-
-.dark .academy-filter {
-  border-color: rgba(148, 163, 184, 0.26);
-  background: rgba(15, 23, 42, 0.7);
-}
-
-.dark .academy-challenge-card,
-.dark .academy-data-surface {
-  border-color: rgba(255, 255, 255, 0.1);
-  background: rgba(22, 34, 56, 0.78);
-  box-shadow: 0 18px 45px -35px rgba(0, 0, 0, 0.85);
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
 }
 
 /* Admin command center: shared visual frame without changing admin behaviour. */
@@ -415,8 +172,6 @@
     #0b1220;
 }
 
-.dark .academy-header,
-.dark .academy-footer,
 .dark .admin-sidebar,
 .dark .admin-topbar {
   border-color: rgba(255, 255, 255, 0.1);

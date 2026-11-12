@@ -10,7 +10,7 @@ import { safeLearningRedirect, withLearningRedirect } from '@/lib/auth/learning-
  * Auth Callback Route Handler
  *
  * Handles Supabase OAuth and magic-link callbacks. Successful sign-in flows are
- * redirected by role: admins to /[locale]/admin, testers to /[locale]/academy.
+ * redirected by role: admins to /[locale]/admin, testers to Student Home.
  * Explicit safe `next` destinations are still honored for non-login flows such
  * as password reset.
  */
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       // Keep the existing recovery and settings destinations. Learning
       // redirects take the role-aware allowlisted path below.
       if (next === '/settings' || next === '/update-password') {
-        return new NextResponse(null, { status: 307, headers: { Location: next } })
+        return new NextResponse(null, { status: 307, headers: { Location: "/" + locale + next } })
       }
 
       const redirectPath = await getPostLoginRedirect(locale, destination)
@@ -47,7 +47,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   return new NextResponse(null, { status: 307, headers: {
-    Location: withLearningRedirect('/' + locale + '/register?error=auth_failed', destination),
+    Location: next === '/update-password' ? '/' + locale + '/forgot-password?error=invalid_link'
+      : withLearningRedirect('/' + locale + '/register?error=auth_failed', destination),
   } })
 }
 

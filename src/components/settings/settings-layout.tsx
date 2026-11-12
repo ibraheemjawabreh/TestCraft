@@ -3,7 +3,6 @@ import { ArrowLeft } from 'lucide-react'
 import { TesterFooter } from '@/components/layout/tester-footer'
 import { SiteHeader } from '@/components/layout/site-header'
 import { AccountMenu } from '@/components/layout/account-menu'
-import { ThemeToggle } from '@/components/theme/theme-toggle'
 import type { AccountIdentity } from '@/lib/auth/account-identity'
 import type { Dictionary } from '@/i18n/types'
 import type { Locale } from '@/i18n/config'
@@ -41,8 +40,7 @@ export function SettingsLayout({
           </Link>
         </div>
       </header> : <SiteHeader locale={locale} role="tester"
-        accountMenu={<AccountMenu account={account} locale={locale} admin={false} />}
-        controls={<ThemeToggle dictionary={{ theme: dictionary.theme }} />} />}
+        accountMenu={<AccountMenu account={account} locale={locale} admin={false} />} />}
 
       <main className="mx-auto max-w-5xl px-4 sm:px-6 py-8 md:py-12">
         <div className="academy-page-heading space-y-1 mb-8 rounded-2xl p-6 sm:p-8">

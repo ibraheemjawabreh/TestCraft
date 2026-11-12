@@ -51,19 +51,18 @@ export default async function ProfilePage({ params }: Props) {
   return (
     <AcademyLayout dictionary={dictionary} locale={locale} account={account}>
       <div className="mx-auto max-w-5xl space-y-8">
-        <section className="rounded-2xl border border-[#79603b]/40 bg-[#171719] px-5 py-8 text-[#fbf7ed] sm:px-8 sm:py-10"
-          style={{ backgroundImage: 'radial-gradient(ellipse at 95% 0%, #543720 0%, transparent 58%)' }}>
-          <p className="mb-5 text-xs font-bold uppercase tracking-wider text-[#ffbb70]">{labels.profile}</p>
+        <section className="academy-hero rounded-2xl px-5 py-8 sm:px-8 sm:py-10">
+          <p className="mb-5 text-xs font-bold uppercase tracking-wider text-primary">{labels.profile}</p>
           <div className="flex flex-wrap items-center gap-5">
-            <AccountAvatar name={account.name} src={account.avatar} className="size-20 text-2xl ring-2 ring-[#a87445] sm:size-24" />
+            <AccountAvatar name={account.name} src={account.avatar} className="size-20 text-2xl ring-2 ring-primary/50 sm:size-24" />
             <div className="min-w-0 flex-1 basis-44">
               <h1 dir="auto" className="break-words font-heading text-3xl font-bold sm:text-4xl">{account.name}</h1>
-              <p className="mt-2 text-sm text-[#c3beb4]">{labels.learner}
+              <p className="mt-2 text-sm text-muted-foreground">{labels.learner}
                 {customUsername && <> · <bdi>@{profile.username}</bdi></>}
               </p>
             </div>
             <Link href={prefix + '/settings'} prefetch={false}
-              className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#ffbb70] px-4 text-sm font-semibold text-[#1b130b] hover:bg-[#ffd39f] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffbb70]">
+              className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
               <Pencil size={16} aria-hidden="true" />{labels.edit}
             </Link>
           </div>

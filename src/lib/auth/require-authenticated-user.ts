@@ -39,7 +39,7 @@ export async function requireAuthenticatedUser(locale: Locale): Promise<Authenti
     .single()
 
   if (error || !profile) {
-    redirect(`/${locale}/login`)
+    redirect(`/${locale}/login?error=profile_unavailable`)
   }
 
   return { user, profile }

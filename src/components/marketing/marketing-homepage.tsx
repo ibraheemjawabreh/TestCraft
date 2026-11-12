@@ -19,7 +19,7 @@ export function MarketingHomepage({ locale }: { locale: Locale }) {
   const listing = '/' + locale + '/learning-paths'
   const stepIcons = [BookOpen, FlaskConical, CheckCircle2]
   return (
-    <MarketingShell locale={locale}>
+    <MarketingShell locale={locale} publicOnly>
       <MarketingHero locale={locale} />
       <section className={s.section} aria-labelledby="path-preview">
         <div className={s.sectionHeader}>

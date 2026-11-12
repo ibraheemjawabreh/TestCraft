@@ -1,49 +1,33 @@
 'use client'
 
-import * as React from 'react'
-import { usePathname, useRouter } from 'next/navigation'
-import { Globe } from 'lucide-react'
-
-import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { Globe2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { HeaderSelect } from '@/components/layout/header-select'
 import type { Locale } from '@/i18n/config'
-import { safeLearningRedirect, withLearningRedirect } from '@/lib/auth/learning-redirect'
+import type { Dictionary } from '@/i18n/types'
+import { safeLearningRedirect } from '@/lib/auth/learning-redirect'
 
-export function LanguageSwitcher({ dictionary, locale, destination }: { dictionary: any; locale: Locale; destination?: string }) {
-  const pathname = usePathname()
+export function LanguageSwitcher({ dictionary, locale }: { dictionary: Pick<Dictionary, 'language'>; locale: Locale }) {
   const router = useRouter()
+  const t = dictionary.language
 
-  const switchLocale = (newLocale: Locale) => {
-    if (!pathname) return
-    document.cookie = `testcraft-locale=${newLocale}; path=/; max-age=31536000; samesite=lax`
-    const segments = pathname.split('/')
-    // Replace the locale segment
-    segments[1] = newLocale
-    const next = destination && safeLearningRedirect('/' + newLocale + destination.slice(locale.length + 1), newLocale)
-    router.push(withLearningRedirect(segments.join('/'), next || undefined))
+  function switchLocale(value: string) {
+    if ((value !== 'en' && value !== 'ar') || value === locale) return
+    const current = new URL(window.location.href)
+    const intended = safeLearningRedirect(current.searchParams.get('redirectTo'), locale)
+    if (current.searchParams.has('redirectTo')) {
+      const translated = intended && safeLearningRedirect('/' + value + intended.slice(locale.length + 1), value)
+      if (translated) current.searchParams.set('redirectTo', translated)
+      else current.searchParams.delete('redirectTo')
+    }
+    current.pathname = '/' + value + current.pathname.slice(locale.length + 1)
+    document.cookie = 'testcraft-locale=' + value + '; path=/; max-age=31536000; samesite=lax'
+    router.push(current.pathname + current.search + current.hash, { scroll: !current.hash })
   }
 
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="gap-2" aria-label={dictionary.language.switchLanguage}>
-          <Globe className="h-4 w-4" />
-          <span>{locale === 'en' ? 'English' : 'العربية'}</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => switchLocale('en')} disabled={locale === 'en'}>
-          {dictionary.language.english}
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => switchLocale('ar')} disabled={locale === 'ar'}>
-          {dictionary.language.arabic}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  )
+  return <HeaderSelect label={t.switchLanguage} value={locale} onChange={switchLocale}
+    icon={<><Globe2 className="size-4 shrink-0" />{locale === 'ar' ? 'ع' : 'EN'}</>}>
+    <option lang="en" value="en">English</option>
+    <option lang="ar" value="ar">العربية</option>
+  </HeaderSelect>
 }

@@ -13,27 +13,27 @@ export function AccountMenu({ account, locale, admin }: { account: AccountIdenti
   const ar = locale === 'ar'
   const prefix = '/' + locale
   const label = ar ? 'قائمة الحساب' : 'Account menu'
-  const item = 'cursor-pointer rounded-lg px-3 py-2.5 focus:bg-[#332920] focus:text-[#ffcb95]'
+  const item = 'cursor-pointer rounded-lg px-3 py-2.5 focus:bg-accent focus:text-accent-foreground'
 
   return (
     <>
       <DropdownMenu dir={ar ? 'rtl' : 'ltr'} modal={false}>
         <DropdownMenuTrigger asChild>
           <button type="button" aria-label={label}
-            className="grid size-10 shrink-0 place-items-center rounded-full border border-[#735235] bg-[#241c16] hover:border-[#ffbb70] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffbb70]">
+            className="grid size-11 shrink-0 place-items-center rounded-full border bg-secondary hover:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
             <AccountAvatar name={account.name} src={account.avatar} className="size-8 text-xs" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" sideOffset={10} collisionPadding={12}
-          className="z-[60] w-[min(19rem,calc(100vw-1.5rem))] rounded-2xl border-[#504133] bg-[#191918] p-2 text-[#fbf7ed] shadow-2xl motion-reduce:!animate-none">
+          className="z-[60] w-[min(19rem,calc(100vw-1.5rem))] rounded-xl bg-popover p-2 text-popover-foreground shadow-xl motion-reduce:!animate-none">
           <DropdownMenuLabel className="flex items-center gap-3 px-3 py-3">
             <AccountAvatar name={account.name} src={account.avatar} className="size-11 text-sm" />
             <span className="min-w-0">
               <span dir="auto" className="block break-words text-base">{account.name}</span>
-              {account.email && <bdi className="block break-all text-xs font-normal text-[#c3beb4]">{account.email}</bdi>}
+              {account.email && <bdi className="block break-all text-xs font-normal text-muted-foreground">{account.email}</bdi>}
             </span>
           </DropdownMenuLabel>
-          <DropdownMenuSeparator className="mx-0 bg-[#3a332b]" />
+          <DropdownMenuSeparator className="mx-0 bg-border" />
           <DropdownMenuItem asChild className={item}>
             {admin ? (
               <Link href={prefix + '/admin'} prefetch={false}>
@@ -50,8 +50,8 @@ export function AccountMenu({ account, locale, admin }: { account: AccountIdenti
               <Settings aria-hidden="true" />{ar ? 'إعدادات الحساب' : 'Account Settings'}
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuSeparator className="mx-0 bg-[#3a332b]" />
-          <DropdownMenuItem className={item + ' text-[#ffc4b9]'} onSelect={() => form.current?.requestSubmit()}>
+          <DropdownMenuSeparator className="mx-0 bg-border" />
+          <DropdownMenuItem className={item + ' text-destructive'} onSelect={() => form.current?.requestSubmit()}>
             <LogOut aria-hidden="true" />{ar ? 'تسجيل الخروج' : 'Sign Out'}
           </DropdownMenuItem>
         </DropdownMenuContent>
